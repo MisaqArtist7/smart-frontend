@@ -2,8 +2,9 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Search, Headphones, Zap, Menu, X } from "lucide-react";
+import { Search, Headphones, Menu, X } from "lucide-react";
 import type { MainBarProps } from "./header.types";
 
 /**
@@ -51,9 +52,30 @@ export function MainBar({
             href={logo.href}
             className="group flex items-center gap-2.5 shrink-0 focus:outline-none"
           >
-            <div className="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm transition-transform group-hover:scale-105">
-              
-            </div>  
+            {logo.src ? (
+              <div className="relative h-10 sm:h-11 flex items-center shrink-0">
+                <Image
+                  src={logo.src}
+                  alt={logo.alt || logo.title || "اسمارت الکتریک"}
+                  width={140}
+                  height={44}
+                  priority
+                  className="h-10 sm:h-11 w-auto object-contain transition-transform group-hover:scale-105"
+                />
+              </div>
+            ) : null}
+            {logo.title && (
+              <div className="flex flex-col">
+                <span className="text-base sm:text-lg font-black tracking-tight text-foreground group-hover:text-primary transition-colors">
+                  {logo.title}
+                </span>
+                {logo.subtitle && (
+                  <span className="hidden sm:block text-[11px] text-muted-foreground font-medium">
+                    {logo.subtitle}
+                  </span>
+                )}
+              </div>
+            )}
           </Link>
 
           {/* اینپوت جستجوی کپسولی گرد با آیکون Search */}

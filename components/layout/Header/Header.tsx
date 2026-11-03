@@ -62,9 +62,11 @@ export interface HeaderTopBarConfig {
 
 export interface HeaderMainBarConfig {
   logo: {
-    title: string;
-    subtitle?: string;
+    src: string;
+    alt: string;
     href: string;
+    title?: string;
+    subtitle?: string;
   };
   search: {
     placeholder: string;
@@ -114,6 +116,8 @@ export const DEFAULT_HEADER_CONFIG: HeaderConfig = {
   },
   mainBar: {
     logo: {
+      src: "/images/brand/logo.png",
+      alt: "لوگوی اسمارت الکتریک",
       title: "اسمارت الکتریک",
       subtitle: "تجهیزات و اتوماسیون برق هوشمند",
       href: "/",

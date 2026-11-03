@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   X,
-  Zap,
   ChevronDown,
   Headphones,
   User,
@@ -73,12 +73,22 @@ export function MobileMenu({
             onClick={onClose}
             className="flex items-center gap-2"
           >
-            <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
-              <Zap className="size-4.5 fill-current" />
-            </div>
-            <span className="font-black text-foreground text-base">
-              {mainBar.logo.title}
-            </span>
+            {mainBar.logo.src ? (
+              <div className="relative h-9 flex items-center shrink-0">
+                <Image
+                  src={mainBar.logo.src}
+                  alt={mainBar.logo.alt || mainBar.logo.title || "اسمارت الکتریک"}
+                  width={110}
+                  height={36}
+                  className="h-8 w-auto object-contain"
+                />
+              </div>
+            ) : null}
+            {mainBar.logo.title && (
+              <span className="font-black text-foreground text-base">
+                {mainBar.logo.title}
+              </span>
+            )}
           </Link>
           <button
             type="button"

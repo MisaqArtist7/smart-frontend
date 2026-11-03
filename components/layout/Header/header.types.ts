@@ -56,6 +56,8 @@ export interface HeaderMainBarConfig {
     src: string;
     alt: string;
     href: string;
+    title?: string;
+    subtitle?: string;
   };
   search: {
     placeholder: string;

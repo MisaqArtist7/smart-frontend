@@ -32,6 +32,8 @@ export const DEFAULT_HEADER_CONFIG: HeaderConfig = {
   },
   mainBar: {
     logo: {
+      src: "/images/brand/logo.png",
+      alt: "لوگوی اسمارت الکتریک",
       title: "اسمارت الکتریک",
       subtitle: "تجهیزات و اتوماسیون برق هوشمند",
       href: "/",
