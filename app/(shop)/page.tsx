@@ -1,5 +1,6 @@
 import React from "react";
 import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/footer";
 
 export default function HomePage() {
   return (
@@ -21,6 +22,9 @@ export default function HomePage() {
           </p>
         </div>
       </main>
+
+      {/* کامپوننت فوتر */}
+      <Footer />
     </div>
   );
 }
