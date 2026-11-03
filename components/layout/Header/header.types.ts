@@ -53,8 +53,8 @@ export interface HeaderTopBarConfig {
  */
 export interface HeaderMainBarConfig {
   logo: {
-    title: string;
-    subtitle?: string;
+    src: string;
+    alt: string;
     href: string;
   };
   search: {
