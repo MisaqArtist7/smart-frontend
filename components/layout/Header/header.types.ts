@@ -145,3 +145,4 @@ export interface NavigationBarProps {
   cartCount?: number;
   className?: string;
 }
+

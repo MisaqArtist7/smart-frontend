@@ -165,3 +165,4 @@ export const DEFAULT_HEADER_CONFIG: HeaderConfig = {
     },
   },
 };
+

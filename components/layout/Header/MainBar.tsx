@@ -55,7 +55,7 @@ export function MainBar({
               <Zap className="size-5 fill-current" />
             </div>
             <div className="flex flex-col">
-              <span className="text-base sm:text-lg font-black tracking-tight text-foreground group-hover:text-primary transition-colors">
+              <span className="text-base sm:text-lg font-black tracking-tight text-foreground text-primary transition-colors">
                 {logo.title}
               </span>
               {logo.subtitle && (

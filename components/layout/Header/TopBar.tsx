@@ -70,3 +70,4 @@ export function TopBar({ config, className = "" }: TopBarProps) {
 }
 
 export default TopBar;
+
