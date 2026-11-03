@@ -1,23 +1,29 @@
 import type { Metadata } from "next";
+import { Vazirmatn } from "next/font/google";
 import "./globals.css";
-import { Geist } from "next/font/google";
-import { cn } from "@/lib/utils";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+// کانفیگ فونت وزیرمتن
+const vazir = Vazirmatn({
+  subsets: ["arabic", "latin"],
+  display: "swap",
+  variable: "--font-vazir",
+});
 
 export const metadata: Metadata = {
-  title: "",
-  description: "",
+  title: "فروشگاه اینترنتی",
+  description: "خرید آنلاین انواع محصولات",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html
-      lang="fa"
-      dir="rtl"
-      className={cn("h-full", "antialiased", "font-sans", geist.variable)}
-    >
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="fa" dir="rtl" className={vazir.variable}>
+      <body className={vazir.className}>
+        {children}
+      </body>
     </html>
   );
 }
