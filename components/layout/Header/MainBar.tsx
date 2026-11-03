@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Search, Headphones, Zap, Menu, X } from "lucide-react";
 import type { MainBarProps } from "./header.types";
 
@@ -17,12 +18,12 @@ export function MainBar({
 }: MainBarProps) {
   const { logo, search, support } = config;
   const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      // می‌توان روتینگ جستجو را به این شکل پیاده‌سازی کرد
-      window.location.href = `/search?q=${encodeURIComponent(searchQuery.trim())}`;
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
     }
   };
 
