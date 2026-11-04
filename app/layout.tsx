@@ -21,7 +21,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fa" dir="rtl" className={vazir.variable}>
-      <body className={vazir.className}>
+      <body className={`${vazir.className}`}>
         {children}
       </body>
     </html>

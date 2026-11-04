@@ -153,7 +153,17 @@ export function HeroCarousel({
             </CarouselItem>
           ))}
         </CarouselContent>
-        
+
+        {/* دکمه‌های ناوبری دسکتاپ */}
+        <CarouselPrevious
+          aria-label="اسلاید قبلی"
+          className="hidden sm:flex right-4 left-auto top-1/2 -translate-y-1/2 z-20 size-10 rounded-full bg-background/80 hover:bg-background text-foreground backdrop-blur-sm border border-border shadow-md rotate-180 transition-all hover:scale-105"
+        />
+        <CarouselNext
+          aria-label="اسلاید بعدی"
+          className="hidden sm:flex left-4 right-auto top-1/2 -translate-y-1/2 z-20 size-10 rounded-full bg-background/80 hover:bg-background text-foreground backdrop-blur-sm border border-border shadow-md rotate-180 transition-all hover:scale-105"
+        />
+
         {/* نشانگرهای زیر اسلایدر (Pagination Dots) */}
         <div className="absolute bottom-3 sm:bottom-4 inset-x-0 z-20 flex items-center justify-center pointer-events-none">
           <div className="flex items-center gap-1.5 rounded-full bg-background/60 backdrop-blur-md px-3 py-1.5 border border-border/40 shadow-xs pointer-events-auto">

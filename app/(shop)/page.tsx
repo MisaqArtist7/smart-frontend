@@ -2,6 +2,7 @@ import React from "react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/footer";
 import HeroCarousel from "@/components/home/hero-carousel";
+import CategoryCarousel from "@/components/home/category-carousel";
 
 export default function HomePage() {
   return (
@@ -13,6 +14,9 @@ export default function HomePage() {
       <main className="flex-1 mx-auto max-w-8xl w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8">
         {/* اسلایدر بنر اصلی (Hero Carousel) */}
         <HeroCarousel />
+
+        {/* اسلایدر دسته‌بندی محصولات (Category Carousel) */}
+        <CategoryCarousel />
 
         <div className="rounded-2xl border border-border bg-card p-8 sm:p-12 text-center shadow-xs">
           <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-xs font-semibold text-primary mb-4">
