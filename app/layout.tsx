@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Vazirmatn } from "next/font/google";
 import "./globals.css";
+import QueryProvider from "@/components/providers/query-provider";
 
 // کانفیگ فونت وزیرمتن
 const vazir = Vazirmatn({
@@ -10,8 +11,8 @@ const vazir = Vazirmatn({
 });
 
 export const metadata: Metadata = {
-  title: "فروشگاه اینترنتی",
-  description: "خرید آنلاین انواع محصولات",
+  title: "فروشگاه اینترنتی اسمارت الکتریک",
+  description: "خرید آنلاین انواع محصولات و تجهیزات برق و شبکه",
 };
 
 export default function RootLayout({
@@ -22,7 +23,7 @@ export default function RootLayout({
   return (
     <html lang="fa" dir="rtl" className={vazir.variable}>
       <body className={`${vazir.className}`}>
-        {children}
+        <QueryProvider>{children}</QueryProvider>
       </body>
     </html>
   );
