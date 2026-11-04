@@ -4,7 +4,6 @@ import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Autoplay from "embla-carousel-autoplay";
-import { ChevronLeft } from "lucide-react";
 
 import {
   Carousel,
@@ -21,48 +20,51 @@ import { cn } from "@/lib/utils";
  */
 export interface BannerItem {
   id: string;
-  title: string;
-  subtitle?: string;
-  badge?: string;
   image: string;
   link: string;
   alt: string;
-  buttonText?: string;
+  title?: string;
 }
 
 /**
- * داده‌های ماک بنرهای تبلیغاتی صفحه اصلی فروشگاه اسمارت الکتریک
+ * بنرهای تصویری اصلی فروشگاه اسمارت الکتریک
  */
 export const DEFAULT_BANNERS: BannerItem[] = [
   {
     id: "banner-1",
-    title: "جشنواره هوشمندسازی ساختمان و اتوماسیون BMS",
-    subtitle: "تا ۳۰٪ تخفیف ویژه روی تمامی رله‌ها، گیت‌وی‌ها و کلیدهای لمسی هوشمند",
-    badge: "پیشنهاد ویژه",
-    image: "/images/banners/banner-1.png",
-    link: "/category/smart-home",
-    alt: "تجهیزات مدرن خانه هوشمند اسمارت الکتریک",
-    buttonText: "مشاهده محصولات هوشمند",
+    image: "/images/banners/1.webp",
+    link: "/offers",
+    alt: "بنر تبلیغاتی شماره ۱",
   },
   {
     id: "banner-2",
-    title: "کلید و پریزهای مدرن و تجهیزات دکوراتیو روشنایی",
-    subtitle: "تنوع بی‌نظیر قاب‌های لوکس و استانداردهای اروپایی با ۵ سال گارانتی تعویض",
-    badge: "پرفروش‌ترین کالاها",
-    image: "/images/banners/banner-2.png",
-    link: "/category/switches",
-    alt: "کلید و پریزهای مدرن و قاب‌های لوکس",
-    buttonText: "خرید کلید و پریز",
+    image: "/images/banners/2.webp",
+    link: "/category/smart-home",
+    alt: "بنر تبلیغاتی شماره ۲",
   },
   {
     id: "banner-3",
-    title: "سیم و کابل استاندارد و تجهیزات تخصصی تابلو برق",
-    subtitle: "فروش مستقیم بدون واسطه با تاییدیه نظام مهندسی و شرکت توانیر",
-    badge: "ویژه پروژه‌ها و همکاران",
-    image: "/images/banners/banner-3.png",
+    image: "/images/banners/3.webp",
+    link: "/category/switches",
+    alt: "بنر تبلیغاتی شماره ۳",
+  },
+  {
+    id: "banner-4",
+    image: "/images/banners/4.webp",
     link: "/category/cables",
-    alt: "سیم و کابل استاندارد و کلیدهای مینیاتوری",
-    buttonText: "استعلام قیمت عمده",
+    alt: "بنر تبلیغاتی شماره ۴",
+  },
+  {
+    id: "banner-5",
+    image: "/images/banners/5.webp",
+    link: "/category/lighting",
+    alt: "بنر تبلیغاتی شماره ۵",
+  },
+  {
+    id: "banner-6",
+    image: "/images/banners/6.webp",
+    link: "/category/switchboards",
+    alt: "بنر تبلیغاتی شماره ۶",
   },
 ];
 
@@ -74,7 +76,7 @@ export interface HeroCarouselProps {
 
 /**
  * کامپوننت اسلایدر بنر اصلی (Hero Carousel)
- * سازگار با RTL، کامپوننت کلاینتی، دارای Autoplay و ناوبری ریسپانسیو
+ * نمایش خالص تصاویر بنر بدون متن‌های اضافی، سازگار با RTL و دارای Autoplay
  */
 export function HeroCarousel({
   banners = DEFAULT_BANNERS,
@@ -136,62 +138,24 @@ export function HeroCarousel({
             <CarouselItem key={banner.id} className="pl-0">
               <Link
                 href={banner.link}
-                className="group relative block w-full h-[220px] sm:h-[340px] md:h-[420px] rounded-2xl overflow-hidden border border-border shadow-xs focus:outline-none focus:ring-2 focus:ring-primary"
+                className="group relative block w-full h-10 sm:h-auto rounded-2xl overflow-hidden border border-border shadow-xs focus:outline-none focus:ring-2 focus:ring-primary"
               >
-                {/* لایه تصویر پس‌زمینه با کامپوننت بهینه‌شده Image در Next.js */}
+                {/* تصویر خالص بنر بدون پوشش متنی */}
                 <Image
                   src={banner.image}
-                  alt={banner.alt}
-                  fill
+                  alt={banner.alt || banner.title || `بنر ${index + 1}`}
+                  width={2222}
+                  height={100}
                   priority={index === 0}
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
-                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                  className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-[1.01]"
                 />
-
-                {/* لایه گرادینت شیک تستی روی بنر جهت خوانایی بالا */}
-                <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/60 to-transparent sm:bg-gradient-to-r sm:from-background/95 sm:via-background/70 sm:to-transparent transition-opacity" />
-
-                {/* عنوان، توضیحات و دکمه فراخوان (CTA) روی بنر */}
-                <div className="absolute inset-0 z-10 flex flex-col justify-end sm:justify-center p-5 sm:p-10 md:p-14 text-right max-w-2xl">
-                  {banner.badge && (
-                    <span className="inline-flex items-center w-fit rounded-full bg-primary/10 border border-primary/20 px-3 py-1 text-[11px] sm:text-xs font-bold text-primary mb-2 sm:mb-3">
-                      {banner.badge}
-                    </span>
-                  )}
-                  <h3 className="text-base sm:text-2xl md:text-3xl font-black text-foreground tracking-tight leading-snug drop-shadow-xs">
-                    {banner.title}
-                  </h3>
-                  {banner.subtitle && (
-                    <p className="hidden sm:block text-xs sm:text-sm text-muted-foreground mt-2 md:mt-3 leading-relaxed max-w-lg">
-                      {banner.subtitle}
-                    </p>
-                  )}
-                  {banner.buttonText && (
-                    <div className="mt-4 sm:mt-5 hidden sm:block">
-                      <span className="inline-flex items-center gap-2 rounded-xl bg-primary text-primary-foreground px-4 py-2 text-xs sm:text-sm font-semibold shadow-md transition-all group-hover:bg-primary/90 group-hover:gap-3">
-                        <span>{banner.buttonText}</span>
-                        <ChevronLeft className="size-4" />
-                      </span>
-                    </div>
-                  )}
-                </div>
               </Link>
             </CarouselItem>
           ))}
         </CarouselContent>
-
-        {/* دکمه‌های ناوبری دسکتاپ (قبلی سمت راست، بعدی سمت چپ طبق اصول RTL) */}
-        <CarouselPrevious
-          aria-label="اسلاید قبلی"
-          className="hidden sm:flex right-4 left-auto top-1/2 -translate-y-1/2 z-20 size-10 rounded-full bg-background/80 hover:bg-background text-foreground backdrop-blur-sm border border-border shadow-md rotate-180 transition-all hover:scale-105"
-        />
-        <CarouselNext
-          aria-label="اسلاید بعدی"
-          className="hidden sm:flex left-4 right-auto top-1/2 -translate-y-1/2 z-20 size-10 rounded-full bg-background/80 hover:bg-background text-foreground backdrop-blur-sm border border-border shadow-md rotate-180 transition-all hover:scale-105"
-        />
-
-        {/* ۳. نشانگرهای زیر اسلایدر (Pagination Dots) */}
-        <div className="absolute bottom-4 inset-x-0 z-20 flex items-center justify-center pointer-events-none">
+        
+        {/* نشانگرهای زیر اسلایدر (Pagination Dots) */}
+        <div className="absolute bottom-3 sm:bottom-4 inset-x-0 z-20 flex items-center justify-center pointer-events-none">
           <div className="flex items-center gap-1.5 rounded-full bg-background/60 backdrop-blur-md px-3 py-1.5 border border-border/40 shadow-xs pointer-events-auto">
             {banners.map((_, index) => (
               <button

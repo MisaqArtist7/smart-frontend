@@ -10,7 +10,7 @@ export default function HomePage() {
       <Header cartCount={3} />
 
       {/* محتوای صفحه اصلی */}
-      <main className="flex-1 mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8">
+      <main className="flex-1 mx-auto max-w-8xl w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8">
         {/* اسلایدر بنر اصلی (Hero Carousel) */}
         <HeroCarousel />
 

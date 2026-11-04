@@ -30,7 +30,7 @@ export function MainBar({
 
   return (
     <div
-      className={`border-b border-border bg-background py-3.5 transition-colors ${className}`}
+      className={`border-b border-border bg-white py-3.5 transition-colors ${className}`}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         {/* سمت راست: دکمه منوی موبایل (در صفحات کوچک) + لوگو + فرم جستجوی کپسولی */}
