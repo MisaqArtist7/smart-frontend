@@ -59,13 +59,9 @@ const productFormSchema = z.object({
   title: z.string().min(2, "عنوان محصول باید حداقل ۲ کاراکتر باشد"),
   slug: z.string().min(2, "شناسه انگلیسی (slug) الزامی است"),
   categoryId: z.string().min(1, "انتخاب دسته‌بندی کالا الزامی است"),
-  price: z.coerce.number().positive("قیمت محصول باید عددی مثبت باشد"),
-  discountPrice: z.coerce
-    .number()
-    .optional()
-    .nullable()
-    .transform((val) => (val && val > 0 ? val : null)),
-  stock: z.coerce.number().min(0, "موجودی انبار نمی‌تواند کمتر از صفر باشد"),
+  price: z.number().positive("قیمت محصول باید عددی مثبت باشد"),
+  discountPrice: z.number().optional().nullable(),
+  stock: z.number().min(0, "موجودی انبار نمی‌تواند کمتر از صفر باشد"),
   sku: z.string().min(2, "کد شناسه انبار (SKU) الزامی است"),
   description: z.string().optional(),
   imageUrl: z.string().optional(),
@@ -79,6 +75,7 @@ export default function AdminProductsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [isActiveValue, setIsActiveValue] = useState(true);
 
   const { data: products = [], isLoading: isProductsLoading } = useProducts();
   const { data: categories = [] } = useCategories();
@@ -91,7 +88,6 @@ export default function AdminProductsPage() {
     handleSubmit,
     reset,
     setValue,
-    watch,
     formState: { errors, isSubmitting },
   } = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
@@ -108,8 +104,6 @@ export default function AdminProductsPage() {
       isActive: true,
     },
   });
-
-  const isActiveValue = watch("isActive");
 
   // فیلتر کردن محصولات بر اساس جستجو و دسته‌بندی
   const filteredProducts = useMemo(() => {
@@ -381,11 +375,11 @@ export default function AdminProductsPage() {
                               <span>ویرایش اطلاعات</span>
                             </DropdownMenuItem>
 
-                            <DropdownMenuItem asChild>
-                              <a href={`/product/${prod.slug}`} target="_blank" rel="noreferrer" className="flex items-center gap-2">
-                                <ExternalLink className="size-3.5 text-muted-foreground" />
-                                <span>نمایش در سایت</span>
-                              </a>
+                            <DropdownMenuItem
+                              onClick={() => window.open(`/product/${prod.slug}`, "_blank")}
+                            >
+                              <ExternalLink className="size-3.5 text-muted-foreground" />
+                              <span>نمایش در سایت</span>
                             </DropdownMenuItem>
 
                             <DropdownMenuSeparator />
@@ -497,7 +491,7 @@ export default function AdminProductsPage() {
                 </label>
                 <Input
                   type="number"
-                  {...register("stock")}
+                  {...register("stock", { valueAsNumber: true })}
                   placeholder="10"
                   className={errors.stock ? "border-destructive" : ""}
                 />
@@ -513,7 +507,7 @@ export default function AdminProductsPage() {
                 </label>
                 <Input
                   type="number"
-                  {...register("price")}
+                  {...register("price", { valueAsNumber: true })}
                   placeholder="5000000"
                   className={errors.price ? "border-destructive" : ""}
                 />
@@ -529,7 +523,7 @@ export default function AdminProductsPage() {
                 </label>
                 <Input
                   type="number"
-                  {...register("discountPrice")}
+                  {...register("discountPrice", { valueAsNumber: true })}
                   placeholder="4500000"
                 />
               </div>
@@ -582,7 +576,10 @@ export default function AdminProductsPage() {
                   </span>
                   <Switch
                     checked={isActiveValue}
-                    onCheckedChange={(checked) => setValue("isActive", checked)}
+                    onCheckedChange={(checked) => {
+                      setIsActiveValue(checked);
+                      setValue("isActive", checked);
+                    }}
                   />
                 </div>
               </div>

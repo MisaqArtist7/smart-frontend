@@ -24,7 +24,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 
 export default function AdminDashboardPage() {
   const { data: metrics, isLoading: isMetricsLoading } = useAdminMetrics();
@@ -46,19 +46,27 @@ export default function AdminDashboardPage() {
         </div>
 
         <div className="flex items-center gap-2.5">
-          <Button variant="outline" asChild className="gap-2 rounded-xl text-xs sm:text-sm">
-            <Link href="/" target="_blank">
-              <Store className="size-4" />
-              <span>نمایش فروشگاه</span>
-            </Link>
-          </Button>
+          <Link
+            href="/"
+            target="_blank"
+            className={buttonVariants({
+              variant: "outline",
+              className: "gap-2 rounded-xl text-xs sm:text-sm font-semibold",
+            })}
+          >
+            <Store className="size-4" />
+            <span>نمایش فروشگاه</span>
+          </Link>
 
-          <Button asChild className="gap-2 rounded-xl bg-primary text-primary-foreground text-xs sm:text-sm">
-            <Link href="/admin/products">
-              <Plus className="size-4" />
-              <span>مدیریت محصولات</span>
-            </Link>
-          </Button>
+          <Link
+            href="/admin/products"
+            className={buttonVariants({
+              className: "gap-2 rounded-xl bg-primary text-primary-foreground text-xs sm:text-sm font-bold shadow-xs hover:bg-primary/90",
+            })}
+          >
+            <Plus className="size-4" />
+            <span>مدیریت محصولات</span>
+          </Link>
         </div>
       </div>
 
@@ -160,12 +168,13 @@ export default function AdminDashboardPage() {
             </CardDescription>
           </div>
 
-          <Button variant="ghost" asChild className="text-primary hover:text-primary/90 text-xs gap-1 mt-2 sm:mt-0 p-0 h-auto">
-            <Link href="/admin/products" className="flex items-center gap-1 font-bold">
-              <span>مشاهده و ویرایش همه محصولات</span>
-              <ArrowUpLeft className="size-3.5" />
-            </Link>
-          </Button>
+          <Link
+            href="/admin/products"
+            className="flex items-center gap-1 font-bold text-xs text-primary hover:text-primary/80 transition-colors"
+          >
+            <span>مشاهده و ویرایش همه محصولات</span>
+            <ArrowUpLeft className="size-3.5" />
+          </Link>
         </CardHeader>
 
         <CardContent className="p-0">
@@ -269,17 +278,13 @@ export default function AdminDashboardPage() {
 
                       {/* دکمه عملیات سریع */}
                       <TableCell className="text-center">
-                        <Button
-                          variant="ghost"
-                          size="icon-xs"
-                          asChild
-                          className="size-8 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground"
+                        <Link
+                          href="/admin/products"
+                          className="size-8 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground inline-flex items-center justify-center transition-colors"
                         >
-                          <Link href={`/admin/products`}>
-                            <Eye className="size-4" />
-                            <span className="sr-only">مشاهده</span>
-                          </Link>
-                        </Button>
+                          <Eye className="size-4" />
+                          <span className="sr-only">مشاهده</span>
+                        </Link>
                       </TableCell>
                     </TableRow>
                   ))

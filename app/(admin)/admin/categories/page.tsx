@@ -40,7 +40,7 @@ const categoryFormSchema = z.object({
   name: z.string().min(2, "نام دسته‌بندی باید حداقل ۲ کاراکتر باشد"),
   slug: z.string().min(2, "نامک انگلیسی الزامی است"),
   parentId: z.string().optional().nullable(),
-  sortOrder: z.coerce.number().min(1, "ترتیب نمایش باید عددی مثبت باشد"),
+  sortOrder: z.number().min(1, "ترتیب نمایش باید عددی مثبت باشد"),
 });
 
 type CategoryFormValues = z.infer<typeof categoryFormSchema>;
@@ -321,7 +321,7 @@ export default function AdminCategoriesPage() {
               </label>
               <Input
                 type="number"
-                {...register("sortOrder")}
+                {...register("sortOrder", { valueAsNumber: true })}
                 placeholder="1"
               />
               {errors.sortOrder && (
