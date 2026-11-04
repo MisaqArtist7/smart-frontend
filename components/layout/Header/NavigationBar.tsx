@@ -54,7 +54,7 @@ export function NavigationBar({
 
   return (
     <nav
-      className={`border-b border-border bg-card/50 backdrop-blur-sm transition-colors ${className}`}
+      className={`border-b shadow-sm border-border bg-card/50 backdrop-blur-sm transition-colors ${className}`}
       aria-label="ناوبری اصلی"
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 h-14">
