@@ -125,6 +125,7 @@ export function HeroCarousel({
       className={cn("w-full relative select-none", className)}
     >
       <Carousel
+        dir="rtl"
         setApi={setApi}
         plugins={[autoplayPlugin]}
         opts={{
@@ -133,9 +134,9 @@ export function HeroCarousel({
         }}
         className="w-full relative"
       >
-        <CarouselContent className="-ml-0">
+        <CarouselContent className="-ms-0">
           {banners.map((banner, index) => (
-            <CarouselItem key={banner.id} className="pl-0">
+            <CarouselItem key={banner.id} className="ps-0">
               <Link
                 href={banner.link}
                 className="group relative block w-full h-10 sm:h-auto rounded-2xl overflow-hidden border border-border shadow-xs focus:outline-none focus:ring-2 focus:ring-primary"
@@ -157,11 +158,11 @@ export function HeroCarousel({
         {/* دکمه‌های ناوبری دسکتاپ */}
         <CarouselPrevious
           aria-label="اسلاید قبلی"
-          className="hidden sm:flex right-4 left-auto top-1/2 -translate-y-1/2 z-20 size-10 rounded-full bg-background/80 hover:bg-background text-foreground backdrop-blur-sm border border-border shadow-md rotate-180 transition-all hover:scale-105"
+          className="hidden sm:flex start-4 end-auto top-1/2 -translate-y-1/2 z-20 size-10 rounded-full bg-background/80 hover:bg-background text-foreground backdrop-blur-sm border border-border shadow-md transition-all hover:scale-105"
         />
         <CarouselNext
           aria-label="اسلاید بعدی"
-          className="hidden sm:flex left-4 right-auto top-1/2 -translate-y-1/2 z-20 size-10 rounded-full bg-background/80 hover:bg-background text-foreground backdrop-blur-sm border border-border shadow-md rotate-180 transition-all hover:scale-105"
+          className="hidden sm:flex end-4 start-auto top-1/2 -translate-y-1/2 z-20 size-10 rounded-full bg-background/80 hover:bg-background text-foreground backdrop-blur-sm border border-border shadow-md transition-all hover:scale-105"
         />
 
         {/* نشانگرهای زیر اسلایدر (Pagination Dots) */}

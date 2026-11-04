@@ -95,10 +95,10 @@ export function CategoryCarousel({
     <section
       dir="rtl"
       aria-label={title}
-      className={cn("w-full py-6 select-none", className)}
+      className={cn("w-full py-4 select-none", className)}
     >
       {/* سربرگ بخش: دات قرمز رنگ شاخص + عنوان بولد دسته‌بندی محصولات */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2.5">
           <span className="size-2.5 rounded-full bg-primary inline-block shrink-0 shadow-xs" />
           <h2 className="text-base sm:text-lg md:text-xl font-black tracking-tight text-foreground">
@@ -109,6 +109,7 @@ export function CategoryCarousel({
 
       {/* اسلایدر کارت‌های دسته‌بندی */}
       <Carousel
+        dir="rtl"
         opts={{
           direction: "rtl",
           dragFree: true,
@@ -116,11 +117,11 @@ export function CategoryCarousel({
         }}
         className="w-full relative group/carousel"
       >
-        <CarouselContent className="-mr-3 sm:-mr-4 ml-0">
+        <CarouselContent className="-ms-3 sm:-ms-4">
           {categories.map((cat) => (
             <CarouselItem
               key={cat.id}
-              className="pr-3 sm:pr-4 pl-0 basis-[44%] sm:basis-[30%] md:basis-[22%] lg:basis-[16.6%] xl:basis-[15%]"
+              className="ps-3 sm:ps-4 basis-[44%] sm:basis-[30%] md:basis-[22%] lg:basis-[16.6%] xl:basis-[15%]"
             >
               <Link
                 href={cat.href}
@@ -151,11 +152,11 @@ export function CategoryCarousel({
         {/* دکمه‌های ناوبری چپ و راست با هاور نرم */}
         <CarouselPrevious
           aria-label="دسته‌بندی قبلی"
-          className="hidden md:flex opacity-0 group-hover/carousel:opacity-100 transition-opacity right-1 top-1/2 -translate-y-1/2 z-20 size-9 rounded-full bg-background/90 hover:bg-background text-foreground border border-border shadow-md rotate-180"
+          className="hidden md:flex opacity-0 group-hover/carousel:opacity-100 transition-opacity start-2 end-auto top-1/2 -translate-y-1/2 z-20 size-9 rounded-full bg-background/90 hover:bg-background text-foreground border border-border shadow-md"
         />
         <CarouselNext
           aria-label="دسته‌بندی بعدی"
-          className="hidden md:flex opacity-0 group-hover/carousel:opacity-100 transition-opacity left-1 top-1/2 -translate-y-1/2 z-20 size-9 rounded-full bg-background/90 hover:bg-background text-foreground border border-border shadow-md rotate-180"
+          className="hidden md:flex opacity-0 group-hover/carousel:opacity-100 transition-opacity end-2 start-auto top-1/2 -translate-y-1/2 z-20 size-9 rounded-full bg-background/90 hover:bg-background text-foreground border border-border shadow-md"
         />
       </Carousel>
     </section>
@@ -163,4 +164,3 @@ export function CategoryCarousel({
 }
 
 export default CategoryCarousel;
-

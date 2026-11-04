@@ -3,6 +3,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/footer";
 import HeroCarousel from "@/components/home/hero-carousel";
 import CategoryCarousel from "@/components/home/category-carousel";
+import LatestProducts from "@/components/home/latest-products";
 
 export default function HomePage() {
   return (
@@ -17,6 +18,9 @@ export default function HomePage() {
 
         {/* اسلایدر دسته‌بندی محصولات (Category Carousel) */}
         <CategoryCarousel />
+
+        {/* اسلایدر جدید ترین محصولات ما (Latest Products) */}
+        <LatestProducts />
 
         <div className="rounded-2xl border border-border bg-card p-8 sm:p-12 text-center shadow-xs">
           <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-xs font-semibold text-primary mb-4">
