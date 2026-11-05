@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { apiClient } from '@/lib/api-client';
 
 export default function TestApiPage() {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<unknown>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -33,7 +33,7 @@ export default function TestApiPage() {
         </div>
       )}
 
-      {data && (
+      {Boolean(data) && (
         <div className="p-4 bg-emerald-50 border border-emerald-300 rounded">
           <p className="text-emerald-700 font-bold mb-2">✅ ارتباط با بکند با موفقیت برقرار شد!</p>
           <pre className="text-xs overflow-auto max-h-96 bg-white p-3 border rounded">
