@@ -3,8 +3,13 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/footer";
 import HeroCarousel from "@/components/home/hero-carousel";
 import CategoryCarousel from "@/components/home/category-carousel";
+import SpecialOffers from "@/components/home/special-offers";
 import LatestProducts from "@/components/home/latest-products";
 import PromoBanners from "@/components/home/promo-banners";
+import BrandShowcase from "@/components/home/brand-showcase";
+import B2BConsultation from "@/components/home/b2b-consultation";
+import BlogSection from "@/components/home/blog-section";
+import FaqSection from "@/components/home/faq-section";
 
 export default function HomePage() {
   return (
@@ -12,34 +17,37 @@ export default function HomePage() {
       {/* کامپوننت هدر ۳ طبقه */}
       <Header cartCount={3} />
 
-      {/* محتوای صفحه اصلی */}
-      <main className="flex-1 mx-auto max-w-8xl w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8">
-        {/* اسلایدر بنر اصلی (Hero Carousel) */}
+      {/* محتوای اصلی و کامل صفحه نخست */}
+      <main className="flex-1 mx-auto max-w-8xl w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8 sm:space-y-10">
+        {/* ۱. اسلایدر بنر اصلی هیرو (Hero Carousel) */}
         <HeroCarousel />
 
-        {/* اسلایدر دسته‌بندی محصولات (Category Carousel) */}
+        {/* ۲. اسلایدر دسته‌بندی محصولات (Category Carousel) */}
         <CategoryCarousel />
 
-        {/* اسلایدر جدید ترین محصولات ما (Latest Products) */}
+        {/* ۳. بخش پیشنهاد شگفت‌انگیز همراه با تایمر معکوس (Special Offers) */}
+        <SpecialOffers />
+
+        {/* ۴. اسلایدر جدید ترین محصولات ما متصل به دیتابیس (Latest Products) */}
         <LatestProducts />
 
-        {/* بنرهای دوقلوی تبلیغاتی کنار هم (۷ و ۸) زیر بخش محصولات */}
+        {/* ۵. بنرهای دوقلوی تبلیغاتی کنار هم (۷ و ۸) */}
         <PromoBanners />
 
-        <div className="rounded-2xl border border-border bg-card p-8 sm:p-12 text-center shadow-xs">
-          <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-xs font-semibold text-primary mb-4">
-            فروشگاه تخصصی اسمارت الکتریک
-          </div>
-          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-foreground mb-4">
-            تجهیزات برق صنعتی، ساختمانی و هوشمندسازی
-          </h1>
-          <p className="text-muted-foreground text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
-            طراحی شده با استانداردهای توکن سیستم shadcn، پشتیبانی کامل از RTL، مدیریت داینامیک سبد خرید، اسلایدر ریسپانسیو و بدون هاردکد کردن مقادیر رنگی و متنی.
-          </p>
-        </div>
+        {/* ۶. برندهای معتبر و همکاران تجاری (Brand Showcase) */}
+        <BrandShowcase />
+
+        {/* ۷. بخش مشاوره فنی، خرید پروژه‌ای و استعلام پیش‌فاکتور رسمی B2B */}
+        <B2BConsultation />
+
+        {/* ۸. مقالات آموزشی و راهنمای تخصصی خرید (Blog Section) */}
+        <BlogSection />
+
+        {/* ۹. سوالات متداول خریداران (FAQ Section) */}
+        <FaqSection />
       </main>
 
-      {/* کامپوننت فوتر */}
+      {/* کامپوننت فوتر کامل و مدرن */}
       <Footer />
     </div>
   );
