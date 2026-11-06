@@ -406,7 +406,7 @@ export default function AdminProductsPage() {
 
       {/* مدال افزودن محصول جدید با فرم React Hook Form و Zod */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-lg font-black text-foreground">
               افزودن محصول جدید به فروشگاه
