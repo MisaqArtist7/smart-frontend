@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,7 +15,6 @@ import {
   ExternalLink,
   AlertCircle,
   X,
-  Upload,
 } from "lucide-react";
 import {
   useProducts,
@@ -54,40 +53,85 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 
-// ولیدیشن فرم افزودن محصول مطابق با مدل دیتابیس
-const productFormSchema = z.object({
-  title: z.string().min(2, "عنوان محصول باید حداقل ۲ کاراکتر باشد"),
-  slug: z.string().min(2, "شناسه انگلیسی (slug) الزامی است"),
-  categoryId: z.string().min(1, "انتخاب دسته‌بندی کالا الزامی است"),
-  price: z.number().positive("قیمت محصول باید عددی مثبت باشد"),
-  discountPrice: z.number().optional().nullable(),
-  stock: z.number().min(0, "موجودی انبار نمی‌تواند کمتر از صفر باشد"),
-  sku: z.string().min(2, "کد شناسه انبار (SKU) الزامی است"),
-  description: z.string().optional(),
-  imageUrl: z.string().optional(),
-  isActive: z.boolean(),
-});
+const FALLBACK_IMAGE = "/images/products/adapter-52240.png";
+
+// ولیدیشن فرم، هماهنگ با CreateProductDto بک‌اند
+// (export نمی‌کنیم، چون فایل page در Next.js نباید export اضافه داشته باشه)
+const productFormSchema = z
+  .object({
+    title: z
+      .string()
+      .min(2, "عنوان محصول باید حداقل ۲ کاراکتر باشد")
+      .max(200, "عنوان نباید بیشتر از ۲۰۰ کاراکتر باشد"),
+    slug: z
+      .string()
+      .regex(
+        /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+        "فقط حروف کوچک انگلیسی، عدد و خط تیره (مثلاً led-lamp-9w)"
+      )
+      .max(220, "شناسه نباید بیشتر از ۲۲۰ کاراکتر باشد"),
+    categoryId: z.string().min(1, "انتخاب دسته‌بندی کالا الزامی است"),
+    price: z
+      .number("قیمت را وارد کنید")
+      .int("قیمت باید عدد صحیح باشد")
+      .positive("قیمت محصول باید عددی مثبت باشد"),
+    discountPrice: z
+      .number()
+      .int("قیمت تخفیفی باید عدد صحیح باشد")
+      .min(0)
+      .optional(),
+    stock: z
+      .number("موجودی را وارد کنید")
+      .int("موجودی باید عدد صحیح باشد")
+      .min(0, "موجودی انبار نمی‌تواند کمتر از صفر باشد"),
+    sku: z.string().max(50, "حداکثر ۵۰ کاراکتر").optional(),
+    description: z.string().optional(),
+    metaTitle: z.string().max(70, "حداکثر ۷۰ کاراکتر").optional(),
+    metaDescription: z.string().max(170, "حداکثر ۱۷۰ کاراکتر").optional(),
+    isActive: z.boolean(),
+  })
+  .refine((d) => d.discountPrice === undefined || d.discountPrice < d.price, {
+    message: "قیمت تخفیفی باید کمتر از قیمت اصلی باشد",
+    path: ["discountPrice"],
+  });
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
+
+// تبدیل مقادیر فرم به بدنه‌ای که بک‌اند می‌خواد
+// فیلدهای خالی undefined می‌شن تا اصلاً ارسال نشن
+function toProductPayload(v: ProductFormValues) {
+  return {
+    title: v.title.trim(),
+    slug: v.slug.trim(),
+    categoryId: Number(v.categoryId),
+    price: v.price,
+    discountPrice: v.discountPrice || undefined,
+    stock: v.stock,
+    sku: v.sku?.trim() || undefined,
+    description: v.description?.trim() || undefined,
+    metaTitle: v.metaTitle?.trim() || undefined,
+    metaDescription: v.metaDescription?.trim() || undefined,
+    isActive: v.isActive,
+  };
+}
 
 export default function AdminProductsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [isActiveValue, setIsActiveValue] = useState(true);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const { data: products = [], isLoading: isProductsLoading } = useProducts();
   const { data: categories = [] } = useCategories();
   const createProductMutation = useCreateProduct();
   const deleteProductMutation = useDeleteProduct();
 
-  // فرم ثبت محصول
   const {
     register,
     handleSubmit,
     reset,
     setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
@@ -95,24 +139,29 @@ export default function AdminProductsPage() {
       title: "",
       slug: "",
       categoryId: "",
-      price: 0,
-      discountPrice: null,
+      price: undefined,
+      discountPrice: undefined,
       stock: 10,
       sku: "",
       description: "",
-      imageUrl: "/images/products/adapter-52240.png",
+      metaTitle: "",
+      metaDescription: "",
       isActive: true,
     },
   });
 
-  // فیلتر کردن محصولات بر اساس جستجو و دسته‌بندی
+  const isActive = watch("isActive");
+
+  // فیلتر محصولات بر اساس جستجو و دسته‌بندی
   const filteredProducts = useMemo(() => {
+    const term = searchTerm.toLowerCase();
     return products.filter((prod) => {
       const matchSearch =
-        prod.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        prod.sku.toLowerCase().includes(searchTerm.toLowerCase());
+        prod.title.toLowerCase().includes(term) ||
+        (prod.sku ?? "").toLowerCase().includes(term);
       const matchCategory =
-        selectedCategory === "all" || prod.categoryId === selectedCategory;
+        selectedCategory === "all" ||
+        prod.categoryId === Number(selectedCategory);
       return matchSearch && matchCategory;
     });
   }, [products, searchTerm, selectedCategory]);
@@ -120,30 +169,17 @@ export default function AdminProductsPage() {
   // ثبت محصول جدید
   const onSubmit = async (values: ProductFormValues) => {
     try {
-      await createProductMutation.mutateAsync({
-        title: values.title,
-        slug: values.slug,
-        categoryId: values.categoryId,
-        price: values.price,
-        discountPrice: values.discountPrice,
-        stock: values.stock,
-        sku: values.sku,
-        description: values.description,
-        isActive: values.isActive,
-        images: values.imageUrl ? [values.imageUrl] : ["/images/products/adapter-52240.png"],
-      });
-
-      toast.success("محصول جدید با موفقیت به انبار فروشگاه افزوده شد.");
+      await createProductMutation.mutateAsync(toProductPayload(values));
+      toast.success("محصول جدید با موفقیت افزوده شد.");
       setIsCreateOpen(false);
       reset();
     } catch (err: unknown) {
-      const error = err as Error;
-      toast.error(error.message || "خطا در ثبت محصول جدید");
+      toast.error((err as Error).message || "خطا در ثبت محصول جدید");
     }
   };
 
   // حذف محصول با تایید کاربر
-  const handleDelete = async (id: string, title: string) => {
+  const handleDelete = async (id: number, title: string) => {
     if (!window.confirm(`آیا از حذف محصول «${title}» اطمینان دارید؟`)) return;
 
     try {
@@ -151,28 +187,15 @@ export default function AdminProductsPage() {
       await deleteProductMutation.mutateAsync(id);
       toast.success(`محصول «${title}» با موفقیت حذف گردید.`);
     } catch (err: unknown) {
-      const error = err as Error;
-      toast.error(error.message || "خطا در حذف محصول");
+      toast.error((err as Error).message || "خطا در حذف محصول");
     } finally {
       setDeletingId(null);
     }
   };
 
-  // تولید خودکار اسلاگ انگلیسی هنگام تغییر عنوان محصول
-  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const titleVal = e.target.value;
-    setValue("title", titleVal);
-    const autoSlug = titleVal
-      .trim()
-      .toLowerCase()
-      .replace(/[\s\-_]+/g, "-")
-      .replace(/[^\w\u0600-\u06FF-]/g, "");
-    setValue("slug", autoSlug);
-  };
-
   return (
     <div className="space-y-6 select-none">
-      {/* هدر صفحه و دکمه افزودن محصول جدید */}
+      {/* هدر صفحه */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
@@ -195,11 +218,10 @@ export default function AdminProductsPage() {
         </Button>
       </div>
 
-      {/* نوار جستجو و فیلترها */}
+      {/* جستجو و فیلتر */}
       <Card className="rounded-2xl border-border bg-card shadow-xs">
         <CardContent className="p-4 sm:p-5">
           <div className="flex flex-col sm:flex-row items-center gap-3">
-            {/* اینپوت جستجو */}
             <div className="relative flex-1 w-full">
               <Search className="absolute start-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
               <Input
@@ -219,7 +241,6 @@ export default function AdminProductsPage() {
               )}
             </div>
 
-            {/* فیلتر دسته‌بندی */}
             <div className="w-full sm:w-56">
               <Select
                 value={selectedCategory}
@@ -238,7 +259,7 @@ export default function AdminProductsPage() {
         </CardContent>
       </Card>
 
-      {/* جدول نمایش لیست محصولات */}
+      {/* جدول محصولات */}
       <Card className="rounded-2xl border-border bg-card shadow-xs overflow-hidden">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
@@ -272,11 +293,11 @@ export default function AdminProductsPage() {
                 ) : (
                   filteredProducts.map((prod) => (
                     <TableRow key={prod.id}>
-                      {/* تصویر بندانگشتی کالا */}
+                      {/* تصویر */}
                       <TableCell className="text-center py-2.5">
                         <div className="size-12 rounded-xl border border-border bg-muted/20 p-1 mx-auto flex items-center justify-center overflow-hidden">
                           <Image
-                            src={prod.images[0] || "/images/products/adapter-52240.png"}
+                            src={prod.images?.[0]?.url || FALLBACK_IMAGE}
                             alt={prod.title}
                             width={44}
                             height={44}
@@ -295,33 +316,37 @@ export default function AdminProductsPage() {
                         </div>
                       </TableCell>
 
-                      {/* کد انبار */}
+                      {/* SKU */}
                       <TableCell>
-                        <span className="font-mono text-xs font-semibold text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-md">
-                          {prod.sku}
-                        </span>
+                        {prod.sku ? (
+                          <span className="font-mono text-xs font-semibold text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-md">
+                            {prod.sku}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
                       </TableCell>
 
                       {/* دسته‌بندی */}
                       <TableCell>
                         <Badge variant="outline" className="text-xs font-medium border-border">
-                          {prod.categoryName || "عمومی"}
+                          {prod.category?.name ?? "عمومی"}
                         </Badge>
                       </TableCell>
 
-                      {/* قیمت */}
+                      {/* قیمت: قیمت نهایی اصلی، قیمت قبل از تخفیف خط‌خورده */}
                       <TableCell>
                         <div className="font-black text-xs sm:text-sm text-foreground">
-                          {prod.price.toLocaleString("fa-IR")}
+                          {(prod.discountPrice ?? prod.price).toLocaleString("fa-IR")}
                         </div>
-                        {prod.discountPrice && (
+                        {prod.discountPrice != null && (
                           <div className="text-[11px] text-muted-foreground line-through">
-                            {prod.discountPrice.toLocaleString("fa-IR")}
+                            {prod.price.toLocaleString("fa-IR")}
                           </div>
                         )}
                       </TableCell>
 
-                      {/* موجودی انبار */}
+                      {/* موجودی */}
                       <TableCell>
                         {prod.stock === 0 ? (
                           <span className="text-xs font-bold text-destructive flex items-center gap-1">
@@ -340,7 +365,7 @@ export default function AdminProductsPage() {
                         )}
                       </TableCell>
 
-                      {/* وضعیت فعال بودن کالا */}
+                      {/* وضعیت */}
                       <TableCell>
                         {prod.isActive ? (
                           <Badge variant="default" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[10px]">
@@ -353,7 +378,7 @@ export default function AdminProductsPage() {
                         )}
                       </TableCell>
 
-                      {/* دراپ‌داون عملیات */}
+                      {/* عملیات */}
                       <TableCell className="text-center">
                         <DropdownMenu>
                           <DropdownMenuTrigger
@@ -404,7 +429,7 @@ export default function AdminProductsPage() {
         </CardContent>
       </Card>
 
-      {/* مدال افزودن محصول جدید با فرم React Hook Form و Zod */}
+      {/* مدال افزودن محصول */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -412,7 +437,7 @@ export default function AdminProductsPage() {
               افزودن محصول جدید به فروشگاه
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
-              مشخصات فنی، قیمت و دسته‌بندی کالا را طبق استانداردهای انبارداری تکمیل نمایید.
+              مشخصات، قیمت و دسته‌بندی کالا را تکمیل نمایید. تصاویر بعد از ثبت محصول اضافه می‌شوند.
             </DialogDescription>
           </DialogHeader>
 
@@ -425,8 +450,7 @@ export default function AdminProductsPage() {
                 </label>
                 <Input
                   {...register("title")}
-                  onChange={handleTitleChange}
-                  placeholder="مثال: سوئیچ شبکه صنعتی ۸ پورت PoE گیگابیت HRUI"
+                  placeholder="مثال: لامپ LED ۹ وات"
                   className={errors.title ? "border-destructive" : ""}
                 />
                 {errors.title && (
@@ -434,14 +458,14 @@ export default function AdminProductsPage() {
                 )}
               </div>
 
-              {/* اسلاگ انگلیسی */}
+              {/* اسلاگ */}
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-foreground">
                   اسلاگ انگلیسی (Slug) <span className="text-destructive">*</span>
                 </label>
                 <Input
                   {...register("slug")}
-                  placeholder="hrui-industrial-switch-8port"
+                  placeholder="led-lamp-9w"
                   dir="ltr"
                   className={errors.slug ? "border-destructive text-start" : "text-start"}
                 />
@@ -450,14 +474,14 @@ export default function AdminProductsPage() {
                 )}
               </div>
 
-              {/* کد انبار SKU */}
+              {/* SKU */}
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-foreground">
-                  کد کالا / SKU <span className="text-destructive">*</span>
+                  کد کالا / SKU (اختیاری)
                 </label>
                 <Input
                   {...register("sku")}
-                  placeholder="HRUI-SW-82S"
+                  placeholder="LED-9W-001"
                   dir="ltr"
                   className={errors.sku ? "border-destructive text-start" : "text-start"}
                 />
@@ -466,12 +490,15 @@ export default function AdminProductsPage() {
                 )}
               </div>
 
-              {/* انتخاب دسته‌بندی */}
+              {/* دسته‌بندی */}
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-foreground">
                   دسته‌بندی محصول <span className="text-destructive">*</span>
                 </label>
-                <Select {...register("categoryId")} className={errors.categoryId ? "border-destructive" : ""}>
+                <Select
+                  {...register("categoryId")}
+                  className={errors.categoryId ? "border-destructive" : ""}
+                >
                   <option value="">انتخاب دسته‌بندی...</option>
                   {categories.map((cat) => (
                     <option key={cat.id} value={cat.id}>
@@ -484,7 +511,7 @@ export default function AdminProductsPage() {
                 )}
               </div>
 
-              {/* موجودی انبار */}
+              {/* موجودی */}
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-foreground">
                   تعداد موجودی انبار <span className="text-destructive">*</span>
@@ -500,7 +527,7 @@ export default function AdminProductsPage() {
                 )}
               </div>
 
-              {/* قیمت پایه (تومان) */}
+              {/* قیمت اصلی */}
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-foreground">
                   قیمت اصلی (تومان) <span className="text-destructive">*</span>
@@ -508,7 +535,7 @@ export default function AdminProductsPage() {
                 <Input
                   type="number"
                   {...register("price", { valueAsNumber: true })}
-                  placeholder="5000000"
+                  placeholder="85000"
                   className={errors.price ? "border-destructive" : ""}
                 />
                 {errors.price && (
@@ -516,50 +543,68 @@ export default function AdminProductsPage() {
                 )}
               </div>
 
-              {/* قیمت پس از تخفیف */}
+              {/* قیمت با تخفیف */}
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-foreground">
                   قیمت با تخفیف (اختیاری)
                 </label>
                 <Input
                   type="number"
-                  {...register("discountPrice", { valueAsNumber: true })}
-                  placeholder="4500000"
+                  {...register("discountPrice", {
+                    setValueAs: (v) =>
+                      v === "" || v == null ? undefined : Number(v),
+                  })}
+                  placeholder="70000"
+                  className={errors.discountPrice ? "border-destructive" : ""}
                 />
+                {errors.discountPrice && (
+                  <p className="text-[11px] text-destructive">{errors.discountPrice.message}</p>
+                )}
               </div>
 
-              {/* آدرس اینترنتی تصویر */}
-              <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-bold text-foreground flex items-center justify-between">
-                  <span>آدرس تصویر کالا</span>
-                  <span className="text-[11px] text-muted-foreground font-normal">
-                    مسیر تصویر یا آدرس URL
-                  </span>
-                </label>
-                <div className="relative">
-                  <Input
-                    {...register("imageUrl")}
-                    placeholder="/images/products/adapter-52240.png"
-                    dir="ltr"
-                    className="text-start pe-10"
-                  />
-                  <Upload className="absolute end-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                </div>
-              </div>
-
-              {/* توضیحات کالا */}
+              {/* توضیحات */}
               <div className="space-y-1.5 sm:col-span-2">
                 <label className="text-xs font-bold text-foreground">
                   توضیحات و مشخصات اجمالی
                 </label>
                 <Textarea
                   {...register("description")}
-                  placeholder="مشخصات ولتاژ، پورت‌ها، استانداردهای صنعتی و کاربری محصول..."
+                  placeholder="مشخصات، کاربرد و ویژگی‌های محصول..."
                   rows={3}
                 />
               </div>
 
-              {/* وضعیت فعال بودن در فروشگاه */}
+              {/* سئو */}
+              <div className="space-y-1.5 sm:col-span-2">
+                <label className="text-xs font-bold text-foreground">
+                  عنوان سئو (Meta Title)
+                </label>
+                <Input
+                  {...register("metaTitle")}
+                  placeholder="حداکثر ۷۰ کاراکتر"
+                  className={errors.metaTitle ? "border-destructive" : ""}
+                />
+                {errors.metaTitle && (
+                  <p className="text-[11px] text-destructive">{errors.metaTitle.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-1.5 sm:col-span-2">
+                <label className="text-xs font-bold text-foreground">
+                  توضیحات سئو (Meta Description)
+                </label>
+                <Textarea
+                  {...register("metaDescription")}
+                  placeholder="حداکثر ۱۷۰ کاراکتر"
+                  rows={2}
+                  className={errors.metaDescription ? "border-destructive" : ""}
+                />
+                {errors.metaDescription && (
+                  <p className="text-[11px] text-destructive">{errors.metaDescription.message}</p>
+                )}
+              </div>
+
+              {/* وضعیت انتشار */}
               <div className="sm:col-span-2 flex items-center justify-between p-3 rounded-xl border border-border bg-muted/30">
                 <div className="space-y-0.5">
                   <div className="text-xs font-bold text-foreground">
@@ -572,14 +617,11 @@ export default function AdminProductsPage() {
 
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-semibold">
-                    {isActiveValue ? "فعال" : "غیرفعال"}
+                    {isActive ? "فعال" : "غیرفعال"}
                   </span>
                   <Switch
-                    checked={isActiveValue}
-                    onCheckedChange={(checked) => {
-                      setIsActiveValue(checked);
-                      setValue("isActive", checked);
-                    }}
+                    checked={isActive}
+                    onCheckedChange={(checked) => setValue("isActive", checked)}
                   />
                 </div>
               </div>
