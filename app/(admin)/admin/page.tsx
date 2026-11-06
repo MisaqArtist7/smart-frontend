@@ -212,7 +212,7 @@ export default function AdminDashboardPage() {
                       <TableCell className="text-center py-2.5">
                         <div className="size-11 rounded-xl border border-border bg-muted/30 p-1 mx-auto flex items-center justify-center overflow-hidden">
                           <Image
-                            src={product.images[0] || "/images/products/adapter-52240.png"}
+                            src={product.images?.[0]?.url || "/images/products/adapter-52240.png"}
                             alt={product.title}
                             width={40}
                             height={40}

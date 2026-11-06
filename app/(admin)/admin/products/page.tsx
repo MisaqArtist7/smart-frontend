@@ -120,6 +120,7 @@ export default function AdminProductsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [isActiveValue, setIsActiveValue] = useState(true);
 
   const { data: products = [], isLoading: isProductsLoading } = useProducts();
   const { data: categories = [] } = useCategories();
@@ -131,7 +132,6 @@ export default function AdminProductsPage() {
     handleSubmit,
     reset,
     setValue,
-    watch,
     formState: { errors, isSubmitting },
   } = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
@@ -149,8 +149,6 @@ export default function AdminProductsPage() {
       isActive: true,
     },
   });
-
-  const isActive = watch("isActive");
 
   // فیلتر محصولات بر اساس جستجو و دسته‌بندی
   const filteredProducts = useMemo(() => {
@@ -173,6 +171,7 @@ export default function AdminProductsPage() {
       toast.success("محصول جدید با موفقیت افزوده شد.");
       setIsCreateOpen(false);
       reset();
+      setIsActiveValue(true);
     } catch (err: unknown) {
       toast.error((err as Error).message || "خطا در ثبت محصول جدید");
     }
@@ -209,6 +208,7 @@ export default function AdminProductsPage() {
         <Button
           onClick={() => {
             reset();
+            setIsActiveValue(true);
             setIsCreateOpen(true);
           }}
           className="gap-2 rounded-xl bg-primary text-primary-foreground text-xs sm:text-sm font-bold shadow-xs hover:bg-primary/90"
@@ -617,11 +617,14 @@ export default function AdminProductsPage() {
 
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-semibold">
-                    {isActive ? "فعال" : "غیرفعال"}
+                    {isActiveValue ? "فعال" : "غیرفعال"}
                   </span>
                   <Switch
-                    checked={isActive}
-                    onCheckedChange={(checked) => setValue("isActive", checked)}
+                    checked={isActiveValue}
+                    onCheckedChange={(checked) => {
+                      setIsActiveValue(checked);
+                      setValue("isActive", checked);
+                    }}
                   />
                 </div>
               </div>
