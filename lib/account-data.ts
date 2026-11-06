@@ -35,7 +35,7 @@ export type OrderStatus =
   | "DELIVERED"
   | "CANCELLED";
 
-export type PaymentMethod = "COD" | "CARD_TO_CARD";
+export type PaymentMethod = "COD" | "CARD_TO_CARD" | "ONLINE";
 export type PaymentStatus = "PENDING" | "PAID" | "FAILED";
 
 export interface OrderItem {

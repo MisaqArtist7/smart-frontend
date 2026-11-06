@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useSyncExternalStore } from "react";
 import {
   Sparkles,
   Flame,
@@ -14,6 +14,7 @@ import {
   PhoneCall,
   GraduationCap,
 } from "lucide-react";
+import { useCartStore } from "@/lib/cart-store";
 
 import { TopBar } from "./TopBar";
 import { MainBar } from "./MainBar";
@@ -277,12 +278,20 @@ export interface HeaderProps {
    ========================================================================= */
 
 export function Header({
-  cartCount = 0,
+  cartCount,
   config: userConfig,
   className = "",
   sticky = true,
 }: HeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+  const liveCount = useCartStore((s) => s.items.reduce((acc, i) => acc + i.quantity, 0));
+
+  const effectiveCartCount = mounted ? liveCount : (cartCount ?? 0);
 
   // ادغام عمیق کانفیگ پیش‌فرض با کانفیگ سفارشی احتمالی
   const mergedConfig: HeaderConfig = {
@@ -347,14 +356,14 @@ export function Header({
       {/* طبقه دوم: نوار میانی (Main Bar) */}
       <MainBar
         config={mergedConfig.mainBar}
-        cartCount={cartCount}
+        cartCount={effectiveCartCount}
         onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
       />
 
       {/* طبقه سوم: نوار ناوبری (Navigation Bar) */}
       <NavigationBar
         config={mergedConfig.navigation}
-        cartCount={cartCount}
+        cartCount={effectiveCartCount}
       />
 
       {/* منوی دراور ویژه صفحات موبایل و تبلت */}
@@ -362,7 +371,7 @@ export function Header({
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
         config={mergedConfig}
-        cartCount={cartCount}
+        cartCount={effectiveCartCount}
       />
     </header>
   );

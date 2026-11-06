@@ -381,6 +381,35 @@ export function useProducts() {
 }
 
 /**
+ * دریافت اطلاعات تک‌محصول بر اساس شناسه یا اسلاگ
+ */
+export function useProduct(slugOrId: string | number) {
+  return useQuery<Product | null>({
+    queryKey: ["product", slugOrId],
+    queryFn: async () => {
+      try {
+        return await apiFetch<Product>(`/product/${slugOrId}`);
+      } catch {
+        try {
+          const list = await apiFetch<Product[]>("/product");
+          const found = list.find(
+            (p) => String(p.id) === String(slugOrId) || p.slug === slugOrId
+          );
+          if (found) return found;
+        } catch {
+          // fallback to mock data
+        }
+        const mockItem = mockProducts.find(
+          (p) => String(p.id) === String(slugOrId) || p.slug === slugOrId
+        );
+        return mockItem || null;
+      }
+    },
+    enabled: Boolean(slugOrId),
+  });
+}
+
+/**
  * ایجاد محصول جدید با متد POST به http://localhost:4000/product
  */
 export function useCreateProduct() {
