@@ -98,13 +98,13 @@ Errors: 404, 409 if the product exists in past orders (set isActive = false inst
 
 ## Rules
 - All ids are numbers, never strings.
-- The API uses `forbidNonWhitelisted`: any field not listed above returns 400.
+-- The API uses `forbidNonWhitelisted`: any field not listed above returns 400.
   Do NOT send `images`, `imageUrl`, `categoryName`, `id`, `createdAt`, `updatedAt`.
-- Never send empty strings. Omit the field instead (critical for `sku`, which is unique).
-- `categoryId` comes from a `<select>` as a string: convert with `Number()` before sending.
-- Display price: `discountPrice ?? price`. If `discountPrice` is not null, show `price` struck through.
-- Numeric inputs: use `valueAsNumber`. Empty optional numbers must become `undefined`.
-- Slug is typed manually by the admin (English only). No auto-slug from Persian titles.
+-- Never send empty strings. Omit the field instead (critical for `sku`, which is unique).
+-- `categoryId` comes from a `<select>` as a string: convert with `Number()` before sending.
+-- Display price: `discountPrice ?? price`. If `discountPrice` is not null, show `price` struck through.
+-- Numeric inputs: use `valueAsNumber`. Empty optional numbers must become `undefined`.
+-- Slug is typed manually by the admin (English only). No auto-slug from Persian titles.
 
 ## Not implemented yet
 - Image upload and ProductImage endpoints

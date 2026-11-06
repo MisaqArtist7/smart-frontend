@@ -57,7 +57,7 @@ export function NavigationBar({
       className={`transition-colors bg-white/88 ${className}`}
       aria-label="ناوبری اصلی"
     >
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 h-14">
+      <div className="mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 h-14">
         {/* سمت راست: دراپ‌داون دسته‌بندی‌ها + لینک‌های اصلی منو */}
         <div className="flex items-center gap-1 sm:gap-2 lg:gap-4">
           {/* بخش دراپ‌داون دسته‌بندی‌ها */}

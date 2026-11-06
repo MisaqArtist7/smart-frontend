@@ -55,19 +55,38 @@ export interface CreateProductInput {
 
 export interface Category {
   id: number;
+  parentId?: number | null;
+  parent?: Category | null;
+  parentName?: string | null;
+  children?: Category[];
   name: string;
   slug: string;
-  parentId?: number | null;
-  parentName?: string | null;
+  description?: string | null;
+  image?: string | null;
+  imageAlt?: string | null;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
   sortOrder: number;
+  isActive: boolean;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface CreateCategoryInput {
   name: string;
   slug: string;
-  parentId?: number | string | null;
+  parentId?: number | null;
+  description?: string | null;
+  image?: string | null;
+  imageAlt?: string | null;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
   sortOrder?: number;
+  isActive?: boolean;
+}
+
+export interface UpdateCategoryInput extends Partial<CreateCategoryInput> {
+  id: number;
 }
 
 export interface AdminMetrics {
@@ -87,7 +106,13 @@ let mockCategories: Category[] = [
     slug: "cables",
     parentId: null,
     parentName: null,
+    description: "انواع سیم و کابل استاندارد ساختمانی و صنعتی، شبکه و مخابرات",
+    image: "/images/categories/cables.svg",
+    imageAlt: "سیم و کابل",
+    metaTitle: "خرید سیم و کابل ساختمانی و صنعتی",
+    metaDescription: "فروش آنلاین انواع سیم و کابل با بهترین کیفیت و قیمت مناسب در اسمارت الکتریک",
     sortOrder: 1,
+    isActive: true,
     createdAt: "1403/08/01",
   },
   {
@@ -96,7 +121,13 @@ let mockCategories: Category[] = [
     slug: "switches",
     parentId: null,
     parentName: null,
+    description: "کلید و پریزهای مکانیکی، لمسی خازنی و هوشمند",
+    image: "/images/categories/switches.svg",
+    imageAlt: "کلید و پریز",
+    metaTitle: "خرید کلید و پریز مدرن و هوشمند",
+    metaDescription: "مجموعه متنوع کلید و پریز با طراحی لوکس و استانداردهای روز",
     sortOrder: 2,
+    isActive: true,
     createdAt: "1403/08/02",
   },
   {
@@ -105,7 +136,13 @@ let mockCategories: Category[] = [
     slug: "network-industrial",
     parentId: null,
     parentName: null,
+    description: "تجهیزات اکتیو و پسیو شبکه، منابع تغذیه صنعتی و تابلو برق",
+    image: "/images/categories/industrial.svg",
+    imageAlt: "تجهیزات شبکه و برق صنعتی",
+    metaTitle: "تجهیزات شبکه و اتوماسیون صنعتی",
+    metaDescription: "سوئیچ‌ها و آداپتورهای قدرتمند صنعتی مقاوم در شرایط سخت",
     sortOrder: 3,
+    isActive: true,
     createdAt: "1403/08/03",
   },
   {
@@ -114,7 +151,13 @@ let mockCategories: Category[] = [
     slug: "industrial-switches",
     parentId: 3,
     parentName: "تجهیزات شبکه و برق صنعتی",
+    description: "سوئیچ‌های رکمونت و ریل‌مونت مجهز به درگاه PoE با پهنای باند گیگابیت",
+    image: "/images/products/switch-8port.png",
+    imageAlt: "سوئیچ‌های صنعتی PoE",
+    metaTitle: "سوئیچ شبکه صنعتی PoE",
+    metaDescription: "سوئیچ‌های اترنت و PoE مقاوم سازمانی و کارخانه‌ای",
     sortOrder: 1,
+    isActive: true,
     createdAt: "1403/08/04",
   },
   {
@@ -123,7 +166,13 @@ let mockCategories: Category[] = [
     slug: "adapters",
     parentId: 3,
     parentName: "تجهیزات شبکه و برق صنعتی",
+    description: "منابع تغذیه ریلی و رومیزی با خروجی ولتاژ پایدار و ضد نوسان",
+    image: "/images/products/adapter-52240.png",
+    imageAlt: "آداپتور و منابع تغذیه",
+    metaTitle: "منبع تغذیه و آداپتور سوئیچ شبکه",
+    metaDescription: "آداپتورهای استاندارد و پرقدرت صنعتی با خروجی پایدار",
     sortOrder: 2,
+    isActive: true,
     createdAt: "1403/08/05",
   },
   {
@@ -132,7 +181,13 @@ let mockCategories: Category[] = [
     slug: "lighting",
     parentId: null,
     parentName: null,
+    description: "انواع لامپ‌های ال‌ای‌دی، ادیسونی فیلامنتی، پنل‌های توکار و روکار",
+    image: "/images/categories/lighting.svg",
+    imageAlt: "محصولات روشنایی",
+    metaTitle: "خرید لامپ و ادوات روشنایی",
+    metaDescription: "بهترین تجهیزات نورپردازی دکوراتیو و اداری با ضمانت",
     sortOrder: 4,
+    isActive: true,
     createdAt: "1403/08/06",
   },
   {
@@ -141,7 +196,13 @@ let mockCategories: Category[] = [
     slug: "smart-home",
     parentId: null,
     parentName: null,
+    description: "سیستم‌های کنترل هوشمند روشنایی، دما، امنیت و پرده برقی",
+    image: "/images/categories/security.svg",
+    imageAlt: "خانه هوشمند و اینترنت اشیا",
+    metaTitle: "تجهیزات خانه هوشمند و BMS",
+    metaDescription: "راهکارهای نوین ساختمانی برای اتوماسیون و کاهش مصرف انرژی",
     sortOrder: 5,
+    isActive: true,
     createdAt: "1403/08/07",
   },
 ];
@@ -295,7 +356,7 @@ async function apiFetch<T>(endpoint: string, options?: RequestInit): Promise<T> 
 }
 
 // ----------------------------------------------------
-// هوک‌های TanStack Query
+// هوک‌های TanStack Query برای محصولات (Products)
 // ----------------------------------------------------
 
 /**
@@ -411,19 +472,25 @@ export function useDeleteProduct() {
   });
 }
 
+// ----------------------------------------------------
+// هوک‌های TanStack Query برای دسته‌بندی‌ها (Categories)
+// اندپوینت: http://localhost:4000/categories (GET, POST, PUT, DELETE)
+// ----------------------------------------------------
+
 /**
- * دریافت لیست دسته‌بندی‌ها
+ * دریافت لیست دسته‌بندی‌ها با متد GET از /categories
  */
 export function useCategories() {
   return useQuery<Category[]>({
     queryKey: ["categories"],
     queryFn: async () => {
       try {
-        return await apiFetch<Category[]>("/category");
-      } catch {
+        return await apiFetch<Category[]>("/categories");
+      } catch (err) {
         try {
-          return await apiFetch<Category[]>("/categories");
+          return await apiFetch<Category[]>("/category");
         } catch {
+          console.warn("استفاده از دیتای ماک دسته‌بندی‌ها به دلیل عدم دسترسی به سرور:", err);
           return [...mockCategories];
         }
       }
@@ -432,7 +499,7 @@ export function useCategories() {
 }
 
 /**
- * ایجاد دسته‌بندی جدید
+ * ایجاد دسته‌بندی جدید با متد POST به /categories
  */
 export function useCreateCategory() {
   const queryClient = useQueryClient();
@@ -440,31 +507,145 @@ export function useCreateCategory() {
   return useMutation({
     mutationFn: async (input: CreateCategoryInput) => {
       try {
-        return await apiFetch<Category>("/category", {
+        return await apiFetch<Category>("/categories", {
           method: "POST",
           body: JSON.stringify(input),
         });
-      } catch {
-        try {
-          return await apiFetch<Category>("/categories", {
-            method: "POST",
-            body: JSON.stringify(input),
-          });
-        } catch {
-          console.warn("افزودن دسته‌بندی به ماک دیتای محلی:");
-          const parent = mockCategories.find((c) => c.id === Number(input.parentId));
+      } catch (err: unknown) {
+        const error = err as Error;
+        const isNetworkError =
+          error?.name === "TypeError" ||
+          error?.message?.includes("Failed to fetch") ||
+          error?.message?.includes("NetworkError") ||
+          error?.message?.includes("network");
+
+        if (isNetworkError) {
+          console.warn("سرور بک‌اند در دسترس نیست. افزودن دسته‌بندی به ماک دیتای محلی:", error);
+          const parent = input.parentId
+            ? mockCategories.find((c) => c.id === input.parentId)
+            : null;
+
           const newCat: Category = {
             id: Date.now(),
+            parentId: input.parentId ?? null,
+            parent: parent
+              ? {
+                  id: parent.id,
+                  name: parent.name,
+                  slug: parent.slug,
+                  sortOrder: parent.sortOrder,
+                  isActive: parent.isActive,
+                  createdAt: parent.createdAt,
+                }
+              : null,
+            parentName: parent?.name || null,
             name: input.name,
             slug: input.slug,
-            parentId: input.parentId ? Number(input.parentId) : null,
-            parentName: parent?.name || null,
-            sortOrder: input.sortOrder || mockCategories.length + 1,
+            description: input.description ?? null,
+            image: input.image ?? null,
+            imageAlt: input.imageAlt ?? null,
+            metaTitle: input.metaTitle ?? null,
+            metaDescription: input.metaDescription ?? null,
+            sortOrder: input.sortOrder ?? 0,
+            isActive: input.isActive ?? true,
             createdAt: new Date().toLocaleDateString("fa-IR"),
           };
           mockCategories = [...mockCategories, newCat];
           return newCat;
         }
+
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+    },
+  });
+}
+
+/**
+ * ویرایش دسته‌بندی با متد PUT به /categories/:id
+ */
+export function useUpdateCategory() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, ...payload }: UpdateCategoryInput) => {
+      try {
+        return await apiFetch<Category>(`/categories/${id}`, {
+          method: "PUT",
+          body: JSON.stringify(payload),
+        });
+      } catch (err: unknown) {
+        const error = err as Error;
+        const isNetworkError =
+          error?.name === "TypeError" ||
+          error?.message?.includes("Failed to fetch") ||
+          error?.message?.includes("NetworkError") ||
+          error?.message?.includes("network");
+
+        if (isNetworkError) {
+          console.warn("سرور بک‌اند در دسترس نیست. ویرایش دسته‌بندی در ماک دیتای محلی:", error);
+          const parent = payload.parentId
+            ? mockCategories.find((c) => c.id === payload.parentId)
+            : null;
+
+          let updatedCat: Category | null = null;
+          mockCategories = mockCategories.map((c) => {
+            if (c.id === id) {
+              updatedCat = {
+                ...c,
+                ...payload,
+                parentId: payload.parentId !== undefined ? payload.parentId : c.parentId,
+                parent: parent ?? (payload.parentId === null ? null : c.parent),
+                parentName: parent?.name ?? (payload.parentId === null ? null : c.parentName),
+                updatedAt: new Date().toLocaleDateString("fa-IR"),
+              };
+              return updatedCat;
+            }
+            return c;
+          });
+
+          if (updatedCat) return updatedCat;
+          throw new Error("دسته‌بندی مورد نظر یافت نشد.");
+        }
+
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+    },
+  });
+}
+
+/**
+ * حذف دسته‌بندی با متد DELETE از /categories/:id
+ */
+export function useDeleteCategory() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: number) => {
+      try {
+        return await apiFetch<{ success: boolean }>(`/categories/${id}`, {
+          method: "DELETE",
+        });
+      } catch (err: unknown) {
+        const error = err as Error;
+        const isNetworkError =
+          error?.name === "TypeError" ||
+          error?.message?.includes("Failed to fetch") ||
+          error?.message?.includes("NetworkError") ||
+          error?.message?.includes("network");
+
+        if (isNetworkError) {
+          console.warn("سرور بک‌اند در دسترس نیست. حذف دسته‌بندی از ماک دیتای محلی:", error);
+          mockCategories = mockCategories.filter((c) => c.id !== id);
+          return { success: true };
+        }
+
+        throw error;
       }
     },
     onSuccess: () => {

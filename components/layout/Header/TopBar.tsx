@@ -28,7 +28,7 @@ export function TopBar({ config, className = "" }: TopBarProps) {
     <div
       className={`border-b border-border bg-card text-xs transition-colors ${className}`}
     >
-      <div className="mx-auto flex h-9 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-12 bg-gray-100 items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* سمت راست: نشانگر وضعیت + متن ارسال رایگان */}
         <div className="flex items-center gap-2">
           <span className="relative flex size-2 shrink-0">

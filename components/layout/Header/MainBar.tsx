@@ -32,7 +32,7 @@ export function MainBar({
     <div
       className={`border-b border-border bg-white py-3.5 transition-colors ${className}`}
     >
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         {/* سمت راست: دکمه منوی موبایل (در صفحات کوچک) + لوگو + فرم جستجوی کپسولی */}
         <div className="flex flex-1 items-center gap-4 sm:gap-6 lg:gap-8">
           {/* دکمه منوی موبایل (فقط در صفحات کوچکتر از lg) */}
