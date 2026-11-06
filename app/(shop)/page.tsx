@@ -4,6 +4,7 @@ import Footer from "@/components/layout/footer";
 import HeroCarousel from "@/components/home/hero-carousel";
 import CategoryCarousel from "@/components/home/category-carousel";
 import LatestProducts from "@/components/home/latest-products";
+import PromoBanners from "@/components/home/promo-banners";
 
 export default function HomePage() {
   return (
@@ -21,6 +22,9 @@ export default function HomePage() {
 
         {/* اسلایدر جدید ترین محصولات ما (Latest Products) */}
         <LatestProducts />
+
+        {/* بنرهای دوقلوی تبلیغاتی کنار هم (۷ و ۸) زیر بخش محصولات */}
+        <PromoBanners />
 
         <div className="rounded-2xl border border-border bg-card p-8 sm:p-12 text-center shadow-xs">
           <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-xs font-semibold text-primary mb-4">
