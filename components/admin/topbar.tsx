@@ -20,6 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/components/providers/auth-provider";
 
 interface AdminTopbarProps {
   onOpenMobileSidebar: () => void;
@@ -36,6 +37,7 @@ const ROUTE_TITLES: Record<string, string> = {
 export function AdminTopbar({ onOpenMobileSidebar }: AdminTopbarProps) {
   const pathname = usePathname();
   const currentTitle = ROUTE_TITLES[pathname] || "مدیریت پنل";
+  const { user, logout } = useAuth();
 
   return (
     <header className="h-16 bg-card border-b border-border px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 select-none">
@@ -94,10 +96,10 @@ export function AdminTopbar({ onOpenMobileSidebar }: AdminTopbarProps) {
             </div>
             <div className="hidden sm:flex flex-col text-start">
               <span className="text-xs font-bold text-foreground line-clamp-1 leading-tight">
-                مدیر ارشد فروشگاه
+                {user?.name || "مدیر ارشد فروشگاه"}
               </span>
-              <span className="text-[11px] text-muted-foreground leading-tight">
-                admin@smart-electric.ir
+              <span className="text-[11px] text-muted-foreground leading-tight" dir="ltr">
+                {user?.phone || "admin@smart-electric.ir"}
               </span>
             </div>
             <ChevronDown className="size-3.5 text-muted-foreground" />
@@ -105,28 +107,35 @@ export function AdminTopbar({ onOpenMobileSidebar }: AdminTopbarProps) {
 
           <DropdownMenuContent className="w-52" align="start">
             <DropdownMenuLabel>
-              <div className="font-bold text-xs text-foreground">حساب مدیریتی</div>
-              <div className="text-[11px] text-muted-foreground font-normal">دسترسی سوپرادمین</div>
+              <div className="font-bold text-xs text-foreground">{user?.name || "حساب مدیریتی"}</div>
+              <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-normal">دسترسی سوپرادمین (ADMIN)</div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
 
             <DropdownMenuItem>
-              <User className="size-4 text-muted-foreground" />
-              <span>پروفایل کاربری</span>
+              <Link href="/profile" className="flex items-center gap-2 w-full text-foreground hover:text-primary">
+                <User className="size-4 text-muted-foreground" />
+                <span>پروفایل کاربری</span>
+              </Link>
             </DropdownMenuItem>
 
             <DropdownMenuItem>
-              <SettingsIcon className="size-4 text-muted-foreground" />
-              <span>تنظیمات امنیتی</span>
+              <Link href="/admin/settings" className="flex items-center gap-2 w-full text-foreground hover:text-primary">
+                <SettingsIcon className="size-4 text-muted-foreground" />
+                <span>تنظیمات فروشگاه</span>
+              </Link>
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />
 
-            <DropdownMenuItem className="text-destructive focus:bg-destructive/10 focus:text-destructive">
-              <Link href="/login" className="flex items-center gap-2 w-full">
+            <DropdownMenuItem
+              onClick={() => logout()}
+              className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer"
+            >
+              <div className="flex items-center gap-2 w-full">
                 <LogOut className="size-4" />
                 <span>خروج از حساب</span>
-              </Link>
+              </div>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

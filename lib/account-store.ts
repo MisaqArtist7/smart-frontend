@@ -16,7 +16,13 @@ interface AccountStore {
   addresses: Address[];
   orders: Order[];
   isAuthenticated: boolean;
-  setAuthUser: (userData: { id?: string | number; name?: string; phone: string; role?: User["role"] }) => void;
+  setAuthUser: (userData: {
+    id?: string | number;
+    name?: string;
+    phone: string;
+    role?: User["role"];
+    avatarUrl?: string;
+  }) => void;
   logout: () => void;
   updateUser: (name: string) => void;
   addAddress: (address: Omit<Address, "id" | "userId">) => void;
@@ -44,6 +50,7 @@ export const useAccountStore = create<AccountStore>()(
             name: userData.name || state.user.name,
             phone: userData.phone,
             role: userData.role || state.user.role,
+            avatarUrl: userData.avatarUrl || state.user.avatarUrl,
           },
         })),
 

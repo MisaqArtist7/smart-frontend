@@ -6,6 +6,11 @@
  * - POST /auth/login
  * - POST /auth/request-otp
  * - POST /auth/verify-otp
+ * - GET /auth/me
+ * - POST /auth/refresh
+ * - POST /auth/logout
+ *
+ * All requests are executed with `credentials: "include"` for httpOnly cookie exchange.
  */
 
 const BASE_AUTH_URL =
@@ -83,12 +88,59 @@ export interface AuthUser {
   id: number | string;
   name: string;
   phone: string;
-  role: "CUSTOMER" | "ADMIN" | string;
+  role: "ADMIN" | "CUSTOMER" | string;
+  avatarUrl?: string;
 }
 
 export interface VerifyOtpResponse {
   message: string;
   user: AuthUser;
+}
+
+// متغیر سشن تستی در حافظه جهت پایداری تست در زمان آفلاین بودن بک‌اند
+let devSessionUser: AuthUser | null = null;
+
+/**
+ * تابع کمکی ارسال درخواست با credentials: 'include'
+ */
+async function fetchAuth<T>(
+  endpoint: string,
+  method: "GET" | "POST" = "POST",
+  body?: unknown
+): Promise<T> {
+  const url = `${BASE_AUTH_URL}${endpoint}`;
+  const res = await fetch(url, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    credentials: "include",
+    body: body ? JSON.stringify(body) : undefined,
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    let msg = data.message;
+    if (res.status === 401) {
+      msg = msg || "احراز هویت انجام نشده است یا نشست شما منقضی شده است";
+    } else if (res.status === 403) {
+      msg = msg || "شما اجازه دسترسی به این بخش را ندارید (دسترسی غیرمجاز)";
+    } else if (res.status === 404) {
+      msg = msg || "کاربری با این مشخصات یافت نشد";
+    } else if (res.status === 409) {
+      msg = msg || "کاربری با این مشخصات قبلاً ثبت‌نام کرده است";
+    } else if (res.status === 429) {
+      msg = msg || "کمی صبر کنید. تعداد درخواست‌های ارسال کد بیش از حد مجاز است";
+    } else {
+      msg = msg || `خطای سرور: ${res.status}`;
+    }
+
+    throw new AuthApiError(msg, res.status, data);
+  }
+
+  return data as T;
 }
 
 /**
@@ -100,41 +152,25 @@ export async function registerUser(name: string, phone: string): Promise<Registe
   const cleanName = name.trim();
 
   try {
-    const res = await fetch(`${BASE_AUTH_URL}/register`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name: cleanName,
-        phone: cleanPhone,
-      }),
+    return await fetchAuth<RegisterResponse>("/register", "POST", {
+      name: cleanName,
+      phone: cleanPhone,
     });
-
-    const data = await res.json().catch(() => ({}));
-
-    if (!res.ok) {
-      const message =
-        data.message ||
-        (res.status === 409
-          ? "کاربری با این شماره تلفن قبلاً ثبت‌نام کرده است. لطفاً وارد شوید"
-          : "خطا در ثبت‌نام کاربر");
-      throw new AuthApiError(message, res.status, data);
-    }
-
-    return data as RegisterResponse;
   } catch (error) {
     if (error instanceof AuthApiError) {
       throw error;
     }
 
     // شبیه‌سازی در حالت آفلاین بک‌اند (توسعه محلی)
-    console.warn("⚠️ سرور بک‌اند در دسترس نیست. بازگشت دیتای تستی با devCode...");
+    console.warn("⚠️ سرور بک‌اند در دسترس نیست. استفاده از حالت توسعه محلی...");
     if (cleanPhone === "09004090000") {
       throw new AuthApiError(
         "کاربری با این شماره تلفن قبلاً ثبت‌نام کرده است. لطفاً وارد شوید",
         409
       );
+    }
+    if (cleanPhone === "09004290000") {
+      throw new AuthApiError("کمی صبر کنید. تعداد درخواست‌های ارسال کد بیش از حد مجاز است", 429);
     }
 
     return {
@@ -154,40 +190,24 @@ export async function loginUser(phone: string): Promise<LoginResponse> {
   const cleanPhone = normalizePhoneNumber(phone);
 
   try {
-    const res = await fetch(`${BASE_AUTH_URL}/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        phone: cleanPhone,
-      }),
+    return await fetchAuth<LoginResponse>("/login", "POST", {
+      phone: cleanPhone,
     });
-
-    const data = await res.json().catch(() => ({}));
-
-    if (!res.ok) {
-      const message =
-        data.message ||
-        (res.status === 404
-          ? "کاربری با این شماره تلفن یافت نشد. لطفاً ابتدا ثبت‌نام کنید"
-          : "خطا در ورود کاربر");
-      throw new AuthApiError(message, res.status, data);
-    }
-
-    return data as LoginResponse;
   } catch (error) {
     if (error instanceof AuthApiError) {
       throw error;
     }
 
     // شبیه‌سازی در حالت آفلاین بک‌اند
-    console.warn("⚠️ سرور بک‌اند در دسترس نیست. بازگشت دیتای تستی با devCode...");
+    console.warn("⚠️ سرور بک‌اند در دسترس نیست. استفاده از حالت توسعه محلی...");
     if (cleanPhone === "09004040000") {
       throw new AuthApiError(
         "کاربری با این شماره تلفن یافت نشد. لطفاً ابتدا ثبت‌نام کنید",
         404
       );
+    }
+    if (cleanPhone === "09004290000") {
+      throw new AuthApiError("کمی صبر کنید. تعداد درخواست‌های ارسال کد بیش از حد مجاز است", 429);
     }
 
     return {
@@ -207,30 +227,19 @@ export async function resendOtp(phone: string): Promise<RequestOtpResponse> {
   const cleanPhone = normalizePhoneNumber(phone);
 
   try {
-    const res = await fetch(`${BASE_AUTH_URL}/request-otp`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        phone: cleanPhone,
-      }),
+    return await fetchAuth<RequestOtpResponse>("/request-otp", "POST", {
+      phone: cleanPhone,
     });
-
-    const data = await res.json().catch(() => ({}));
-
-    if (!res.ok) {
-      const message = data.message || "خطا در ارسال مجدد کد تأیید";
-      throw new AuthApiError(message, res.status, data);
-    }
-
-    return data as RequestOtpResponse;
   } catch (error) {
     if (error instanceof AuthApiError) {
       throw error;
     }
 
     console.warn("⚠️ سرور بک‌اند در دسترس نیست. شبیه‌سازی ارسال مجدد کد...");
+    if (cleanPhone === "09004290000") {
+      throw new AuthApiError("کمی صبر کنید. تعداد درخواست‌های ارسال کد بیش از حد مجاز است", 429);
+    }
+
     return {
       message: "کد تأیید با موفقیت مجدداً ارسال گردید (حالت توسعه)",
       phone: cleanPhone,
@@ -248,27 +257,13 @@ export async function verifyOtp(phone: string, code: string): Promise<VerifyOtpR
   const cleanCode = toEnglishDigits(code).trim();
 
   try {
-    const res = await fetch(`${BASE_AUTH_URL}/verify-otp`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        phone: cleanPhone,
-        code: cleanCode,
-      }),
+    const res = await fetchAuth<VerifyOtpResponse>("/verify-otp", "POST", {
+      phone: cleanPhone,
+      code: cleanCode,
     });
 
-    const data = await res.json().catch(() => ({}));
-
-    if (!res.ok) {
-      const message =
-        data.message ||
-        (res.status === 400 ? "کد تأیید وارد شده اشتباه است" : "خطا در تأیید کد ورود");
-      throw new AuthApiError(message, res.status, data);
-    }
-
-    return data as VerifyOtpResponse;
+    devSessionUser = res.user;
+    return res;
   } catch (error) {
     if (error instanceof AuthApiError) {
       throw error;
@@ -279,15 +274,80 @@ export async function verifyOtp(phone: string, code: string): Promise<VerifyOtpR
       throw new AuthApiError("کد تأیید وارد شده اشتباه است", 400);
     }
 
+    // شماره‌های اختصاصی تست ادمین در محیط توسعه (مثلاً 09120000000 یا 09121111111)
+    const isAdminTest =
+      cleanPhone === "09120000000" ||
+      cleanPhone === "09121111111" ||
+      cleanPhone.endsWith("9999");
+
+    const mockUser: AuthUser = {
+      id: isAdminTest ? 99 : 1,
+      name: isAdminTest ? "مدیر ارشد اسمارت الکتریک" : "کاربر اسمارت الکتریک",
+      phone: cleanPhone,
+      role: isAdminTest ? "ADMIN" : "CUSTOMER",
+    };
+
+    devSessionUser = mockUser;
+
     return {
       message: "ورود با موفقیت انجام شد (حالت توسعه)",
-      user: {
-        id: 1,
-        name: "کاربر اسمارت الکتریک",
-        phone: cleanPhone,
-        role: "CUSTOMER",
-      },
+      user: mockUser,
     };
   }
 }
 
+/**
+ * ۵. دریافت اطلاعات هویت و نقش کاربر جاری (معتبرترین منبع تشخیص نقش)
+ * GET /auth/me
+ */
+export async function getMe(): Promise<AuthUser> {
+  try {
+    const data = await fetchAuth<AuthUser | { user: AuthUser }>("/me", "GET");
+    const user = "user" in data && data.user ? data.user : (data as AuthUser);
+    devSessionUser = user;
+    return user;
+  } catch (error) {
+    if (error instanceof AuthApiError) {
+      throw error;
+    }
+
+    // در حالت آفلاین بک‌اند:
+    if (devSessionUser) {
+      return devSessionUser;
+    }
+
+    throw new AuthApiError("نشست شما منقضی شده است یا هنوز وارد نشده‌اید", 401);
+  }
+}
+
+/**
+ * ۶. تازه‌سازی توکن احراز هویت
+ * POST /auth/refresh
+ * اگر موفق بود true برمی‌گرداند؛ اگر 401 بود false.
+ */
+export async function refreshToken(): Promise<boolean> {
+  try {
+    await fetchAuth<{ message?: string }>("/refresh", "POST");
+    return true;
+  } catch (err) {
+    if (err instanceof AuthApiError && err.statusCode === 401) {
+      devSessionUser = null;
+      return false;
+    }
+    // اگر سرور در دسترس نبود یا خطای دیگر
+    return false;
+  }
+}
+
+/**
+ * ۷. خروج از حساب کاربری
+ * POST /auth/logout
+ */
+export async function logoutUser(): Promise<void> {
+  devSessionUser = null;
+  try {
+    await fetchAuth<{ message?: string }>("/logout", "POST");
+  } catch {
+    // حتی در صورت خطای شبکه، وضعیت کلاینت پاک می‌شود
+  }
+}

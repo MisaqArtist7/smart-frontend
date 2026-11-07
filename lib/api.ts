@@ -347,9 +347,17 @@ async function apiFetch<T>(endpoint: string, options?: RequestInit): Promise<T> 
     ...options?.headers,
   };
 
-  const response = await fetch(url, { ...options, headers });
+  const response = await fetch(url, {
+    credentials: "include",
+    ...options,
+    headers,
+  });
+
   if (!response.ok) {
     const errorBody = await response.json().catch(() => ({}));
+    if (response.status === 403) {
+      throw new Error("شما اجازه دسترسی به این بخش را ندارید (دسترسی غیرمجاز ۴۰۳)");
+    }
     throw new Error(errorBody.message || `خطای سرور: ${response.status}`);
   }
   return response.json();

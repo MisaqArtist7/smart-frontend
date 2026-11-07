@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   PackageCheck,
@@ -13,11 +13,11 @@ import {
   User as UserIcon,
 } from "lucide-react";
 import { useAccountStore } from "@/lib/account-store";
+import { useAuth } from "@/components/providers/auth-provider";
 import { toPersianDigits } from "@/lib/account-data";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
 
 export interface NavItem {
   title: string;
@@ -55,15 +55,13 @@ interface ProfileSidebarProps {
 
 export function ProfileSidebar({ className, onNavigate }: ProfileSidebarProps) {
   const pathname = usePathname();
-  const router = useRouter();
-  const user = useAccountStore((s) => s.user);
-  const logout = useAccountStore((s) => s.logout);
+  const storeUser = useAccountStore((s) => s.user);
+  const { user: authUser, logout } = useAuth();
+  const user = authUser || storeUser;
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (window.confirm("آیا قصد خروج از حساب کاربری خود را دارید؟")) {
-      logout();
-      toast.success("با موفقیت از حساب کاربری خارج شدید.");
-      router.push("/login");
+      await logout();
     }
   };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useSyncExternalStore } from "react";
+import React, { useState, useEffect, useSyncExternalStore } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -26,6 +26,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/footer";
 import { useCartStore } from "@/lib/cart-store";
 import { useAccountStore } from "@/lib/account-store";
+import { useAuth } from "@/components/providers/auth-provider";
 import { formatPrice, toPersianDigits, type Order, type PaymentMethod } from "@/lib/account-data";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -42,6 +43,7 @@ import {
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
@@ -50,6 +52,14 @@ export default function CheckoutPage() {
     () => true,
     () => false
   );
+
+  // محافظت از صفحه تسویه‌حساب: هدایت به ورود در صورت عدم احراز هویت
+  useEffect(() => {
+    if (!isAuthLoading && !isAuthenticated) {
+      toast.info("برای ثبت و پرداخت نهایی سفارش، لطفاً ابتدا وارد حساب کاربری شوید.");
+      router.replace("/login?redirect=/checkout");
+    }
+  }, [isAuthLoading, isAuthenticated, router]);
 
   // دیالوگ افزودن آدرس جدید
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
@@ -229,12 +239,25 @@ export default function CheckoutPage() {
     }
   };
 
-  if (!mounted) {
+  if (!mounted || isAuthLoading) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Header />
         <main className="flex-1 w-full px-4 sm:px-6 lg:px-8 py-16 flex items-center justify-center">
-          <div className="animate-pulse text-muted-foreground">در حال بارگذاری اطلاعات پرداخت...</div>
+          <div className="animate-pulse text-muted-foreground text-sm">در حال بررسی اطلاعات حساب کاربری...</div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <Header />
+        <main className="flex-1 w-full px-4 sm:px-6 lg:px-8 py-16 flex flex-col items-center justify-center text-center">
+          <p className="text-sm font-semibold text-foreground">نیاز به ورود به حساب کاربری</p>
+          <p className="text-xs text-muted-foreground mt-1">در حال هدایت به صفحه ورود...</p>
         </main>
         <Footer />
       </div>

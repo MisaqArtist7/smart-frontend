@@ -25,16 +25,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { OtpInput } from "./otp-input";
-import { useAccountStore } from "@/lib/account-store";
+import { useAuth } from "@/components/providers/auth-provider";
 import {
   registerUser,
   loginUser,
   resendOtp,
   verifyOtp,
+  getMe,
   isValidIranPhone,
   normalizePhoneNumber,
   toEnglishDigits,
   AuthApiError,
+  type AuthUser,
 } from "@/lib/auth-api";
 import { toPersianDigits } from "@/lib/account-data";
 import { cn } from "@/lib/utils";
@@ -90,7 +92,7 @@ export function AuthCard({
   // تایمر ۶۰ ثانیه‌ای ارسال مجدد
   const [timer, setTimer] = useState<number>(60);
 
-  const { setAuthUser } = useAccountStore();
+  const { loginSuccess } = useAuth();
 
   // مدیریت شمارش معکوس تایمر
   useEffect(() => {
@@ -180,6 +182,14 @@ export function AuthCard({
           return;
         }
 
+        // مدیریت خطای ۴۲۹ (تعداد درخواست‌های بیش از حد)
+        if (err.statusCode === 429) {
+          setErrorMessage("کمی صبر کنید. تعداد درخواست‌های ارسال پیامک بیش از حد مجاز است.");
+          setTimer(60);
+          toast.warning("کمی صبر کنید. لطفاً تا پایان زمان منتظر بمانید.");
+          return;
+        }
+
         setErrorMessage(err.message);
         toast.error(err.message);
       } else {
@@ -209,9 +219,15 @@ export function AuthCard({
       setTimer(60);
       setOtpCode("");
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "خطا در ارسال مجدد کد";
-      setErrorMessage(msg);
-      toast.error(msg);
+      if (err instanceof AuthApiError && err.statusCode === 429) {
+        setErrorMessage("کمی صبر کنید. تعداد تلاش‌های مجدد بیش از حد مجاز است.");
+        setTimer(60);
+        toast.warning("کمی صبر کنید. لطفاً منتظر بمانید.");
+      } else {
+        const msg = err instanceof Error ? err.message : "خطا در ارسال مجدد کد";
+        setErrorMessage(msg);
+        toast.error(msg);
+      }
     } finally {
       setIsResending(false);
     }
@@ -234,30 +250,60 @@ export function AuthCard({
 
       try {
         const res = await verifyOtp(phone, code);
+
+        // واکشی نقش و هویت موثق از GET /auth/me طبق استاندارد امنیتی
+        let verifiedUser: AuthUser = res.user;
+        try {
+          const me = await getMe();
+          if (me) {
+            verifiedUser = me;
+          }
+        } catch {
+          // در صورت عدم دسترسی در لحظه از پاسخ verify-otp استفاده می‌شود
+        }
+
+        const finalDisplayName =
+          verifiedUser.name && verifiedUser.name !== "کاربر اسمارت الکتریک"
+            ? verifiedUser.name
+            : name.trim() || verifiedUser.name || "کاربر اسمارت الکتریک";
+
+        const completeUser: AuthUser = {
+          ...verifiedUser,
+          name: finalDisplayName,
+        };
+
+        loginSuccess(completeUser);
         toast.success(res.message || "ورود با موفقیت انجام شد!");
 
-        // ذخیره اطلاعات کاربر لاگین‌شده در استور اکانت
-        const finalDisplayName =
-          res.user.name && res.user.name !== "کاربر اسمارت الکتریک"
-            ? res.user.name
-            : name.trim() || res.user.name || "کاربر اسمارت الکتریک";
+        // تعیین هوشمند مقصد بر اساس نقش معتبر کاربر:
+        // role === "ADMIN" ← بره /admin
+        // بقیه ← بره /profile (یا queryRedirect در صورتی که به /admin نباشد)
+        let destination = "/profile";
+        if (completeUser.role === "ADMIN") {
+          destination = "/admin";
+        } else if (queryRedirect && !queryRedirect.startsWith("/admin")) {
+          destination = queryRedirect;
+        } else {
+          destination = "/profile";
+        }
 
-        setAuthUser({
-          id: res.user.id,
-          name: finalDisplayName,
-          phone: res.user.phone || phone,
-          role: res.user.role === "ADMIN" ? "ADMIN" : "CUSTOMER",
-        });
-
-        // هدایت به صفحه مقصد
         setTimeout(() => {
-          router.push(queryRedirect);
+          router.push(destination);
         }, 400);
       } catch (err) {
         setOtpError(true);
         if (err instanceof AuthApiError) {
-          setErrorMessage(err.message);
-          toast.error(err.message);
+          if (err.statusCode === 429) {
+            setErrorMessage("کمی صبر کنید. تعداد درخواست‌های ناموفق بیش از حد مجاز است.");
+            setTimer(60);
+            toast.warning("کمی صبر کنید. لطفاً بعداً تلاش فرمایید.");
+          } else if (err.statusCode === 403) {
+            setErrorMessage("دسترسی ندارید (۴۰۳)");
+            toast.error("دسترسی ندارید");
+          } else {
+            setErrorMessage(err.message);
+            toast.error(err.message);
+          }
         } else {
           const msg = "کد تأیید وارد شده اشتباه یا منقضی شده است.";
           setErrorMessage(msg);
@@ -267,7 +313,7 @@ export function AuthCard({
         setIsSubmitting(false);
       }
     },
-    [name, otpCode, phone, queryRedirect, router, setAuthUser]
+    [loginSuccess, name, otpCode, phone, queryRedirect, router]
   );
 
   // درج خودکار کد تست محیط توسعه

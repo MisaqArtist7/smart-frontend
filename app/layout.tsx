@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Vazirmatn } from "next/font/google";
 import "./globals.css";
 import QueryProvider from "@/components/providers/query-provider";
+import { AuthProvider } from "@/components/providers/auth-provider";
 
 // کانفیگ فونت وزیرمتن
 const vazir = Vazirmatn({
@@ -23,7 +24,9 @@ export default function RootLayout({
   return (
     <html lang="fa" dir="rtl" className={vazir.variable}>
       <body className={`${vazir.className}`}>
-        <QueryProvider>{children}</QueryProvider>
+        <QueryProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </QueryProvider>
       </body>
     </html>
   );

@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useCartStore } from "@/lib/cart-store";
 import { useAccountStore } from "@/lib/account-store";
+import { useAuth } from "@/components/providers/auth-provider";
 
 import { TopBar } from "./TopBar";
 import { MainBar } from "./MainBar";
@@ -293,9 +294,14 @@ export function Header({
     () => false
   );
   const liveCount = useCartStore((s) => s.items.reduce((acc, i) => acc + i.quantity, 0));
-  const { user, isAuthenticated } = useAccountStore();
-  const isLoggedIn = mounted && isAuthenticated;
-  const displayName = user?.name || "حساب کاربری";
+  const { user: authUser, isAuthenticated: isAuth, role } = useAuth();
+  const storeUser = useAccountStore((s) => s.user);
+  const storeAuth = useAccountStore((s) => s.isAuthenticated);
+
+  const isLoggedIn = mounted && (isAuth || storeAuth);
+  const currentUser = authUser || storeUser;
+  const displayName = currentUser?.name || "حساب کاربری";
+  const userTargetHref = (role === "ADMIN" || currentUser?.role === "ADMIN") ? "/admin" : "/profile";
 
   const effectiveCartCount = mounted ? liveCount : (cartCount ?? 0);
 
@@ -345,7 +351,7 @@ export function Header({
           ? displayName
           : (userConfig?.navigation?.authButton?.text || DEFAULT_HEADER_CONFIG.navigation.authButton.text),
         href: isLoggedIn
-          ? "/profile"
+          ? userTargetHref
           : (userConfig?.navigation?.authButton?.href || "/login"),
         isLoggedIn,
         userName: isLoggedIn ? displayName : undefined,

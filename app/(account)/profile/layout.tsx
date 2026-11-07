@@ -1,11 +1,13 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { Loader2, Lock } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/footer";
 import ProfileSidebar, { PROFILE_NAV_ITEMS } from "@/components/account/profile-sidebar";
+import { useAuth } from "@/components/providers/auth-provider";
 import { cn } from "@/lib/utils";
 
 export default function ProfileLayout({
@@ -14,11 +16,55 @@ export default function ProfileLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { isLoading, isAuthenticated } = useAuth();
 
+  // محافظت از مسیرهای حساب کاربری: در صورت عدم ورود، هدایت به /login
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.replace(`/login?redirect=${encodeURIComponent(pathname)}`);
+    }
+  }, [isLoading, isAuthenticated, pathname, router]);
+
+  // ۱. حالت در حال بارگذاری استعلام نشست
+  if (isLoading) {
+    return (
+      <div dir="rtl" className="min-h-screen bg-background text-foreground flex flex-col">
+        <Header />
+        <main className="flex-1 w-full flex flex-col items-center justify-center p-8 text-center">
+          <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-3">
+            <Loader2 className="w-6 h-6 animate-spin" />
+          </div>
+          <p className="text-sm font-bold text-foreground">در حال بارگذاری اطلاعات حساب کاربری...</p>
+          <p className="text-xs text-muted-foreground mt-1">بررسی وضعیت نشست کاربری</p>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // ۲. کاربر وارد نشده
+  if (!isAuthenticated) {
+    return (
+      <div dir="rtl" className="min-h-screen bg-background text-foreground flex flex-col">
+        <Header />
+        <main className="flex-1 w-full flex flex-col items-center justify-center p-8 text-center">
+          <div className="w-12 h-12 rounded-2xl bg-muted text-muted-foreground flex items-center justify-center mb-3">
+            <Lock className="w-6 h-6" />
+          </div>
+          <p className="text-sm font-bold text-foreground">نیاز به ورود به حساب کاربری</p>
+          <p className="text-xs text-muted-foreground mt-1">در حال هدایت خودکار به صفحه ورود...</p>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // ۳. کاربر احراز هویت شده
   return (
     <div dir="rtl" className="min-h-screen bg-background text-foreground flex flex-col">
       {/* هدر کامل ۳ طبقه فروشگاه */}
-      <Header cartCount={2} />
+      <Header />
 
       {/* کانتینر اصلی بخش حساب کاربری */}
       <main className="flex-1 mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
@@ -68,4 +114,3 @@ export default function ProfileLayout({
     </div>
   );
 }
-
