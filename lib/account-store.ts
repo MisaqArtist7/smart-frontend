@@ -15,6 +15,9 @@ interface AccountStore {
   user: User;
   addresses: Address[];
   orders: Order[];
+  isAuthenticated: boolean;
+  setAuthUser: (userData: { id?: string | number; name?: string; phone: string; role?: User["role"] }) => void;
+  logout: () => void;
   updateUser: (name: string) => void;
   addAddress: (address: Omit<Address, "id" | "userId">) => void;
   updateAddress: (id: string, address: Partial<Omit<Address, "id" | "userId">>) => void;
@@ -30,6 +33,24 @@ export const useAccountStore = create<AccountStore>()(
       user: INITIAL_USER,
       addresses: INITIAL_ADDRESSES,
       orders: INITIAL_ORDERS,
+      isAuthenticated: true,
+
+      setAuthUser: (userData) =>
+        set((state) => ({
+          isAuthenticated: true,
+          user: {
+            ...state.user,
+            id: userData.id ? String(userData.id) : state.user.id,
+            name: userData.name || state.user.name,
+            phone: userData.phone,
+            role: userData.role || state.user.role,
+          },
+        })),
+
+      logout: () =>
+        set(() => ({
+          isAuthenticated: false,
+        })),
 
       updateUser: (name: string) =>
         set((state) => ({
