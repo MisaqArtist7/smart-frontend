@@ -7,6 +7,7 @@ import {
   ChevronDown,
   ShoppingCart,
   User,
+  UserCheck,
   ChevronLeft,
 } from "lucide-react";
 import type { NavigationBarProps } from "./header.types";
@@ -194,13 +195,18 @@ export function NavigationBar({
             </span>
           </Link>
 
-          {/* دکمه ورود / عضویت با کلاس استاندارد bg-primary text-primary-foreground */}
+          {/* دکمه ورود / عضویت یا نام کاربری پس از لاگین */}
           <Link
             href={authButton.href}
-            className="flex items-center gap-2 rounded-lg bg-primary text-primary-foreground px-4 py-2 text-sm font-semibold shadow-xs transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+            title={authButton.isLoggedIn ? `حساب کاربری: ${authButton.text}` : authButton.text}
+            className="flex items-center gap-2 rounded-lg bg-primary text-primary-foreground px-3.5 py-2 text-sm font-semibold shadow-xs transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 max-w-[180px]"
           >
-            <User className="size-4" />
-            <span>{authButton.text}</span>
+            {authButton.isLoggedIn ? (
+              <UserCheck className="size-4 shrink-0 text-primary-foreground" />
+            ) : (
+              <User className="size-4 shrink-0" />
+            )}
+            <span className="truncate">{authButton.text}</span>
           </Link>
         </div>
       </div>

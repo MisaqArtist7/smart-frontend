@@ -237,10 +237,15 @@ export function AuthCard({
         toast.success(res.message || "ورود با موفقیت انجام شد!");
 
         // ذخیره اطلاعات کاربر لاگین‌شده در استور اکانت
+        const finalDisplayName =
+          res.user.name && res.user.name !== "کاربر اسمارت الکتریک"
+            ? res.user.name
+            : name.trim() || res.user.name || "کاربر اسمارت الکتریک";
+
         setAuthUser({
           id: res.user.id,
-          name: res.user.name,
-          phone: res.user.phone,
+          name: finalDisplayName,
+          phone: res.user.phone || phone,
           role: res.user.role === "ADMIN" ? "ADMIN" : "CUSTOMER",
         });
 
@@ -262,7 +267,7 @@ export function AuthCard({
         setIsSubmitting(false);
       }
     },
-    [otpCode, phone, queryRedirect, router, setAuthUser]
+    [name, otpCode, phone, queryRedirect, router, setAuthUser]
   );
 
   // درج خودکار کد تست محیط توسعه

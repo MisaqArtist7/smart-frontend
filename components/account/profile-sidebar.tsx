@@ -57,9 +57,11 @@ export function ProfileSidebar({ className, onNavigate }: ProfileSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const user = useAccountStore((s) => s.user);
+  const logout = useAccountStore((s) => s.logout);
 
   const handleLogout = () => {
     if (window.confirm("آیا قصد خروج از حساب کاربری خود را دارید؟")) {
+      logout();
       toast.success("با موفقیت از حساب کاربری خارج شدید.");
       router.push("/login");
     }

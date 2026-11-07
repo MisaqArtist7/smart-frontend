@@ -8,6 +8,7 @@ import {
   ChevronDown,
   Headphones,
   User,
+  UserCheck,
   ShoppingCart,
   ChevronLeft,
 } from "lucide-react";
@@ -109,8 +110,12 @@ export function MobileMenu({
               onClick={onClose}
               className="flex items-center justify-center gap-1.5 rounded-lg bg-primary text-primary-foreground py-2 px-3 text-xs font-semibold shadow-xs"
             >
-              <User className="size-3.5" />
-              <span>{navigation.authButton.text}</span>
+              {navigation.authButton.isLoggedIn ? (
+                <UserCheck className="size-3.5 shrink-0" />
+              ) : (
+                <User className="size-3.5 shrink-0" />
+              )}
+              <span className="truncate max-w-[100px]">{navigation.authButton.text}</span>
             </Link>
             <Link
               href={navigation.cartButton.href}

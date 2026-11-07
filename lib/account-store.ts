@@ -33,7 +33,7 @@ export const useAccountStore = create<AccountStore>()(
       user: INITIAL_USER,
       addresses: INITIAL_ADDRESSES,
       orders: INITIAL_ORDERS,
-      isAuthenticated: true,
+      isAuthenticated: false,
 
       setAuthUser: (userData) =>
         set((state) => ({

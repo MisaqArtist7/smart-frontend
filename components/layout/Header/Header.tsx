@@ -15,6 +15,7 @@ import {
   GraduationCap,
 } from "lucide-react";
 import { useCartStore } from "@/lib/cart-store";
+import { useAccountStore } from "@/lib/account-store";
 
 import { TopBar } from "./TopBar";
 import { MainBar } from "./MainBar";
@@ -86,6 +87,8 @@ export interface HeaderNavigationConfig {
   authButton: {
     text: string;
     href: string;
+    isLoggedIn?: boolean;
+    userName?: string;
   };
   cartButton: {
     text: string;
@@ -290,6 +293,9 @@ export function Header({
     () => false
   );
   const liveCount = useCartStore((s) => s.items.reduce((acc, i) => acc + i.quantity, 0));
+  const { user, isAuthenticated } = useAccountStore();
+  const isLoggedIn = mounted && isAuthenticated;
+  const displayName = user?.name || "حساب کاربری";
 
   const effectiveCartCount = mounted ? liveCount : (cartCount ?? 0);
 
@@ -335,6 +341,14 @@ export function Header({
       authButton: {
         ...DEFAULT_HEADER_CONFIG.navigation.authButton,
         ...(userConfig?.navigation?.authButton || {}),
+        text: isLoggedIn
+          ? displayName
+          : (userConfig?.navigation?.authButton?.text || DEFAULT_HEADER_CONFIG.navigation.authButton.text),
+        href: isLoggedIn
+          ? "/profile"
+          : (userConfig?.navigation?.authButton?.href || "/login"),
+        isLoggedIn,
+        userName: isLoggedIn ? displayName : undefined,
       },
       cartButton: {
         ...DEFAULT_HEADER_CONFIG.navigation.cartButton,
