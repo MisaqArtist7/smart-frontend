@@ -12,8 +12,11 @@ import {
   Truck,
   AlertCircle,
   ShieldCheck,
+  Phone,
+  LogOut,
 } from "lucide-react";
 import { useAccountStore } from "@/lib/account-store";
+import { useAuth } from "@/components/providers/auth-provider";
 import {
   formatPrice,
   toPersianDigits,
@@ -56,7 +59,9 @@ export const ORDER_STATUS_CONFIG: Record<
 };
 
 export default function ProfileDashboardPage() {
-  const user = useAccountStore((s) => s.user);
+  const { user: authUser, logout } = useAuth();
+  const storeUser = useAccountStore((s) => s.user);
+  const user = authUser || storeUser;
   const orders = useAccountStore((s) => s.orders);
   const addresses = useAccountStore((s) => s.addresses);
 
@@ -72,32 +77,59 @@ export default function ProfileDashboardPage() {
 
   return (
     <div className="space-y-6 sm:space-y-8 select-none">
-      {/* پیام خوش‌آمدگویی و خلاصه وضعیت */}
+      {/* پیام خوش‌آمدگویی، مشخصات کاربر و دکمه خروج */}
       <div className="rounded-2xl border border-border/80 bg-card p-5 sm:p-6 shadow-xs relative overflow-hidden">
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold mb-2">
-              <span className="size-2 rounded-full bg-primary" />
-              <span>پیشخوان حساب کاربری</span>
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold">
+                <span className="size-2 rounded-full bg-primary" />
+                <span>حساب کاربری</span>
+              </span>
+              <Badge variant="outline" className="text-xs font-mono">
+                {user.role === "ADMIN" ? "مدیر سیستم" : "مشتری"}
+              </Badge>
             </div>
+
             <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
-              سلام، {user.name} عزیز
+              سلام، {user.name || "کاربر گرامی"} عزیز
             </h1>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1 max-w-xl leading-relaxed">
-              به پنل کاربری اسمارت الکتریک خوش آمدید. از این بخش می‌توانید وضعیت سفارش‌ها و آدرس‌های تحویل خود را پیگیری کنید.
-            </p>
+
+            <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1.5">
+                <Phone className="size-3.5 text-primary" />
+                <span className="font-mono tracking-wider" dir="ltr">
+                  {toPersianDigits(user.phone || "")}
+                </span>
+              </div>
+            </div>
           </div>
 
-          <Link
-            href="/profile/orders"
-            className={buttonVariants({
-              variant: "outline",
-              className: "rounded-xl border-border text-xs sm:text-sm font-bold gap-2 shrink-0 self-start sm:self-auto",
-            })}
-          >
-            <span>مشاهده همه سفارش‌ها</span>
-            <ChevronLeft className="size-4" />
-          </Link>
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+            <Link
+              href="/profile/orders"
+              className={buttonVariants({
+                variant: "outline",
+                className: "rounded-xl border-border text-xs sm:text-sm font-bold gap-2",
+              })}
+            >
+              <span>مشاهده همه سفارش‌ها</span>
+              <ChevronLeft className="size-4" />
+            </Link>
+
+            <button
+              type="button"
+              onClick={async () => {
+                if (window.confirm("آیا برای خروج از حساب کاربری اطمینان دارید؟")) {
+                  await logout();
+                }
+              }}
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold text-destructive hover:bg-destructive/10 border border-destructive/20 transition-all cursor-pointer"
+            >
+              <LogOut className="size-4" />
+              <span>خروج از حساب</span>
+            </button>
+          </div>
         </div>
       </div>
 

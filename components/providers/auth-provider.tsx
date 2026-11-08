@@ -4,188 +4,153 @@ import React, {
   createContext,
   useContext,
   useEffect,
-  useState,
   useCallback,
   useMemo,
 } from "react";
 import { useRouter } from "next/navigation";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
-  type AuthUser,
-  getMe,
-  refreshToken,
-  logoutUser,
-  AuthApiError,
-} from "@/lib/auth-api";
+import { apiFetch, ApiError, onUnauthorized } from "@/lib/api";
+import { getMe } from "@/lib/auth-api";
+import type { User } from "@/lib/types";
 import { useAccountStore } from "@/lib/account-store";
 
-interface AuthContextType {
-  user: AuthUser | null;
+export interface AuthContextType {
+  user: User | null;
   role: "ADMIN" | "CUSTOMER" | string | null;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   isLoading: boolean;
-  refreshUser: () => Promise<AuthUser | null>;
+  refreshUser: () => Promise<User | null>;
   logout: () => Promise<void>;
-  loginSuccess: (userData: AuthUser) => void;
+  loginSuccess: (userData: User) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-
+  const queryClient = useQueryClient();
   const { setAuthUser, logout: storeLogout } = useAccountStore();
 
   /**
-   * دریافت کاربر جاری از GET /auth/me
-   * با مکانیسم یکبار تلاش مجدد پس از POST /auth/refresh در صورت بروز ۴۰۱
+   * استعلام مشخصات و نقش کاربر جاری از سرور
+   * GET /auth/me با مدیریت کامل سشن و کوکی‌ها
    */
-  const refreshUser = useCallback(async (): Promise<AuthUser | null> => {
-    setIsLoading(true);
-    try {
-      const meUser = await getMe();
-      setUser(meUser);
-      setAuthUser({
-        id: meUser.id,
-        name: meUser.name,
-        phone: meUser.phone,
-        role: meUser.role === "ADMIN" ? "ADMIN" : "CUSTOMER",
-      });
-      return meUser;
-    } catch (error) {
-      if (error instanceof AuthApiError && error.statusCode === 401) {
-        // تلاش برای تمدید نشست با رفرش توکن
-        try {
-          const refreshed = await refreshToken();
-          if (refreshed) {
-            const meUser = await getMe();
-            setUser(meUser);
-            setAuthUser({
-              id: meUser.id,
-              name: meUser.name,
-              phone: meUser.phone,
-              role: meUser.role === "ADMIN" ? "ADMIN" : "CUSTOMER",
-            });
-            return meUser;
-          }
-        } catch {
-          // در صورت شکست رفرش توکن
-        }
-      }
-
-      // کاربر وارد نشده یا نشست منقضی شده
-      setUser(null);
-      storeLogout();
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [setAuthUser, storeLogout]);
-
-  // بررسی اولیه وضعیت ورود در زمان بارگذاری اپلیکیشن
-  useEffect(() => {
-    let isMounted = true;
-
-    async function initAuth() {
+  const {
+    data: user = null,
+    isLoading,
+    refetch,
+  } = useQuery<User | null>({
+    queryKey: ["auth", "me"],
+    queryFn: async () => {
       try {
-        const meUser = await getMe();
-        if (!isMounted) return;
-        setUser(meUser);
-        setAuthUser({
-          id: meUser.id,
-          name: meUser.name,
-          phone: meUser.phone,
-          role: meUser.role === "ADMIN" ? "ADMIN" : "CUSTOMER",
-          avatarUrl: meUser.avatarUrl,
-        });
-      } catch (error) {
-        if (error instanceof AuthApiError && error.statusCode === 401) {
-          const refreshed = await refreshToken().catch(() => false);
-          if (refreshed && isMounted) {
-            const retried = await getMe().catch(() => null);
-            if (retried && isMounted) {
-              setUser(retried);
-              setAuthUser({
-                id: retried.id,
-                name: retried.name,
-                phone: retried.phone,
-                role: retried.role === "ADMIN" ? "ADMIN" : "CUSTOMER",
-                avatarUrl: retried.avatarUrl,
-              });
-              setIsLoading(false);
-              return;
-            }
-          }
+        const data = await apiFetch<User | { user: User }>("/auth/me");
+        if (data && "user" in data && data.user) {
+          return data.user;
         }
-        if (isMounted) {
-          setUser(null);
-          storeLogout();
+        return (data as User) || null;
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 401) {
+          return null;
         }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
+        // در صورت عدم دسترسی به سرور از وضعیت توسعه محلی چک می‌شود
+        try {
+          return await getMe();
+        } catch {
+          return null;
         }
       }
+    },
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  });
+
+  // همگام‌سازی وضعیت کاربر با استور اکانت
+  useEffect(() => {
+    if (user) {
+      setAuthUser({
+        id: user.id,
+        name: user.name,
+        phone: user.phone,
+        role: user.role === "ADMIN" ? "ADMIN" : "CUSTOMER",
+        avatarUrl: user.avatarUrl ?? undefined,
+      });
+    } else if (!isLoading) {
+      storeLogout();
     }
+  }, [user, isLoading, setAuthUser, storeLogout]);
 
-    initAuth();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [setAuthUser, storeLogout]);
+  // ثبت شنونده برای پاکسازی وضعیت در صورت بروز خطای 401 حل‌نشده
+  useEffect(() => {
+    const unsubscribe = onUnauthorized(() => {
+      queryClient.setQueryData(["auth", "me"], null);
+      storeLogout();
+    });
+    return unsubscribe;
+  }, [queryClient, storeLogout]);
 
   /**
-   * به‌روزرسانی موفقیت‌آمیز نشست بعد از اعتبارسنجی OTP
+   * بازخوانی مشخصات کاربر از سرور
+   */
+  const refreshUser = useCallback(async (): Promise<User | null> => {
+    const result = await refetch();
+    return result.data ?? null;
+  }, [refetch]);
+
+  /**
+   * تنظیم سریع اطلاعات کاربر بعد از لاگین موفق
    */
   const loginSuccess = useCallback(
-    (userData: AuthUser) => {
-      setUser(userData);
+    (userData: User) => {
+      queryClient.setQueryData(["auth", "me"], userData);
       setAuthUser({
         id: userData.id,
         name: userData.name,
         phone: userData.phone,
         role: userData.role === "ADMIN" ? "ADMIN" : "CUSTOMER",
+        avatarUrl: userData.avatarUrl ?? undefined,
       });
-      setIsLoading(false);
     },
-    [setAuthUser]
+    [queryClient, setAuthUser]
   );
 
   /**
-   * خروج کامل از حساب کاربری
-   * ۱. فراخوانی POST /auth/logout با credentials: 'include'
-   * ۲. پاکسازی کامل وضعیت کاربر در کلاینت
+   * خروج از حساب کاربری
+   * ۱. فراخوانی POST /auth/logout
+   * ۲. پاکسازی کامل Query Cache
    * ۳. هدایت به /login
    */
   const logout = useCallback(async () => {
-    setIsLoading(true);
     try {
-      await logoutUser();
+      await apiFetch("/auth/logout", { method: "POST" });
     } catch {
-      // ادامه پاکسازی محلی
+      // ادامه پاکسازی کلاینت حتی در صورت خطای شبکه
     } finally {
-      setUser(null);
+      queryClient.setQueryData(["auth", "me"], null);
+      queryClient.clear();
       storeLogout();
-      setIsLoading(false);
       toast.success("با موفقیت از حساب کاربری خارج شدید.");
       router.push("/login");
     }
-  }, [router, storeLogout]);
+  }, [queryClient, router, storeLogout]);
+
+  const isAuthenticated = Boolean(user);
+  const isAdmin = user?.role === "ADMIN";
+  const role = user?.role ?? null;
 
   const value = useMemo<AuthContextType>(
     () => ({
       user,
-      role: user?.role || null,
-      isAuthenticated: Boolean(user),
+      role,
+      isAuthenticated,
+      isAdmin,
       isLoading,
       refreshUser,
       logout,
       loginSuccess,
     }),
-    [user, isLoading, refreshUser, logout, loginSuccess]
+    [user, role, isAuthenticated, isAdmin, isLoading, refreshUser, logout, loginSuccess]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

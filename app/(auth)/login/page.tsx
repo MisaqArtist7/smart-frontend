@@ -16,7 +16,7 @@ export default function LoginPage() {
           </div>
         }
       >
-        <AuthCard initialTab="login" />
+        <AuthCard />
       </Suspense>
     </div>
   );

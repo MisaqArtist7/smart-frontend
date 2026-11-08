@@ -1,20 +1,19 @@
 /**
  * Authentication API Client for Smart Electric
- * Endpoint Base: http://localhost:4000/auth
- * Conforms strictly to backend specifications:
- * - POST /auth/register
- * - POST /auth/login
- * - POST /auth/request-otp
- * - POST /auth/verify-otp
- * - GET /auth/me
- * - POST /auth/refresh
- * - POST /auth/logout
+ * Uses centralized apiFetch and typed ApiError.
  *
- * All requests are executed with `credentials: "include"` for httpOnly cookie exchange.
+ * Backend endpoints:
+ * - POST /auth/request-otp (phone) -> { message, phone, isNewUser, devCode? }
+ * - POST /auth/verify-otp (phone, code, name?) -> { message, user: { id, name, phone, role } }
+ * - GET  /auth/me -> User | { user: User }
+ * - POST /auth/refresh -> 200 OK / 401
+ * - POST /auth/logout -> 200 OK
  */
 
-const BASE_AUTH_URL =
-  (process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000").replace(/\/+$/, "") + "/auth";
+import { apiFetch, ApiError } from "./api";
+import type { User, RequestOtpResponse, VerifyOtpResponse } from "./types";
+
+export type AuthUser = User;
 
 /**
  * تبدیل ارقام فارسی و عربی به ارقام استاندارد انگلیسی
@@ -52,302 +51,163 @@ export function isValidIranPhone(phone: string): boolean {
   return /^09\d{9}$/.test(normalizePhoneNumber(phone));
 }
 
-export class AuthApiError extends Error {
-  statusCode: number;
-  data?: unknown;
+// Backward compatibility alias
+export const AuthApiError = ApiError;
 
-  constructor(message: string, statusCode: number, data?: unknown) {
-    super(message);
-    this.name = "AuthApiError";
-    this.statusCode = statusCode;
-    this.data = data;
-  }
-}
-
-export interface RegisterResponse {
-  message: string;
-  phone: string;
-  isNewUser: boolean;
-  devCode?: string;
-}
-
-export interface LoginResponse {
-  message: string;
-  phone: string;
-  isNewUser: boolean;
-  devCode?: string;
-}
-
-export interface RequestOtpResponse {
-  message: string;
-  phone: string;
-  devCode?: string;
-}
-
-export interface AuthUser {
-  id: number | string;
-  name: string;
-  phone: string;
-  role: "ADMIN" | "CUSTOMER" | string;
-  avatarUrl?: string;
-}
-
-export interface VerifyOtpResponse {
-  message: string;
-  user: AuthUser;
-}
-
-// متغیر سشن تستی در حافظه جهت پایداری تست در زمان آفلاین بودن بک‌اند
-let devSessionUser: AuthUser | null = null;
+// In-memory dev session user when backend is offline
+let devSessionUser: User | null = null;
 
 /**
- * تابع کمکی ارسال درخواست با credentials: 'include'
+ * ارسال درخواست دریافت کد یکبار مصرف (OTP)
+ * POST /auth/request-otp
  */
-async function fetchAuth<T>(
-  endpoint: string,
-  method: "GET" | "POST" = "POST",
-  body?: unknown
-): Promise<T> {
-  const url = `${BASE_AUTH_URL}${endpoint}`;
-  const res = await fetch(url, {
-    method,
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
-    credentials: "include",
-    body: body ? JSON.stringify(body) : undefined,
-  });
-
-  const data = await res.json().catch(() => ({}));
-
-  if (!res.ok) {
-    let msg = data.message;
-    if (res.status === 401) {
-      msg = msg || "احراز هویت انجام نشده است یا نشست شما منقضی شده است";
-    } else if (res.status === 403) {
-      msg = msg || "شما اجازه دسترسی به این بخش را ندارید (دسترسی غیرمجاز)";
-    } else if (res.status === 404) {
-      msg = msg || "کاربری با این مشخصات یافت نشد";
-    } else if (res.status === 409) {
-      msg = msg || "کاربری با این مشخصات قبلاً ثبت‌نام کرده است";
-    } else if (res.status === 429) {
-      msg = msg || "کمی صبر کنید. تعداد درخواست‌های ارسال کد بیش از حد مجاز است";
-    } else {
-      msg = msg || `خطای سرور: ${res.status}`;
-    }
-
-    throw new AuthApiError(msg, res.status, data);
-  }
-
-  return data as T;
-}
-
-/**
- * ۱. ثبت‌نام کاربر جدید
- * POST /auth/register
- */
-export async function registerUser(name: string, phone: string): Promise<RegisterResponse> {
-  const cleanPhone = normalizePhoneNumber(phone);
-  const cleanName = name.trim();
-
-  try {
-    return await fetchAuth<RegisterResponse>("/register", "POST", {
-      name: cleanName,
-      phone: cleanPhone,
-    });
-  } catch (error) {
-    if (error instanceof AuthApiError) {
-      throw error;
-    }
-
-    // شبیه‌سازی در حالت آفلاین بک‌اند (توسعه محلی)
-    console.warn("⚠️ سرور بک‌اند در دسترس نیست. استفاده از حالت توسعه محلی...");
-    if (cleanPhone === "09004090000") {
-      throw new AuthApiError(
-        "کاربری با این شماره تلفن قبلاً ثبت‌نام کرده است. لطفاً وارد شوید",
-        409
-      );
-    }
-    if (cleanPhone === "09004290000") {
-      throw new AuthApiError("کمی صبر کنید. تعداد درخواست‌های ارسال کد بیش از حد مجاز است", 429);
-    }
-
-    return {
-      message: "ثبت‌نام با موفقیت انجام شد و کد تأیید ارسال گردید (حالت توسعه)",
-      phone: cleanPhone,
-      isNewUser: true,
-      devCode: "123456",
-    };
-  }
-}
-
-/**
- * ۲. ورود با شماره موبایل
- * POST /auth/login
- */
-export async function loginUser(phone: string): Promise<LoginResponse> {
+export async function requestOtp(phone: string): Promise<RequestOtpResponse> {
   const cleanPhone = normalizePhoneNumber(phone);
 
   try {
-    return await fetchAuth<LoginResponse>("/login", "POST", {
-      phone: cleanPhone,
+    return await apiFetch<RequestOtpResponse>("/auth/request-otp", {
+      method: "POST",
+      body: { phone: cleanPhone },
     });
-  } catch (error) {
-    if (error instanceof AuthApiError) {
-      throw error;
+  } catch (err) {
+    if (err instanceof ApiError) {
+      throw err;
     }
 
-    // شبیه‌سازی در حالت آفلاین بک‌اند
+    // Dev fallback if backend offline
     console.warn("⚠️ سرور بک‌اند در دسترس نیست. استفاده از حالت توسعه محلی...");
-    if (cleanPhone === "09004040000") {
-      throw new AuthApiError(
-        "کاربری با این شماره تلفن یافت نشد. لطفاً ابتدا ثبت‌نام کنید",
-        404
-      );
-    }
     if (cleanPhone === "09004290000") {
-      throw new AuthApiError("کمی صبر کنید. تعداد درخواست‌های ارسال کد بیش از حد مجاز است", 429);
+      throw new ApiError(429, "کمی صبر کنید. تعداد درخواست‌های ارسال کد بیش از حد مجاز است");
     }
 
+    const isNew = cleanPhone.endsWith("00") || cleanPhone.endsWith("11");
     return {
       message: "کد تأیید با موفقیت ارسال شد (حالت توسعه)",
       phone: cleanPhone,
-      isNewUser: false,
+      isNewUser: isNew,
       devCode: "123456",
     };
   }
 }
 
 /**
- * ۳. ارسال مجدد کد تأیید (Resend OTP)
- * POST /auth/request-otp
- */
-export async function resendOtp(phone: string): Promise<RequestOtpResponse> {
-  const cleanPhone = normalizePhoneNumber(phone);
-
-  try {
-    return await fetchAuth<RequestOtpResponse>("/request-otp", "POST", {
-      phone: cleanPhone,
-    });
-  } catch (error) {
-    if (error instanceof AuthApiError) {
-      throw error;
-    }
-
-    console.warn("⚠️ سرور بک‌اند در دسترس نیست. شبیه‌سازی ارسال مجدد کد...");
-    if (cleanPhone === "09004290000") {
-      throw new AuthApiError("کمی صبر کنید. تعداد درخواست‌های ارسال کد بیش از حد مجاز است", 429);
-    }
-
-    return {
-      message: "کد تأیید با موفقیت مجدداً ارسال گردید (حالت توسعه)",
-      phone: cleanPhone,
-      devCode: "123456",
-    };
-  }
-}
-
-/**
- * ۴. تأیید کد پیامکی و ورود نهایی
+ * تأیید کد پیامکی و ورود نهایی
  * POST /auth/verify-otp
+ * نکته حیاتی: فیلد name تنها در صورتی که کاربر جدید باشد ارسال می‌شود.
  */
-export async function verifyOtp(phone: string, code: string): Promise<VerifyOtpResponse> {
+export async function verifyOtp(
+  phone: string,
+  code: string,
+  name?: string
+): Promise<VerifyOtpResponse> {
   const cleanPhone = normalizePhoneNumber(phone);
   const cleanCode = toEnglishDigits(code).trim();
+  const cleanName = name ? name.trim() : undefined;
+
+  const payload: { phone: string; code: string; name?: string } = {
+    phone: cleanPhone,
+    code: cleanCode,
+  };
+
+  if (cleanName && cleanName.length >= 2) {
+    payload.name = cleanName;
+  }
 
   try {
-    const res = await fetchAuth<VerifyOtpResponse>("/verify-otp", "POST", {
-      phone: cleanPhone,
-      code: cleanCode,
+    const res = await apiFetch<VerifyOtpResponse>("/auth/verify-otp", {
+      method: "POST",
+      body: payload,
     });
-
     devSessionUser = res.user;
     return res;
-  } catch (error) {
-    if (error instanceof AuthApiError) {
-      throw error;
+  } catch (err) {
+    if (err instanceof ApiError) {
+      throw err;
     }
 
-    console.warn("⚠️ سرور بک‌اند در دسترس نیست. شبیه‌سازی تأیید ورود...");
+    console.warn("⚠️ سرور بک‌اند در دسترس نیست. شبیه‌سازی ورود محلی...");
     if (cleanCode === "000000") {
-      throw new AuthApiError("کد تأیید وارد شده اشتباه است", 400);
+      throw new ApiError(400, "کد تأیید وارد شده اشتباه یا منقضی شده است");
     }
 
-    // شماره‌های اختصاصی تست ادمین در محیط توسعه (مثلاً 09120000000 یا 09121111111)
-    const isAdminTest =
+    const isAdmin =
       cleanPhone === "09120000000" ||
       cleanPhone === "09121111111" ||
       cleanPhone.endsWith("9999");
 
-    const mockUser: AuthUser = {
-      id: isAdminTest ? 99 : 1,
-      name: isAdminTest ? "مدیر ارشد اسمارت الکتریک" : "کاربر اسمارت الکتریک",
+    const fallbackUser: User = {
+      id: isAdmin ? 99 : 1,
+      name: cleanName || (isAdmin ? "مدیر ارشد اسمارت الکتریک" : "کاربر اسمارت الکتریک"),
       phone: cleanPhone,
-      role: isAdminTest ? "ADMIN" : "CUSTOMER",
+      role: isAdmin ? "ADMIN" : "CUSTOMER",
     };
 
-    devSessionUser = mockUser;
-
+    devSessionUser = fallbackUser;
     return {
       message: "ورود با موفقیت انجام شد (حالت توسعه)",
-      user: mockUser,
+      user: fallbackUser,
     };
   }
 }
 
 /**
- * ۵. دریافت اطلاعات هویت و نقش کاربر جاری (معتبرترین منبع تشخیص نقش)
+ * دریافت اطلاعات هویت و نقش کاربر جاری (معتبرترین منبع تشخیص نقش)
  * GET /auth/me
  */
-export async function getMe(): Promise<AuthUser> {
+export async function getMe(): Promise<User> {
   try {
-    const data = await fetchAuth<AuthUser | { user: AuthUser }>("/me", "GET");
-    const user = "user" in data && data.user ? data.user : (data as AuthUser);
+    const data = await apiFetch<User | { user: User }>("/auth/me", {
+      method: "GET",
+    });
+    const user = data && "user" in data && data.user ? data.user : (data as User);
     devSessionUser = user;
     return user;
-  } catch (error) {
-    if (error instanceof AuthApiError) {
-      throw error;
+  } catch (err) {
+    if (err instanceof ApiError) {
+      throw err;
     }
 
-    // در حالت آفلاین بک‌اند:
     if (devSessionUser) {
       return devSessionUser;
     }
 
-    throw new AuthApiError("نشست شما منقضی شده است یا هنوز وارد نشده‌اید", 401);
+    throw new ApiError(401, "نشست شما منقضی شده است یا هنوز وارد نشده‌اید");
   }
 }
 
 /**
- * ۶. تازه‌سازی توکن احراز هویت
- * POST /auth/refresh
- * اگر موفق بود true برمی‌گرداند؛ اگر 401 بود false.
- */
-export async function refreshToken(): Promise<boolean> {
-  try {
-    await fetchAuth<{ message?: string }>("/refresh", "POST");
-    return true;
-  } catch (err) {
-    if (err instanceof AuthApiError && err.statusCode === 401) {
-      devSessionUser = null;
-      return false;
-    }
-    // اگر سرور در دسترس نبود یا خطای دیگر
-    return false;
-  }
-}
-
-/**
- * ۷. خروج از حساب کاربری
+ * خروج از حساب کاربری
  * POST /auth/logout
  */
 export async function logoutUser(): Promise<void> {
   devSessionUser = null;
   try {
-    await fetchAuth<{ message?: string }>("/logout", "POST");
+    await apiFetch<{ message?: string }>("/auth/logout", {
+      method: "POST",
+    });
   } catch {
-    // حتی در صورت خطای شبکه، وضعیت کلاینت پاک می‌شود
+    // Continue local cleanup even on network failure
   }
 }
+
+// Backward compatibility helper wrappers
+export const registerUser = async (name: string, phone: string) => {
+  return requestOtp(phone);
+};
+
+export const loginUser = async (phone: string) => {
+  return requestOtp(phone);
+};
+
+export const resendOtp = async (phone: string) => {
+  return requestOtp(phone);
+};
+
+export const refreshToken = async (): Promise<boolean> => {
+  try {
+    await apiFetch("/auth/refresh", { method: "POST" });
+    return true;
+  } catch {
+    return false;
+  }
+};

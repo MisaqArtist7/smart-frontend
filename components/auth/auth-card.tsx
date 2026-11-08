@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import {
   Phone,
-  User,
+  User as UserIcon,
   ShieldCheck,
   ArrowRight,
   Pencil,
@@ -16,8 +16,6 @@ import {
   AlertCircle,
   CheckCircle2,
   Loader2,
-  LogIn,
-  UserPlus,
   KeyRound,
   Zap,
 } from "lucide-react";
@@ -27,31 +25,26 @@ import { Badge } from "@/components/ui/badge";
 import { OtpInput } from "./otp-input";
 import { useAuth } from "@/components/providers/auth-provider";
 import {
-  registerUser,
-  loginUser,
-  resendOtp,
+  requestOtp,
   verifyOtp,
-  getMe,
   isValidIranPhone,
   normalizePhoneNumber,
   toEnglishDigits,
-  AuthApiError,
-  type AuthUser,
 } from "@/lib/auth-api";
+import { ApiError } from "@/lib/api";
 import { toPersianDigits } from "@/lib/account-data";
 import { cn } from "@/lib/utils";
+import type { User } from "@/lib/types";
 
-export type AuthTab = "login" | "register";
 export type AuthStep = "phone" | "otp";
 
 interface AuthCardProps {
-  initialTab?: AuthTab;
+  initialTab?: string;
   initialStep?: AuthStep;
   redirectUrl?: string;
 }
 
 export function AuthCard({
-  initialTab = "login",
   initialStep = "phone",
   redirectUrl = "/profile",
 }: AuthCardProps) {
@@ -59,20 +52,19 @@ export function AuthCard({
   const searchParams = useSearchParams();
 
   // خواندن پارامترهای احتمالی از URL
-  const queryTab = searchParams.get("tab") as AuthTab | null;
   const queryStep = searchParams.get("step") as AuthStep | null;
   const queryPhone = searchParams.get("phone") || "";
   const queryRedirect = searchParams.get("redirect") || redirectUrl;
 
-  const [activeTab, setActiveTab] = useState<AuthTab>(queryTab || initialTab);
   const [step, setStep] = useState<AuthStep>(
     queryStep === "otp" || initialStep === "otp" ? "otp" : "phone"
   );
 
   // مقادیر فرم
-  const [name, setName] = useState<string>("");
   const [phone, setPhone] = useState<string>(queryPhone);
+  const [name, setName] = useState<string>("");
   const [otpCode, setOtpCode] = useState<string>("");
+  const [isNewUser, setIsNewUser] = useState<boolean>(false);
 
   // استیت‌های لودینگ و خطا
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -80,21 +72,15 @@ export function AuthCard({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [otpError, setOtpError] = useState<boolean>(false);
 
-  // پیام پیشنهادی هوشمند (در صورت 409 یا 404)
-  const [smartSuggestion, setSmartSuggestion] = useState<{
-    type: "switch-to-login" | "switch-to-register";
-    message: string;
-  } | null>(null);
-
   // کد تست محیط توسعه (devCode)
   const [devCode, setDevCode] = useState<string | null>(null);
 
-  // تایمر ۶۰ ثانیه‌ای ارسال مجدد
+  // تایمر ۶۰ ثانیه‌ای شمارش معکوس ارسال مجدد
   const [timer, setTimer] = useState<number>(60);
 
-  const { loginSuccess } = useAuth();
+  const { loginSuccess, refreshUser } = useAuth();
 
-  // مدیریت شمارش معکوس تایمر
+  // مدیریت شمارش معکوس تایمر ۶۰ ثانیه‌ای
   useEffect(() => {
     if (step !== "otp" || timer <= 0) return;
     const interval = setInterval(() => {
@@ -103,22 +89,15 @@ export function AuthCard({
     return () => clearInterval(interval);
   }, [step, timer]);
 
-  // تغییر تب و پاک کردن خطاهای قبلی
-  const handleTabChange = (tab: AuthTab) => {
-    setActiveTab(tab);
-    setErrorMessage(null);
-    setSmartSuggestion(null);
-  };
-
-  // ارسال فرم مرحله اول (ثبت‌نام یا ورود)
+  // ----------------------------------------------------
+  // مرحله اول: ارسال شماره موبایل و درخواست OTP
+  // ----------------------------------------------------
   const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
-    setSmartSuggestion(null);
 
     const cleanPhone = normalizePhoneNumber(phone);
 
-    // اعتبارسنجی سمت کلاینت
     if (!cleanPhone) {
       setErrorMessage("لطفاً شماره موبایل خود را وارد نمایید.");
       return;
@@ -129,71 +108,31 @@ export function AuthCard({
       return;
     }
 
-    if (activeTab === "register") {
-      if (!name.trim() || name.trim().length < 2) {
-        setErrorMessage("نام و نام خانوادگی باید حداقل ۲ کاراکتر باشد.");
-        return;
-      }
-    }
-
     setIsSubmitting(true);
 
     try {
-      if (activeTab === "register") {
-        const res = await registerUser(name, cleanPhone);
-        toast.success(res.message || "کد تأیید ارسال گردید");
-        if (res.devCode) {
-          setDevCode(res.devCode);
-        }
-      } else {
-        const res = await loginUser(cleanPhone);
-        toast.success(res.message || "کد تأیید ارسال گردید");
-        if (res.devCode) {
-          setDevCode(res.devCode);
-        }
+      const res = await requestOtp(cleanPhone);
+      setIsNewUser(Boolean(res.isNewUser));
+      if (res.devCode) {
+        setDevCode(res.devCode);
       }
-
-      // رفتن به مرحله دوم (OTP)
       setStep("otp");
       setTimer(60);
       setOtpCode("");
       setOtpError(false);
+      toast.success(res.message || "کد تأیید ارسال گردید.");
     } catch (err) {
-      if (err instanceof AuthApiError) {
-        // مدیریت هوشمند خطای ۴۰۹ (ثبت‌نام با شماره تکراری)
-        if (err.statusCode === 409) {
-          setErrorMessage(err.message);
-          setSmartSuggestion({
-            type: "switch-to-login",
-            message: "شماره شما قبلاً ثبت شده است. مایلید وارد شوید؟",
-          });
-          toast.info("این شماره قبلاً ثبت شده است. لطفاً وارد شوید.");
-          return;
-        }
-
-        // مدیریت هوشمند خطای ۴۰۴ (ورود با شماره ثبت‌نشده)
-        if (err.statusCode === 404) {
-          setErrorMessage(err.message);
-          setSmartSuggestion({
-            type: "switch-to-register",
-            message: "این شماره هنوز ثبت‌نام نشده است. مایلید ثبت‌نام کنید؟",
-          });
-          toast.info("کاربری با این شماره یافت نشد. لطفاً ثبت‌نام کنید.");
-          return;
-        }
-
-        // مدیریت خطای ۴۲۹ (تعداد درخواست‌های بیش از حد)
-        if (err.statusCode === 429) {
+      if (err instanceof ApiError) {
+        if (err.status === 429) {
           setErrorMessage("کمی صبر کنید. تعداد درخواست‌های ارسال پیامک بیش از حد مجاز است.");
           setTimer(60);
-          toast.warning("کمی صبر کنید. لطفاً تا پایان زمان منتظر بمانید.");
+          toast.warning("کمی صبر کنید. لطفاً منتظر بمانید.");
           return;
         }
-
         setErrorMessage(err.message);
         toast.error(err.message);
       } else {
-        const msg = "خطای غیرمنتظره در برقراری ارتباط با سرور. لطفاً مجدداً تلاش فرمایید.";
+        const msg = "خطا در برقراری ارتباط با سرور. لطفاً مجدداً تلاش فرمایید.";
         setErrorMessage(msg);
         toast.error(msg);
       }
@@ -202,7 +141,9 @@ export function AuthCard({
     }
   };
 
-  // ارسال مجدد کد تأیید (Resend OTP)
+  // ----------------------------------------------------
+  // ارسال مجدد کد تأیید (Resend OTP) با تایمر ۶۰ ثانیه‌ای
+  // ----------------------------------------------------
   const handleResendOtp = async () => {
     if (timer > 0 || isResending) return;
 
@@ -211,16 +152,16 @@ export function AuthCard({
     setOtpError(false);
 
     try {
-      const res = await resendOtp(phone);
-      toast.success(res.message || "کد جدید با موفقیت ارسال شد");
+      const res = await requestOtp(phone);
       if (res.devCode) {
         setDevCode(res.devCode);
       }
       setTimer(60);
       setOtpCode("");
+      toast.success(res.message || "کد جدید با موفقیت ارسال شد.");
     } catch (err) {
-      if (err instanceof AuthApiError && err.statusCode === 429) {
-        setErrorMessage("کمی صبر کنید. تعداد تلاش‌های مجدد بیش از حد مجاز است.");
+      if (err instanceof ApiError && err.status === 429) {
+        setErrorMessage("کمی صبر کنید. تعداد درخواست‌های ارسال پیامک بیش از حد مجاز است.");
         setTimer(60);
         toast.warning("کمی صبر کنید. لطفاً منتظر بمانید.");
       } else {
@@ -233,7 +174,10 @@ export function AuthCard({
     }
   };
 
-  // تأیید نهایی کد OTP
+  // ----------------------------------------------------
+  // مرحله دوم: تأیید کد پیامکی و ورود نهایی
+  // ارسال name تنها در صورتی که isNewUser باشد
+  // ----------------------------------------------------
   const handleVerifyOtp = useCallback(
     async (codeToVerify?: string) => {
       const code = toEnglishDigits(codeToVerify || otpCode).trim();
@@ -244,68 +188,82 @@ export function AuthCard({
         return;
       }
 
+      // در صورت کاربر جدید، فیلد نام الزامی است (۲ تا ۱۰۰ کاراکتر)
+      const cleanName = name.trim();
+      if (isNewUser) {
+        if (!cleanName || cleanName.length < 2 || cleanName.length > 100) {
+          setErrorMessage("نام و نام خانوادگی الزامی است (بین ۲ تا ۱۰۰ کاراکتر).");
+          return;
+        }
+      }
+
       setIsSubmitting(true);
       setErrorMessage(null);
       setOtpError(false);
 
       try {
-        const res = await verifyOtp(phone, code);
+        // فیلد name تنها و تنها در صورتی که isNewUser باشد ارسال می‌شود
+        const res = await verifyOtp(
+          phone,
+          code,
+          isNewUser ? cleanName : undefined
+        );
 
-        // واکشی نقش و هویت موثق از GET /auth/me طبق استاندارد امنیتی
-        let verifiedUser: AuthUser = res.user;
+        // واکشی مشخصات کامل و موثق کاربر از GET /auth/me
+        let currentUser: User = res.user;
         try {
-          const me = await getMe();
-          if (me) {
-            verifiedUser = me;
+          const freshUser = await refreshUser();
+          if (freshUser) {
+            currentUser = freshUser;
+          } else {
+            loginSuccess(res.user);
           }
         } catch {
-          // در صورت عدم دسترسی در لحظه از پاسخ verify-otp استفاده می‌شود
+          loginSuccess(res.user);
         }
 
-        const finalDisplayName =
-          verifiedUser.name && verifiedUser.name !== "کاربر اسمارت الکتریک"
-            ? verifiedUser.name
-            : name.trim() || verifiedUser.name || "کاربر اسمارت الکتریک";
-
-        const completeUser: AuthUser = {
-          ...verifiedUser,
-          name: finalDisplayName,
-        };
-
-        loginSuccess(completeUser);
         toast.success(res.message || "ورود با موفقیت انجام شد!");
 
-        // تعیین هوشمند مقصد بر اساس نقش معتبر کاربر:
-        // role === "ADMIN" ← بره /admin
-        // بقیه ← بره /profile (یا queryRedirect در صورتی که به /admin نباشد)
+        // تعیین هوشمند مقصد ریدایرکت:
+        // اگر ADMIN است -> /admin
+        // در غیر این صورت -> queryRedirect معتبر یا /profile
         let destination = "/profile";
-        if (completeUser.role === "ADMIN") {
+        if (currentUser.role === "ADMIN") {
           destination = "/admin";
-        } else if (queryRedirect && !queryRedirect.startsWith("/admin")) {
+        } else if (
+          queryRedirect &&
+          queryRedirect.startsWith("/") &&
+          !queryRedirect.startsWith("//") &&
+          !queryRedirect.startsWith("/admin")
+        ) {
           destination = queryRedirect;
-        } else {
-          destination = "/profile";
         }
 
         setTimeout(() => {
           router.push(destination);
-        }, 400);
+        }, 300);
       } catch (err) {
         setOtpError(true);
-        if (err instanceof AuthApiError) {
-          if (err.statusCode === 429) {
+        if (err instanceof ApiError) {
+          if (err.status === 400) {
+            setErrorMessage("کد تأیید وارد شده اشتباه یا منقضی شده است.");
+            toast.error("کد تأیید اشتباه یا منقضی شده است.");
+          } else if (err.status === 401) {
+            setErrorMessage("کد تأیید نامعتبر است.");
+            toast.error("کد تأیید نامعتبر است.");
+          } else if (err.status === 403) {
+            setErrorMessage("حساب کاربری شما مسدود یا غیرفعال است (دسترسی غیرمجاز ۴۰۳).");
+            toast.error("حساب کاربری غیرفعال است.");
+          } else if (err.status === 429) {
             setErrorMessage("کمی صبر کنید. تعداد درخواست‌های ناموفق بیش از حد مجاز است.");
             setTimer(60);
-            toast.warning("کمی صبر کنید. لطفاً بعداً تلاش فرمایید.");
-          } else if (err.statusCode === 403) {
-            setErrorMessage("دسترسی ندارید (۴۰۳)");
-            toast.error("دسترسی ندارید");
+            toast.warning("کمی صبر کنید. لطفاً منتظر بمانید.");
           } else {
             setErrorMessage(err.message);
             toast.error(err.message);
           }
         } else {
-          const msg = "کد تأیید وارد شده اشتباه یا منقضی شده است.";
+          const msg = "خطای غیرمنتظره در تأیید کد. لطفاً دوباره تلاش کنید.";
           setErrorMessage(msg);
           toast.error(msg);
         }
@@ -313,7 +271,7 @@ export function AuthCard({
         setIsSubmitting(false);
       }
     },
-    [loginSuccess, name, otpCode, phone, queryRedirect, router]
+    [isNewUser, loginSuccess, name, otpCode, phone, queryRedirect, refreshUser, router]
   );
 
   // درج خودکار کد تست محیط توسعه
@@ -332,19 +290,6 @@ export function AuthCard({
     setOtpError(false);
   };
 
-  // سوئیچ هوشمند بین تب‌ها بر اساس پیشنهاد خطا
-  const handleApplySuggestion = () => {
-    if (smartSuggestion?.type === "switch-to-login") {
-      setActiveTab("login");
-      setSmartSuggestion(null);
-      setErrorMessage(null);
-    } else if (smartSuggestion?.type === "switch-to-register") {
-      setActiveTab("register");
-      setSmartSuggestion(null);
-      setErrorMessage(null);
-    }
-  };
-
   const formatTimer = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -353,14 +298,14 @@ export function AuthCard({
 
   return (
     <div className="w-full max-w-md mx-auto">
-      {/* کارت اصلی با طراحی مدرن و توکن‌های تم */}
+      {/* کارت اصلی با تم سازگار با کل فروشگاه */}
       <div className="bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden backdrop-blur-xs">
         {/* خط گرادیان ظریف بالای کارت */}
         <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-primary via-emerald-500 to-primary" />
 
         {/* لوگو و عنوان برند اسمارت الکتریک */}
         <div className="text-center mb-6">
-          <Link href="/" className="inline-flex items-center gap-2 mb-3 group">
+          <Link href="/" className="inline-flex items-center gap-2 mb-2 group">
             <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20 group-hover:scale-105 transition-transform">
               <Zap className="w-6 h-6 fill-primary" />
             </div>
@@ -369,107 +314,36 @@ export function AuthCard({
                 اسمارت الکتریک
               </span>
               <span className="text-[11px] text-muted-foreground block">
-                سامانه هوشمند تجهیزات برق و شبکه
+                تجهیزات برق و شبکه هوشمند
               </span>
             </div>
           </Link>
         </div>
 
         {/* ------------------------------------------------------------------ */}
-        {/* مرحله اول: ورود / ثبت‌نام */}
+        {/* مرحله اول: ورود / ثبت‌نام یکپارچه (Single Flow) */}
         {/* ------------------------------------------------------------------ */}
         {step === "phone" && (
           <div>
-            {/* تب‌های انتخاب: ورود / ثبت‌نام */}
-            <div className="grid grid-cols-2 p-1 bg-muted/60 rounded-2xl mb-6 border border-border/50">
-              <button
-                type="button"
-                onClick={() => handleTabChange("login")}
-                className={cn(
-                  "py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer",
-                  activeTab === "login"
-                    ? "bg-card text-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <LogIn className="w-4 h-4" />
-                ورود به حساب
-              </button>
-              <button
-                type="button"
-                onClick={() => handleTabChange("register")}
-                className={cn(
-                  "py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer",
-                  activeTab === "register"
-                    ? "bg-card text-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <UserPlus className="w-4 h-4" />
-                ثبت‌نام جدید
-              </button>
-            </div>
-
-            {/* توضیحات راهنما */}
             <div className="text-center mb-6">
               <h1 className="text-lg sm:text-xl font-bold text-foreground">
-                {activeTab === "login" ? "ورود با رمز یکبار مصرف (OTP)" : "ایجاد حساب کاربری جدید"}
+                ورود یا ثبت‌نام
               </h1>
               <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-                {activeTab === "login"
-                  ? "جهت ورود، شماره موبایل خود را وارد نمایید تا کد تأیید ارسال گردد."
-                  : "با عضویت در اسمارت الکتریک از فاکتور رسمی و پیگیری سریع سفارش بهره‌مند شوید."}
+                لطفاً شماره موبایل خود را وارد نمایید تا کد تأیید برای شما ارسال شود.
               </p>
             </div>
 
-            {/* پیشنهاد هوشمند جابجایی بین تب‌ها (در صورت ۴۰۹ یا ۴۰۴) */}
-            {smartSuggestion && (
-              <div className="mb-5 p-3.5 rounded-2xl bg-primary/10 border border-primary/20 text-xs text-foreground flex items-center justify-between gap-2 animate-in fade-in slide-in-from-top-2">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-primary shrink-0" />
-                  <span>{smartSuggestion.message}</span>
-                </div>
-                <Button
-                  size="sm"
-                  variant="default"
-                  onClick={handleApplySuggestion}
-                  className="rounded-xl text-xs h-8 shrink-0 font-bold"
-                >
-                  {smartSuggestion.type === "switch-to-login" ? "انتقال به ورود" : "انتقال به ثبت‌نام"}
-                </Button>
-              </div>
-            )}
-
             {/* آلرت پیام خطا */}
-            {errorMessage && !smartSuggestion && (
+            {errorMessage && (
               <div className="mb-5 p-3.5 rounded-2xl bg-destructive/10 border border-destructive/20 text-xs text-destructive flex items-center gap-2 animate-in fade-in">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{errorMessage}</span>
               </div>
             )}
 
-            {/* فرم ورود / ثبت‌نام */}
+            {/* فرم ورود یکپارچه */}
             <form onSubmit={handlePhoneSubmit} className="space-y-4">
-              {/* فیلد نام (تنها در حالت ثبت‌نام) */}
-              {activeTab === "register" && (
-                <div className="space-y-1.5 text-right">
-                  <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                    <User className="w-3.5 h-3.5 text-primary" />
-                    نام و نام خانوادگی *
-                  </label>
-                  <Input
-                    required
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="مثال: علی احمدی"
-                    className="h-11 rounded-xl text-xs sm:text-sm bg-background"
-                    disabled={isSubmitting}
-                  />
-                </div>
-              )}
-
-              {/* فیلد شماره موبایل */}
               <div className="space-y-1.5 text-right">
                 <label className="text-xs font-semibold text-foreground flex items-center justify-between">
                   <span className="flex items-center gap-1.5">
@@ -491,6 +365,7 @@ export function AuthCard({
                     maxLength={11}
                     className="h-11 rounded-xl text-sm font-mono text-center tracking-wider bg-background pl-10"
                     disabled={isSubmitting}
+                    autoFocus
                   />
                   <div className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">
                     +۹۸
@@ -507,12 +382,10 @@ export function AuthCard({
                 {isSubmitting ? (
                   <span className="flex items-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    در حال بررسی و ارسال پیامک...
+                    در حال ارسال کد تأیید...
                   </span>
-                ) : activeTab === "login" ? (
-                  "دریافت کد تأیید ورود"
                 ) : (
-                  "ثبت‌نام و ارسال کد تأیید"
+                  "دریافت کد تأیید"
                 )}
               </Button>
             </form>
@@ -520,27 +393,29 @@ export function AuthCard({
             {/* پاورقی کارت */}
             <div className="mt-6 pt-5 border-t border-border/60 text-center text-[11px] text-muted-foreground flex items-center justify-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
-              <span>ورود امن و رمزنگاری‌شده با پروتکل شاپرک و مخابرات</span>
+              <span>احراز هویت امن و محافظت‌شده بر بستر پیامک</span>
             </div>
           </div>
         )}
 
         {/* ------------------------------------------------------------------ */}
-        {/* مرحله دوم: تأیید کد پیامکی (OTP Verification) */}
+        {/* مرحله دوم: تأیید کد پیامکی (OTP) و فیلد نام برای کاربر جدید */}
         {/* ------------------------------------------------------------------ */}
         {step === "otp" && (
-          <div className="space-y-6">
+          <div className="space-y-5">
             {/* سربرگ تأیید کد */}
             <div className="text-center">
               <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto mb-3 border border-primary/20">
                 <KeyRound className="w-6 h-6" />
               </div>
-              <h2 className="text-lg sm:text-xl font-bold text-foreground">تأیید کد پیامکی</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-foreground">
+                تأیید شماره موبایل
+              </h2>
               <p className="text-xs text-muted-foreground mt-1.5">
                 کد تأیید ۶ رقمی به شماره زیر ارسال گردید:
               </p>
 
-              {/* شماره موبایل و دکمه ویرایش */}
+              {/* نمایش شماره موبایل به همراه دکمه ویرایش */}
               <div className="inline-flex items-center gap-2 mt-2 px-3 py-1.5 rounded-full bg-muted/60 border border-border/60 text-xs">
                 <span className="font-mono font-bold text-foreground" dir="ltr">
                   {normalizePhoneNumber(phone)}
@@ -556,9 +431,32 @@ export function AuthCard({
               </div>
             </div>
 
+            {/* در صورت کاربر جدید: نمایش پیام و فیلد الزامی نام */}
+            {isNewUser && (
+              <div className="p-3.5 rounded-2xl bg-primary/10 border border-primary/20 space-y-2.5 animate-in fade-in">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-primary">
+                  <UserIcon className="w-4 h-4" />
+                  <span>تکمیل حساب کاربری جدید</span>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  شما کاربر جدید هستید. لطفاً نام و نام خانوادگی خود را وارد نمایید.
+                </p>
+                <Input
+                  required
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="نام و نام خانوادگی (مثال: علی رضایی)"
+                  maxLength={100}
+                  className="h-10 rounded-xl text-xs sm:text-sm bg-background"
+                  disabled={isSubmitting}
+                />
+              </div>
+            )}
+
             {/* جعبه کمکی محیط توسعه (DevCode Helper) */}
             {devCode && (
-              <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-foreground space-y-2 animate-in fade-in">
+              <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-foreground space-y-2 animate-in fade-in">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-semibold">
                     <Sparkles className="w-4 h-4 shrink-0" />
@@ -580,7 +478,7 @@ export function AuthCard({
               </div>
             )}
 
-            {/* آلرت پیام خطا در صورت اشتباه بودن کد */}
+            {/* آلرت پیام خطا */}
             {errorMessage && (
               <div className="p-3.5 rounded-2xl bg-destructive/10 border border-destructive/20 text-xs text-destructive flex items-center gap-2 animate-in fade-in">
                 <AlertCircle className="w-4 h-4 shrink-0" />
@@ -630,11 +528,11 @@ export function AuthCard({
               )}
             </div>
 
-            {/* دکمه تأیید نهایی */}
+            {/* دکمه تأیید و ورود نهایی */}
             <Button
               type="button"
               onClick={() => handleVerifyOtp()}
-              disabled={isSubmitting || otpCode.length !== 6}
+              disabled={isSubmitting || otpCode.length !== 6 || (isNewUser && name.trim().length < 2)}
               className="w-full h-11 rounded-xl text-xs sm:text-sm font-bold shadow-md hover:shadow-lg transition-all"
             >
               {isSubmitting ? (
@@ -658,14 +556,14 @@ export function AuthCard({
                 className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 transition-colors cursor-pointer"
               >
                 <ArrowRight className="w-3.5 h-3.5" />
-                تغییر شماره یا روش ورود
+                تغییر شماره موبایل
               </button>
             </div>
           </div>
         )}
       </div>
 
-      {/* پیوند بازگشت به فروشگاه */}
+      {/* بازگشت به صفحه اصلی فروشگاه */}
       <div className="text-center mt-6">
         <Link
           href="/"

@@ -112,8 +112,8 @@ export const useCartStore = create<CartStoreState>()(
             image: imgUrl,
             quantity: Math.min(quantity, product.stock || 99),
             stock: product.stock || 99,
-            sku: product.sku,
-            categoryName: product.category?.name || product.categoryName,
+            sku: product.sku ?? undefined,
+            categoryName: product.category?.name || product.categoryName || undefined,
           };
           set({ items: [...items, newItem] });
         }
