@@ -448,12 +448,30 @@ export function useCategories() {
     queryKey: ["categories"],
     queryFn: async () => {
       try {
-        const data = await apiFetch<Category[]>("/categories");
-        return Array.isArray(data) ? data : [];
+        const data = await apiFetch<unknown>("/categories");
+        if (Array.isArray(data)) return data as Category[];
+        if (data && typeof data === "object") {
+          if ("categories" in data && Array.isArray((data as { categories: unknown }).categories)) {
+            return (data as { categories: Category[] }).categories;
+          }
+          if ("items" in data && Array.isArray((data as { items: unknown }).items)) {
+            return (data as { items: Category[] }).items;
+          }
+        }
+        return [];
       } catch (err) {
         if (err instanceof ApiError && err.status === 404) {
-          const fallback = await apiFetch<Category[]>("/category");
-          return Array.isArray(fallback) ? fallback : [];
+          const fallback = await apiFetch<unknown>("/category");
+          if (Array.isArray(fallback)) return fallback as Category[];
+          if (fallback && typeof fallback === "object") {
+            if ("categories" in fallback && Array.isArray((fallback as { categories: unknown }).categories)) {
+              return (fallback as { categories: Category[] }).categories;
+            }
+            if ("items" in fallback && Array.isArray((fallback as { items: unknown }).items)) {
+              return (fallback as { items: Category[] }).items;
+            }
+          }
+          return [];
         }
         throw err;
       }

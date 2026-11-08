@@ -1,6 +1,5 @@
 import {
   Sparkles,
-  Flame,
   Cpu,
   ToggleRight,
   Cable,
@@ -9,7 +8,6 @@ import {
   Wrench,
   Layers,
   PhoneCall,
-  GraduationCap,
 } from "lucide-react";
 import type { HeaderConfig } from "./header.types";
 
@@ -126,29 +124,17 @@ export const DEFAULT_HEADER_CONFIG: HeaderConfig = {
     navLinks: [
       {
         id: "special-offers",
-        title: "شگفت‌انگیزها",
+        title: "پیشنهادات شگفت‌انگیز (افرز)",
         href: "/offers",
         icon: Sparkles,
         isSpecial: true,
         badge: "ویژه",
       },
       {
-        id: "bestsellers",
-        title: "پرفروش‌ترین‌ها",
-        href: "/bestsellers",
-        icon: Flame,
-      },
-      {
         id: "industrial",
         title: "تجهیزات صنعتی",
         href: "/industrial",
         icon: Layers,
-      },
-      {
-        id: "blog",
-        title: "مقالات و آموزش",
-        href: "/blog",
-        icon: GraduationCap,
       },
       {
         id: "contact",

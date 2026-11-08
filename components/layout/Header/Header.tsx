@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useState, useSyncExternalStore } from "react";
+import React, { useState, useMemo, useSyncExternalStore } from "react";
 import {
   Sparkles,
-  Flame,
   Cpu,
   ToggleRight,
   Cable,
@@ -12,10 +11,11 @@ import {
   Wrench,
   Layers,
   PhoneCall,
-  GraduationCap,
+  Package,
 } from "lucide-react";
 import { useCartStore } from "@/lib/cart-store";
 import { useAuth } from "@/components/providers/auth-provider";
+import { useCategories, type Category } from "@/lib/api";
 
 import { TopBar } from "./TopBar";
 import { MainBar } from "./MainBar";
@@ -213,29 +213,17 @@ export const DEFAULT_HEADER_CONFIG: HeaderConfig = {
     navLinks: [
       {
         id: "special-offers",
-        title: "شگفت‌انگیزها",
+        title: "پیشنهادات شگفت‌انگیز (افرز)",
         href: "/offers",
         icon: Sparkles,
         isSpecial: true,
         badge: "ویژه",
       },
       {
-        id: "bestsellers",
-        title: "پرفروش‌ترین‌ها",
-        href: "/bestsellers",
-        icon: Flame,
-      },
-      {
         id: "industrial",
         title: "تجهیزات صنعتی",
         href: "/industrial",
         icon: Layers,
-      },
-      {
-        id: "blog",
-        title: "وبلاگ و آموزش",
-        href: "/blog",
-        icon: GraduationCap,
       },
       {
         id: "contact",
@@ -279,7 +267,131 @@ export interface HeaderProps {
 }
 
 /* =========================================================================
-   ۴. کامپوننت اصلی Header (۳ طبقه کامل و ماژولار)
+   ۴. توابع کمکی تطبیق دسته‌بندی‌های سرور با معماری هدر
+   ========================================================================= */
+
+/**
+ * تطبیق هوشمند آیکون دسته‌بندی بر اساس نام یا اسلاگ کالا
+ */
+function getCategoryIcon(
+  slug: string,
+  name: string
+): React.ComponentType<{ className?: string }> {
+  const text = `${slug} ${name}`.toLowerCase();
+  if (
+    text.includes("smart") ||
+    text.includes("هوشمند") ||
+    text.includes("auto") ||
+    text.includes("رله") ||
+    text.includes("کنترل")
+  ) {
+    return Cpu;
+  }
+  if (
+    text.includes("switch") ||
+    text.includes("کلید") ||
+    text.includes("پریز") ||
+    text.includes("socket")
+  ) {
+    return ToggleRight;
+  }
+  if (
+    text.includes("cable") ||
+    text.includes("wire") ||
+    text.includes("سیم") ||
+    text.includes("کابل")
+  ) {
+    return Cable;
+  }
+  if (
+    text.includes("light") ||
+    text.includes("روشنایی") ||
+    text.includes("لامپ") ||
+    text.includes("لوستر") ||
+    text.includes("پروژکتور")
+  ) {
+    return Lightbulb;
+  }
+  if (
+    text.includes("safety") ||
+    text.includes("حفاظت") ||
+    text.includes("امنیت") ||
+    text.includes("فیوز") ||
+    text.includes("محافظ") ||
+    text.includes("shield")
+  ) {
+    return ShieldAlert;
+  }
+  if (
+    text.includes("tool") ||
+    text.includes("ابزار") ||
+    text.includes("تستر") ||
+    text.includes("مولتی‌متر") ||
+    text.includes("آچار")
+  ) {
+    return Wrench;
+  }
+  if (
+    text.includes("board") ||
+    text.includes("تابلو") ||
+    text.includes("صنعتی") ||
+    text.includes("industrial")
+  ) {
+    return Layers;
+  }
+  return Package;
+}
+
+/**
+ * تبدیل دسته‌بندی‌های زنده سرور به ساختار درختی دو سطحی برای مگامنو
+ */
+function mapCategoriesToHeader(categories: Category[]): HeaderCategoryItem[] {
+  if (!categories || categories.length === 0) return [];
+
+  // فیلتر دسته‌بندی‌های فعال
+  const activeList = categories.filter((c) => c.isActive !== false);
+  if (activeList.length === 0) return [];
+
+  // ۱. شناسایی دسته‌های ریشه (سطح اول که parentId ندارند)
+  const roots = activeList.filter((c) => !c.parentId);
+
+  // ۲. مپ کردن فرزندان بر اساس parentId در صورت دریافت ساختار مسطح از سرور
+  const childMap = new Map<number, Category[]>();
+  activeList.forEach((c) => {
+    if (c.parentId) {
+      const list = childMap.get(c.parentId) || [];
+      list.push(c);
+      childMap.set(c.parentId, list);
+    }
+  });
+
+  const effectiveRoots = roots.length > 0 ? roots : activeList;
+
+  return effectiveRoots.map((root) => {
+    // استخراج زیرمجموعه‌ها چه به صورت آبجکت تودرتو (children) و چه مسطح (childMap)
+    const rawSubs: Category[] =
+      root.children && root.children.length > 0
+        ? root.children.filter((ch) => ch.isActive !== false)
+        : childMap.get(root.id) || [];
+
+    const subcategories: HeaderCategorySubItem[] = rawSubs.map((sub) => ({
+      id: String(sub.id),
+      title: sub.name,
+      href: `/category/${root.slug}/${sub.slug}`,
+    }));
+
+    return {
+      id: String(root.id),
+      title: root.name,
+      href: `/category/${root.slug}`,
+      icon: getCategoryIcon(root.slug, root.name),
+      subcategories: subcategories.length > 0 ? subcategories : undefined,
+    };
+  });
+}
+
+/* =========================================================================
+   ۵. کامپوننت اصلی Header (۳ طبقه کامل و ماژولار)
    ========================================================================= */
 
 export function Header({
@@ -296,12 +408,24 @@ export function Header({
   );
   const liveCount = useCartStore((s) => s.items.reduce((acc, i) => acc + i.quantity, 0));
   const { user: authUser, isAuthenticated: isAuth, role } = useAuth();
+  const { data: serverCategories = [] } = useCategories();
 
   const isLoggedIn = mounted && Boolean(isAuth && authUser);
   const displayName = authUser?.name || authUser?.phone || "حساب کاربری";
   const userTargetHref = (role === "ADMIN" || authUser?.role === "ADMIN") ? "/admin" : "/profile";
 
   const effectiveCartCount = mounted ? liveCount : (cartCount ?? 0);
+
+  // تبدیل داده‌های واقعی اندپوینت دسته‌بندی‌ها به ساختار منو
+  const dynamicCategories = useMemo(() => {
+    if (userConfig?.navigation?.categories) {
+      return userConfig.navigation.categories;
+    }
+    const mapped = mapCategoriesToHeader(serverCategories);
+    return mapped.length > 0
+      ? mapped
+      : DEFAULT_HEADER_CONFIG.navigation.categories;
+  }, [serverCategories, userConfig?.navigation?.categories]);
 
   // ادغام عمیق کانفیگ پیش‌فرض با کانفیگ سفارشی احتمالی
   const mergedConfig: HeaderConfig = {
@@ -336,9 +460,7 @@ export function Header({
     navigation: {
       ...DEFAULT_HEADER_CONFIG.navigation,
       ...(userConfig?.navigation || {}),
-      categories:
-        userConfig?.navigation?.categories ||
-        DEFAULT_HEADER_CONFIG.navigation.categories,
+      categories: dynamicCategories,
       navLinks:
         userConfig?.navigation?.navLinks ||
         DEFAULT_HEADER_CONFIG.navigation.navLinks,
