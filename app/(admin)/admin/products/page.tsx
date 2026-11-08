@@ -17,10 +17,12 @@ import {
   X,
 } from "lucide-react";
 import {
-  useProducts,
+  useAdminProducts,
   useCategories,
   useCreateProduct,
+  useUpdateProduct,
   useDeleteProduct,
+  type Product,
 } from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -119,12 +121,14 @@ export default function AdminProductsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [isActiveValue, setIsActiveValue] = useState(true);
 
-  const { data: products = [], isLoading: isProductsLoading } = useProducts();
+  const { data: products = [], isLoading: isProductsLoading } = useAdminProducts();
   const { data: categories = [] } = useCategories();
   const createProductMutation = useCreateProduct();
+  const updateProductMutation = useUpdateProduct();
   const deleteProductMutation = useDeleteProduct();
 
   const {
@@ -164,16 +168,71 @@ export default function AdminProductsPage() {
     });
   }, [products, searchTerm, selectedCategory]);
 
-  // ثبت محصول جدید
+  // باز کردن مدال برای ثبت محصول جدید
+  const handleOpenCreate = () => {
+    setEditingProduct(null);
+    reset({
+      title: "",
+      slug: "",
+      categoryId: categories[0]?.id ? String(categories[0].id) : "",
+      price: undefined,
+      discountPrice: undefined,
+      stock: 10,
+      sku: "",
+      description: "",
+      metaTitle: "",
+      metaDescription: "",
+      isActive: true,
+    });
+    setIsActiveValue(true);
+    setIsCreateOpen(true);
+  };
+
+  // باز کردن مدال برای ویرایش محصول موجود
+  const handleOpenEdit = (prod: Product) => {
+    setEditingProduct(prod);
+    reset({
+      title: prod.title,
+      slug: prod.slug,
+      categoryId: String(prod.categoryId),
+      price: prod.price,
+      discountPrice: prod.discountPrice ?? undefined,
+      stock: prod.stock,
+      sku: prod.sku || "",
+      description: prod.description || "",
+      metaTitle: prod.metaTitle || "",
+      metaDescription: prod.metaDescription || "",
+      isActive: prod.isActive,
+    });
+    setIsActiveValue(prod.isActive);
+    setIsCreateOpen(true);
+  };
+
+  // ثبت یا ویرایش محصول
   const onSubmit = async (values: ProductFormValues) => {
+    if (values.discountPrice !== undefined && values.discountPrice >= values.price) {
+      toast.error("قیمت تخفیفی باید کمتر از قیمت اصلی محصول باشد.");
+      return;
+    }
+
     try {
-      await createProductMutation.mutateAsync(toProductPayload(values));
-      toast.success("محصول جدید با موفقیت افزوده شد.");
+      const payload = toProductPayload(values);
+      if (editingProduct) {
+        await updateProductMutation.mutateAsync({
+          id: editingProduct.id,
+          ...payload,
+        });
+        toast.success(`محصول «${values.title}» با موفقیت ویرایش شد.`);
+      } else {
+        await createProductMutation.mutateAsync(payload);
+        toast.success("محصول جدید با موفقیت به فروشگاه افزوده شد.");
+      }
       setIsCreateOpen(false);
+      setEditingProduct(null);
       reset();
       setIsActiveValue(true);
     } catch (err: unknown) {
-      toast.error((err as Error).message || "خطا در ثبت محصول جدید");
+      toast.error((err as Error).message || "خطا در ثبت اطلاعات محصول");
     }
   };
 
@@ -206,11 +265,7 @@ export default function AdminProductsPage() {
         </div>
 
         <Button
-          onClick={() => {
-            reset();
-            setIsActiveValue(true);
-            setIsCreateOpen(true);
-          }}
+          onClick={handleOpenCreate}
           className="gap-2 rounded-xl bg-primary text-primary-foreground text-xs sm:text-sm font-bold shadow-xs hover:bg-primary/90"
         >
           <Plus className="size-4" />
@@ -395,7 +450,7 @@ export default function AdminProductsPage() {
                           </DropdownMenuTrigger>
 
                           <DropdownMenuContent align="end" className="w-40">
-                            <DropdownMenuItem onClick={() => toast.info(`ویرایش سریع محصول ${prod.title}`)}>
+                            <DropdownMenuItem onClick={() => handleOpenEdit(prod)}>
                               <Edit className="size-3.5 text-muted-foreground" />
                               <span>ویرایش اطلاعات</span>
                             </DropdownMenuItem>
@@ -429,15 +484,17 @@ export default function AdminProductsPage() {
         </CardContent>
       </Card>
 
-      {/* مدال افزودن محصول */}
+      {/* مدال افزودن یا ویرایش محصول */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-lg font-black text-foreground">
-              افزودن محصول جدید به فروشگاه
+              {editingProduct ? `ویرایش محصول «${editingProduct.title}»` : "افزودن محصول جدید به فروشگاه"}
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
-              مشخصات، قیمت و دسته‌بندی کالا را تکمیل نمایید. تصاویر بعد از ثبت محصول اضافه می‌شوند.
+              {editingProduct
+                ? "مشخصات، قیمت و موجودی محصول را ویرایش نمایید."
+                : "مشخصات، قیمت و دسته‌بندی کالا را تکمیل نمایید. تصاویر بعد از ثبت محصول اضافه می‌شوند."}
             </DialogDescription>
           </DialogHeader>
 
@@ -642,11 +699,19 @@ export default function AdminProductsPage() {
 
               <Button
                 type="submit"
-                disabled={isSubmitting || createProductMutation.isPending}
+                disabled={
+                  isSubmitting ||
+                  createProductMutation.isPending ||
+                  updateProductMutation.isPending
+                }
                 className="rounded-xl bg-primary text-primary-foreground text-xs sm:text-sm font-bold shadow-xs hover:bg-primary/90"
               >
-                {isSubmitting || createProductMutation.isPending
-                  ? "در حال ثبت کالا..."
+                {isSubmitting ||
+                createProductMutation.isPending ||
+                updateProductMutation.isPending
+                  ? "در حال ذخیره‌سازی..."
+                  : editingProduct
+                  ? "ذخیره تغییرات محصول"
                   : "ثبت و انتشار محصول"}
               </Button>
             </DialogFooter>

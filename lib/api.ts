@@ -193,7 +193,7 @@ export async function apiFetch<T>(
 }
 
 // ----------------------------------------------------
-// Client Mock Types & Fallbacks (used during transition)
+// Data Layer Inputs & Types
 // ----------------------------------------------------
 
 export interface ProductCategory {
@@ -211,10 +211,14 @@ export interface CreateProductInput {
   stock: number;
   sku?: string;
   description?: string | null;
+  specs?: Record<string, unknown> | null;
   metaTitle?: string | null;
   metaDescription?: string | null;
   isActive: boolean;
-  images?: ProductImage[];
+}
+
+export interface UpdateProductInput extends Partial<CreateProductInput> {
+  id: number;
 }
 
 export interface CreateCategoryInput {
@@ -242,401 +246,217 @@ export interface AdminMetrics {
 }
 
 // ----------------------------------------------------
-// داده‌های پیش‌فرض و ماک (Mock Data) در حافظه کلاینت
-// ----------------------------------------------------
-let mockCategories: Category[] = [
-  {
-    id: 1,
-    name: "سیم و کابل",
-    slug: "cables",
-    parentId: null,
-    description: "انواع سیم و کابل استاندارد ساختمانی و صنعتی، شبکه و مخابرات",
-    image: "/images/categories/cables.svg",
-    imageAlt: "سیم و کابل",
-    metaTitle: "خرید سیم و کابل ساختمانی و صنعتی",
-    metaDescription: "فروش آنلاین انواع سیم و کابل با بهترین کیفیت و قیمت مناسب در اسمارت الکتریک",
-    sortOrder: 1,
-    isActive: true,
-    createdAt: "1403/08/01",
-  },
-  {
-    id: 2,
-    name: "کلید و پریز",
-    slug: "switches",
-    parentId: null,
-    description: "کلید و پریزهای مکانیکی، لمسی خازنی و هوشمند",
-    image: "/images/categories/switches.svg",
-    imageAlt: "کلید و پریز",
-    metaTitle: "خرید کلید و پریز مدرن و هوشمند",
-    metaDescription: "مجموعه متنوع کلید و پریز با طراحی لوکس و استانداردهای روز",
-    sortOrder: 2,
-    isActive: true,
-    createdAt: "1403/08/02",
-  },
-  {
-    id: 3,
-    name: "تجهیزات شبکه و برق صنعتی",
-    slug: "network-industrial",
-    parentId: null,
-    description: "تجهیزات اکتیو و پسیو شبکه، منابع تغذیه صنعتی و تابلو برق",
-    image: "/images/categories/industrial.svg",
-    imageAlt: "تجهیزات شبکه و برق صنعتی",
-    metaTitle: "تجهیزات شبکه و اتوماسیون صنعتی",
-    metaDescription: "سوئیچ‌ها و آداپتورهای قدرتمند صنعتی مقاوم در شرایط سخت",
-    sortOrder: 3,
-    isActive: true,
-    createdAt: "1403/08/03",
-  },
-  {
-    id: 4,
-    name: "سوئیچ‌های صنعتی PoE",
-    slug: "industrial-switches",
-    parentId: 3,
-    description: "سوئیچ‌های رکمونت و ریل‌مونت مجهز به درگاه PoE با پهنای باند گیگابیت",
-    image: "/images/products/switch-8port.png",
-    imageAlt: "سوئیچ‌های صنعتی PoE",
-    metaTitle: "سوئیچ شبکه صنعتی PoE",
-    metaDescription: "سوئیچ‌های اترنت و PoE مقاوم سازمانی و کارخانه‌ای",
-    sortOrder: 1,
-    isActive: true,
-    createdAt: "1403/08/04",
-  },
-  {
-    id: 5,
-    name: "آداپتور و منابع تغذیه",
-    slug: "adapters",
-    parentId: 3,
-    description: "منابع تغذیه ریلی و رومیزی با خروجی ولتاژ پایدار و ضد نوسان",
-    image: "/images/products/adapter-52240.png",
-    imageAlt: "آداپتور و منابع تغذیه",
-    metaTitle: "منبع تغذیه و آداپتور سوئیچ شبکه",
-    metaDescription: "آداپتورهای استاندارد و پرقدرت صنعتی با خروجی پایدار",
-    sortOrder: 2,
-    isActive: true,
-    createdAt: "1403/08/05",
-  },
-  {
-    id: 6,
-    name: "روشنایی",
-    slug: "lighting",
-    parentId: null,
-    description: "انواع لامپ‌های ال‌ای‌دی، ادیسونی فیلامنتی، پنل‌های توکار و روکار",
-    image: "/images/categories/lighting.svg",
-    imageAlt: "محصولات روشنایی",
-    metaTitle: "خرید لامپ و ادوات روشنایی",
-    metaDescription: "بهترین تجهیزات نورپردازی دکوراتیو و اداری با ضمانت",
-    sortOrder: 4,
-    isActive: true,
-    createdAt: "1403/08/06",
-  },
-  {
-    id: 7,
-    name: "خانه هوشمند و BMS",
-    slug: "smart-home",
-    parentId: null,
-    description: "سیستم‌های کنترل هوشمند روشنایی، دما، امنیت و پرده برقی",
-    image: "/images/categories/security.svg",
-    imageAlt: "خانه هوشمند و اینترنت اشیا",
-    metaTitle: "تجهیزات خانه هوشمند و BMS",
-    metaDescription: "راهکارهای نوین ساختمانی برای اتوماسیون و کاهش مصرف انرژی",
-    sortOrder: 5,
-    isActive: true,
-    createdAt: "1403/08/07",
-  },
-];
-
-let mockProducts: Product[] = [
-  {
-    id: 1,
-    title: "آداپتور سوئیچ شبکه صنعتی HRUI مدل Industrial Adapter 52240",
-    slug: "adapter-52240",
-    categoryId: 5,
-    category: { id: 5, name: "آداپتور و منابع تغذیه" },
-    price: 5250000,
-    discountPrice: 4950000,
-    stock: 18,
-    sku: "HRUI-AD-52240",
-    description: "آداپتور صنعتی با بازدهی بالا و محافظت در برابر نوسانات شدید جریان برق.",
-    specs: null,
-    metaTitle: null,
-    metaDescription: null,
-    isActive: true,
-    images: [{ id: 1, productId: 1, url: "/images/products/adapter-52240.png", alt: "آداپتور 52240", sortOrder: 0, createdAt: "" }],
-    createdAt: "1403/08/10",
-    updatedAt: "1403/08/10",
-  },
-  {
-    id: 2,
-    title: "آداپتور سوئیچ شبکه Industrial Adapter 52120 HRUI",
-    slug: "adapter-52120",
-    categoryId: 5,
-    category: { id: 5, name: "آداپتور و منابع تغذیه" },
-    price: 2450000,
-    discountPrice: null,
-    stock: 4,
-    sku: "HRUI-AD-52120",
-    description: "منبع تغذیه استاندارد رومیزی و ریلی برای تجهیزات اکتیو و سوئیچ‌های شبکه.",
-    specs: null,
-    metaTitle: null,
-    metaDescription: null,
-    isActive: true,
-    images: [{ id: 2, productId: 2, url: "/images/products/adapter-52120.png", alt: "آداپتور 52120", sortOrder: 0, createdAt: "" }],
-    createdAt: "1403/08/09",
-    updatedAt: "1403/08/09",
-  },
-  {
-    id: 3,
-    title: "سوئیچ شبکه صنعتی ۸ پورت اچ ار یو ای مدل HR500-AFG-82S",
-    slug: "switch-hr500-afg-82s",
-    categoryId: 4,
-    category: { id: 4, name: "سوئیچ‌های صنعتی PoE" },
-    price: 19600000,
-    discountPrice: 18500000,
-    stock: 12,
-    sku: "HRUI-SW-82S",
-    description: "دارای ۸ پورت گیگابیت PoE و ۲ پورت SFP آپلینک نوری با بدنه آلومینیومی مستحکم.",
-    specs: null,
-    metaTitle: null,
-    metaDescription: null,
-    isActive: true,
-    images: [{ id: 3, productId: 3, url: "/images/products/switch-8port.png", alt: "سوئیچ ۸ پورت", sortOrder: 0, createdAt: "" }],
-    createdAt: "1403/08/08",
-    updatedAt: "1403/08/08",
-  },
-  {
-    id: 4,
-    title: "سوئیچ PoE صنعتی اچ ار یو ای HRUI HR500-AF-811GS",
-    slug: "switch-hr500-af-811gs",
-    categoryId: 4,
-    category: { id: 4, name: "سوئیچ‌های صنعتی PoE" },
-    price: 8000000,
-    discountPrice: null,
-    stock: 2,
-    sku: "HRUI-SW-811GS",
-    description: "مقاوم در برابر شرایط محیطی خشن و دمای منفی ۴۰ تا ۸۵ درجه سانتی‌گراد.",
-    specs: null,
-    metaTitle: null,
-    metaDescription: null,
-    isActive: true,
-    images: [{ id: 4, productId: 4, url: "/images/products/switch-hr500.png", alt: "سوئیچ صنعتی", sortOrder: 0, createdAt: "" }],
-    createdAt: "1403/08/07",
-    updatedAt: "1403/08/07",
-  },
-  {
-    id: 5,
-    title: "سوئیچ ۱۰ پورت POE اچ آر یو آی مدل HR901-AF-82N",
-    slug: "switch-10port-poe",
-    categoryId: 4,
-    category: { id: 4, name: "سوئیچ‌های صنعتی PoE" },
-    price: 28900000,
-    discountPrice: 27500000,
-    stock: 9,
-    sku: "HRUI-SW-10P",
-    description: "پشتیبانی از پروتکل‌های استاندارد IEEE 802.3af/at با توان حداکثر ۲۵۰ وات.",
-    specs: null,
-    metaTitle: null,
-    metaDescription: null,
-    isActive: true,
-    images: [{ id: 5, productId: 5, url: "/images/products/switch-10port.png", alt: "سوئیچ ۱۰ پورت", sortOrder: 0, createdAt: "" }],
-    createdAt: "1403/08/06",
-    updatedAt: "1403/08/06",
-  },
-  {
-    id: 6,
-    title: "کابل شبکه لگراند Cat6 SFTP تمام مس حلقه ۳۰۵ متری",
-    slug: "cable-legrand-cat6-sftp",
-    categoryId: 1,
-    category: { id: 1, name: "سیم و کابل" },
-    price: 6800000,
-    discountPrice: null,
-    stock: 25,
-    sku: "CBL-LEG-CAT6",
-    description: "کابل شبکه اورجینال با روکش LSZH ضد اشتعال و فویل و شیلد ضد نویز.",
-    specs: null,
-    metaTitle: null,
-    metaDescription: null,
-    isActive: true,
-    images: [{ id: 6, productId: 6, url: "/images/categories/cables.svg", alt: "کابل شبکه", sortOrder: 0, createdAt: "" }],
-    createdAt: "1403/08/05",
-    updatedAt: "1403/08/05",
-  },
-  {
-    id: 7,
-    title: "کلید لمسی هوشمند ۴ پل شیشه‌ای مشکی مدل زیگبی",
-    slug: "smart-switch-4gang-touch",
-    categoryId: 2,
-    category: { id: 2, name: "کلید و پریز" },
-    price: 1850000,
-    discountPrice: null,
-    stock: 3,
-    sku: "SW-TCH-4G",
-    description: "قابلیت کنترل از طریق اپلیکیشن موبایل، تاچ خازنی حساس و دارای نور پس‌زمینه LED.",
-    specs: null,
-    metaTitle: null,
-    metaDescription: null,
-    isActive: true,
-    images: [{ id: 7, productId: 7, url: "/images/categories/switches.svg", alt: "کلید لمسی", sortOrder: 0, createdAt: "" }],
-    createdAt: "1403/08/04",
-    updatedAt: "1403/08/04",
-  },
-  {
-    id: 8,
-    title: "لامپ ادیسونی فیلامنتی ۶۰ وات سرپیچ E27 طرح کلاسیک",
-    slug: "edison-lamp-60w",
-    categoryId: 6,
-    category: { id: 6, name: "روشنایی" },
-    price: 290000,
-    discountPrice: null,
-    stock: 45,
-    sku: "LGT-EDS-60W",
-    description: "نور گرم و دکوراتیو با حباب شفاف برای کافه‌ها و محیط‌های مدرن.",
-    specs: null,
-    metaTitle: null,
-    metaDescription: null,
-    isActive: false,
-    images: [{ id: 8, productId: 8, url: "/images/categories/lighting.svg", alt: "لامپ ادیسونی", sortOrder: 0, createdAt: "" }],
-    createdAt: "1403/08/03",
-    updatedAt: "1403/08/03",
-  },
-];
-
-// ----------------------------------------------------
 // هوک‌های TanStack Query برای محصولات (Products)
+// متصل به API واقعی با باطل‌سازی خودکار کش
 // ----------------------------------------------------
 
+/**
+ * دریافت عمومی محصولات فعال از GET /product
+ */
 export function useProducts() {
   return useQuery<Product[]>({
     queryKey: ["products"],
     queryFn: async () => {
+      const data = await apiFetch<Product[]>("/product");
+      return Array.isArray(data) ? data : [];
+    },
+  });
+}
+
+/**
+ * دریافت لیست محصولات برای پنل مدیریت (شامل فعال و غیرفعال)
+ * تلاش اولیه برای GET /admin/product و در صورت ۴۰۴ استفاده از /product
+ */
+export function useAdminProducts() {
+  return useQuery<Product[]>({
+    queryKey: ["admin-products"],
+    queryFn: async () => {
       try {
-        return await apiFetch<Product[]>("/product");
+        const data = await apiFetch<Product[]>("/admin/product");
+        return Array.isArray(data) ? data : [];
       } catch (err) {
-        try {
-          return await apiFetch<Product[]>("/products");
-        } catch {
-          console.warn("استفاده از دیتای ماک محصولات به دلیل عدم دسترسی به سرور:", err);
-          return [...mockProducts];
+        if (err instanceof ApiError && err.status === 404) {
+          const fallback = await apiFetch<Product[]>("/product");
+          return Array.isArray(fallback) ? fallback : [];
         }
+        throw err;
       }
     },
   });
 }
 
+/**
+ * دریافت جزئیات تک‌محصول با شناسه عددی یا اسلاگ
+ * در صورت جستجو با اسلاگ، در صورت عدم پشتیبانی بک‌اند از /product/by-slug/:slug،
+ * به صورت خودکار محصول از لیست واکشی می‌شود.
+ */
 export function useProduct(slugOrId: string | number) {
   return useQuery<Product | null>({
     queryKey: ["product", slugOrId],
     queryFn: async () => {
+      if (!slugOrId) return null;
+
+      const numId = Number(slugOrId);
+      if (!isNaN(numId) && numId > 0 && String(numId) === String(slugOrId)) {
+        return await apiFetch<Product>(`/product/${numId}`);
+      }
+
+      // جستجو با اسلاگ
       try {
-        return await apiFetch<Product>(`/product/${slugOrId}`);
-      } catch {
-        try {
-          const list = await apiFetch<Product[]>("/product");
-          const found = list.find(
-            (p) => String(p.id) === String(slugOrId) || p.slug === slugOrId
-          );
+        return await apiFetch<Product>(`/product/by-slug/${slugOrId}`);
+      } catch (err) {
+        if (err instanceof ApiError && (err.status === 404 || err.status === 400)) {
+          const allProducts = await apiFetch<Product[]>("/product");
+          const found = allProducts.find((p) => p.slug === slugOrId);
           if (found) return found;
-        } catch {
-          // fallback to mock data
         }
-        const mockItem = mockProducts.find(
-          (p) => String(p.id) === String(slugOrId) || p.slug === slugOrId
-        );
-        return mockItem || null;
+        throw err;
       }
     },
     enabled: Boolean(slugOrId),
   });
 }
 
+/**
+ * ثبت محصول جدید با متد POST به /product
+ * رعایت کامل قواعد DTO: عدم ارسال فیلد تصاویر، تبدیل اعداد، حذف فیلدهای اختیاری خالی
+ */
 export function useCreateProduct() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (input: CreateProductInput) => {
-      try {
-        return await apiFetch<Product>("/product", {
-          method: "POST",
-          body: input,
-        });
-      } catch (err: unknown) {
-        const error = err as Error;
-        const isNetworkError =
-          error?.name === "TypeError" ||
-          error?.message?.includes("Failed to fetch") ||
-          error?.message?.includes("NetworkError") ||
-          error?.message?.includes("network");
+      const payload: Record<string, unknown> = {
+        title: input.title.trim(),
+        slug: input.slug.trim(),
+        categoryId: Number(input.categoryId),
+        price: Number(input.price),
+        stock: Number(input.stock ?? 0),
+        isActive: input.isActive ?? true,
+      };
 
-        if (isNetworkError) {
-          console.warn("سرور بک‌اند در دسترس نیست. ذخیره در دیتای محلی (Mock):", error);
-          const category = mockCategories.find((c) => c.id === input.categoryId);
-          const newProduct: Product = {
-            id: Date.now(),
-            title: input.title,
-            slug: input.slug,
-            categoryId: Number(input.categoryId),
-            category: category
-              ? { id: category.id, name: category.name }
-              : undefined,
-            price: Number(input.price),
-            discountPrice: input.discountPrice ? Number(input.discountPrice) : null,
-            stock: Number(input.stock),
-            sku: input.sku || `SKU-${Math.floor(Math.random() * 9000 + 1000)}`,
-            description: input.description ?? null,
-            specs: null,
-            metaTitle: input.metaTitle ?? null,
-            metaDescription: input.metaDescription ?? null,
-            isActive: input.isActive ?? true,
-            images:
-              input.images && input.images.length > 0
-                ? input.images.map((img, i) => ({
-                    id: img.id ?? Date.now() + i,
-                    productId: Date.now(),
-                    url: img.url,
-                    alt: img.alt ?? null,
-                    sortOrder: img.sortOrder ?? i,
-                    createdAt: new Date().toISOString(),
-                  }))
-                : [{ id: 1, productId: 1, url: "/images/products/adapter-52240.png", alt: null, sortOrder: 0, createdAt: "" }],
-            createdAt: new Date().toLocaleDateString("fa-IR"),
-            updatedAt: new Date().toLocaleDateString("fa-IR"),
-          };
-          mockProducts = [newProduct, ...mockProducts];
-          return newProduct;
-        }
-
-        throw error;
+      if (
+        input.discountPrice !== undefined &&
+        input.discountPrice !== null &&
+        !isNaN(Number(input.discountPrice))
+      ) {
+        payload.discountPrice = Number(input.discountPrice);
       }
+      if (input.sku && input.sku.trim()) {
+        payload.sku = input.sku.trim();
+      }
+      if (input.description && input.description.trim()) {
+        payload.description = input.description.trim();
+      }
+      if (input.specs && typeof input.specs === "object" && Object.keys(input.specs).length > 0) {
+        payload.specs = input.specs;
+      }
+      if (input.metaTitle && input.metaTitle.trim()) {
+        payload.metaTitle = input.metaTitle.trim();
+      }
+      if (input.metaDescription && input.metaDescription.trim()) {
+        payload.metaDescription = input.metaDescription.trim();
+      }
+
+      return await apiFetch<Product>("/product", {
+        method: "POST",
+        body: payload,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
       queryClient.invalidateQueries({ queryKey: ["admin-metrics"] });
     },
   });
 }
 
+/**
+ * ویرایش محصول با متد PATCH به /product/:id
+ * ارسال فیلدهای تغییریافته و ارسال null برای فیلدهای نالبل پاک‌شده
+ */
+export function useUpdateProduct() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, ...input }: UpdateProductInput) => {
+      const payload: Record<string, unknown> = {};
+
+      if (input.title !== undefined) payload.title = input.title.trim();
+      if (input.slug !== undefined) payload.slug = input.slug.trim();
+      if (input.categoryId !== undefined) payload.categoryId = Number(input.categoryId);
+      if (input.price !== undefined) payload.price = Number(input.price);
+      if (input.stock !== undefined) payload.stock = Number(input.stock);
+      if (input.isActive !== undefined) payload.isActive = Boolean(input.isActive);
+
+      if (input.discountPrice === null) {
+        payload.discountPrice = null;
+      } else if (
+        input.discountPrice !== undefined &&
+        !isNaN(Number(input.discountPrice))
+      ) {
+        payload.discountPrice = Number(input.discountPrice);
+      }
+
+      if (input.sku === null) {
+        payload.sku = null;
+      } else if (input.sku && input.sku.trim()) {
+        payload.sku = input.sku.trim();
+      }
+
+      if (input.description === null) {
+        payload.description = null;
+      } else if (input.description && input.description.trim()) {
+        payload.description = input.description.trim();
+      }
+
+      if (input.specs === null) {
+        payload.specs = null;
+      } else if (input.specs !== undefined) {
+        payload.specs = input.specs;
+      }
+
+      if (input.metaTitle === null) {
+        payload.metaTitle = null;
+      } else if (input.metaTitle && input.metaTitle.trim()) {
+        payload.metaTitle = input.metaTitle.trim();
+      }
+
+      if (input.metaDescription === null) {
+        payload.metaDescription = null;
+      } else if (input.metaDescription && input.metaDescription.trim()) {
+        payload.metaDescription = input.metaDescription.trim();
+      }
+
+      return await apiFetch<Product>(`/product/${id}`, {
+        method: "PATCH",
+        body: payload,
+      });
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+      queryClient.invalidateQueries({ queryKey: ["product", variables.id] });
+      queryClient.invalidateQueries({ queryKey: ["admin-metrics"] });
+    },
+  });
+}
+
+/**
+ * حذف محصول با متد DELETE از /product/:id
+ */
 export function useDeleteProduct() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (id: number | string) => {
-      try {
-        return await apiFetch<{ message?: string }>(`/product/${id}`, {
-          method: "DELETE",
-        });
-      } catch (err: unknown) {
-        try {
-          return await apiFetch<{ message?: string }>(`/products/${id}`, {
-            method: "DELETE",
-          });
-        } catch {
-          console.warn("حذف محصول از ماک دیتای محلی:", err);
-          mockProducts = mockProducts.filter((p) => p.id !== id && p.id !== Number(id));
-          return { message: "Product deleted" };
-        }
-      }
+      return await apiFetch<{ message: string }>(`/product/${id}`, {
+        method: "DELETE",
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
       queryClient.invalidateQueries({ queryKey: ["admin-metrics"] });
     },
   });
@@ -644,71 +464,82 @@ export function useDeleteProduct() {
 
 // ----------------------------------------------------
 // هوک‌های TanStack Query برای دسته‌بندی‌ها (Categories)
+// متصل به /categories (GET, POST, PUT, DELETE)
 // ----------------------------------------------------
 
+/**
+ * دریافت لیست دسته‌بندی‌ها با متد GET از /categories
+ */
 export function useCategories() {
   return useQuery<Category[]>({
     queryKey: ["categories"],
     queryFn: async () => {
-      try {
-        return await apiFetch<Category[]>("/categories");
-      } catch (err) {
-        try {
-          return await apiFetch<Category[]>("/category");
-        } catch {
-          console.warn("استفاده از دیتای ماک دسته‌بندی‌ها به دلیل عدم دسترسی به سرور:", err);
-          return [...mockCategories];
-        }
-      }
+      const data = await apiFetch<Category[]>("/categories");
+      return Array.isArray(data) ? data : [];
     },
   });
 }
 
+/**
+ * دریافت اطلاعات تک‌دسته‌بندی با متد GET از /categories/:id
+ */
+export function useCategory(id: number | string) {
+  return useQuery<Category | null>({
+    queryKey: ["category", id],
+    queryFn: async () => {
+      if (!id) return null;
+      try {
+        return await apiFetch<Category>(`/categories/${id}`);
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 404) {
+          const list = await apiFetch<Category[]>("/categories");
+          return list.find((c) => String(c.id) === String(id)) || null;
+        }
+        throw err;
+      }
+    },
+    enabled: Boolean(id),
+  });
+}
+
+/**
+ * ایجاد دسته‌بندی جدید با متد POST به /categories
+ */
 export function useCreateCategory() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (input: CreateCategoryInput) => {
-      try {
-        return await apiFetch<Category>("/categories", {
-          method: "POST",
-          body: input,
-        });
-      } catch (err: unknown) {
-        const error = err as Error;
-        const isNetworkError =
-          error?.name === "TypeError" ||
-          error?.message?.includes("Failed to fetch") ||
-          error?.message?.includes("NetworkError") ||
-          error?.message?.includes("network");
+      const payload: Record<string, unknown> = {
+        name: input.name.trim(),
+        slug: input.slug.trim(),
+        sortOrder: input.sortOrder ?? 0,
+        isActive: input.isActive ?? true,
+      };
 
-        if (isNetworkError) {
-          console.warn("سرور بک‌اند در دسترس نیست. افزودن دسته‌بندی به ماک دیتای محلی:", error);
-          const parent = input.parentId
-            ? mockCategories.find((c) => c.id === input.parentId)
-            : null;
-
-          const newCat: Category = {
-            id: Date.now(),
-            parentId: input.parentId ?? null,
-            parent: parent ?? null,
-            name: input.name,
-            slug: input.slug,
-            description: input.description ?? null,
-            image: input.image ?? null,
-            imageAlt: input.imageAlt ?? null,
-            metaTitle: input.metaTitle ?? null,
-            metaDescription: input.metaDescription ?? null,
-            sortOrder: input.sortOrder ?? 0,
-            isActive: input.isActive ?? true,
-            createdAt: new Date().toLocaleDateString("fa-IR"),
-          };
-          mockCategories = [...mockCategories, newCat];
-          return newCat;
-        }
-
-        throw error;
+      if (input.parentId !== undefined && input.parentId !== null) {
+        payload.parentId = Number(input.parentId);
       }
+      if (input.description && input.description.trim()) {
+        payload.description = input.description.trim();
+      }
+      if (input.image && input.image.trim()) {
+        payload.image = input.image.trim();
+      }
+      if (input.imageAlt && input.imageAlt.trim()) {
+        payload.imageAlt = input.imageAlt.trim();
+      }
+      if (input.metaTitle && input.metaTitle.trim()) {
+        payload.metaTitle = input.metaTitle.trim();
+      }
+      if (input.metaDescription && input.metaDescription.trim()) {
+        payload.metaDescription = input.metaDescription.trim();
+      }
+
+      return await apiFetch<Category>("/categories", {
+        method: "POST",
+        body: payload,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
@@ -716,50 +547,70 @@ export function useCreateCategory() {
   });
 }
 
+/**
+ * ویرایش دسته‌بندی با متد PUT به /categories/:id
+ */
 export function useUpdateCategory() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ id, ...payload }: UpdateCategoryInput) => {
+      const body: Record<string, unknown> = {};
+
+      if (payload.name !== undefined) body.name = payload.name.trim();
+      if (payload.slug !== undefined) body.slug = payload.slug.trim();
+      if (payload.sortOrder !== undefined) body.sortOrder = Number(payload.sortOrder);
+      if (payload.isActive !== undefined) body.isActive = Boolean(payload.isActive);
+
+      if (payload.parentId === null) {
+        body.parentId = null;
+      } else if (payload.parentId !== undefined) {
+        body.parentId = Number(payload.parentId);
+      }
+
+      if (payload.description === null) {
+        body.description = null;
+      } else if (payload.description && payload.description.trim()) {
+        body.description = payload.description.trim();
+      }
+
+      if (payload.image === null) {
+        body.image = null;
+      } else if (payload.image && payload.image.trim()) {
+        body.image = payload.image.trim();
+      }
+
+      if (payload.imageAlt === null) {
+        body.imageAlt = null;
+      } else if (payload.imageAlt && payload.imageAlt.trim()) {
+        body.imageAlt = payload.imageAlt.trim();
+      }
+
+      if (payload.metaTitle === null) {
+        body.metaTitle = null;
+      } else if (payload.metaTitle && payload.metaTitle.trim()) {
+        body.metaTitle = payload.metaTitle.trim();
+      }
+
+      if (payload.metaDescription === null) {
+        body.metaDescription = null;
+      } else if (payload.metaDescription && payload.metaDescription.trim()) {
+        body.metaDescription = payload.metaDescription.trim();
+      }
+
       try {
         return await apiFetch<Category>(`/categories/${id}`, {
           method: "PUT",
-          body: payload,
+          body,
         });
-      } catch (err: unknown) {
-        const error = err as Error;
-        const isNetworkError =
-          error?.name === "TypeError" ||
-          error?.message?.includes("Failed to fetch") ||
-          error?.message?.includes("NetworkError") ||
-          error?.message?.includes("network");
-
-        if (isNetworkError) {
-          console.warn("سرور بک‌اند در دسترس نیست. ویرایش دسته‌بندی در ماک دیتای محلی:", error);
-          const parent = payload.parentId
-            ? mockCategories.find((c) => c.id === payload.parentId)
-            : null;
-
-          let updatedCat: Category | null = null;
-          mockCategories = mockCategories.map((c) => {
-            if (c.id === id) {
-              updatedCat = {
-                ...c,
-                ...payload,
-                parentId: payload.parentId !== undefined ? payload.parentId : c.parentId,
-                parent: parent ?? (payload.parentId === null ? null : c.parent),
-                updatedAt: new Date().toLocaleDateString("fa-IR"),
-              };
-              return updatedCat;
-            }
-            return c;
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 404) {
+          return await apiFetch<Category>(`/categories/${id}`, {
+            method: "PATCH",
+            body,
           });
-
-          if (updatedCat) return updatedCat;
-          throw new Error("دسته‌بندی مورد نظر یافت نشد.");
         }
-
-        throw error;
+        throw err;
       }
     },
     onSuccess: () => {
@@ -768,31 +619,17 @@ export function useUpdateCategory() {
   });
 }
 
+/**
+ * حذف دسته‌بندی با متد DELETE از /categories/:id
+ */
 export function useDeleteCategory() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (id: number) => {
-      try {
-        return await apiFetch<{ success: boolean }>(`/categories/${id}`, {
-          method: "DELETE",
-        });
-      } catch (err: unknown) {
-        const error = err as Error;
-        const isNetworkError =
-          error?.name === "TypeError" ||
-          error?.message?.includes("Failed to fetch") ||
-          error?.message?.includes("NetworkError") ||
-          error?.message?.includes("network");
-
-        if (isNetworkError) {
-          console.warn("سرور بک‌اند در دسترس نیست. حذف دسته‌بندی از ماک دیتای محلی:", error);
-          mockCategories = mockCategories.filter((c) => c.id !== id);
-          return { success: true };
-        }
-
-        throw error;
-      }
+      return await apiFetch<{ success?: boolean; message?: string }>(`/categories/${id}`, {
+        method: "DELETE",
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
@@ -800,22 +637,35 @@ export function useDeleteCategory() {
   });
 }
 
+/**
+ * شاخص‌های آماری پیشخوان مدیریت
+ */
 export function useAdminMetrics() {
   return useQuery<AdminMetrics>({
     queryKey: ["admin-metrics"],
     queryFn: async () => {
       try {
         return await apiFetch<AdminMetrics>("/admin/metrics");
-      } catch (err) {
-        console.warn("محاسبه شاخص‌های آماری از ماک دیتای محلی:", err);
-        const activeCount = mockProducts.filter((p) => p.isActive).length;
-        const lowStockCount = mockProducts.filter((p) => p.stock <= 5).length;
-        return {
-          totalSales: 184500000,
-          activeProductsCount: activeCount,
-          lowStockCount: lowStockCount,
-          totalOrders: 142,
-        };
+      } catch {
+        // Fallback calculation from public products if /admin/metrics endpoint doesn't exist
+        try {
+          const prods = await apiFetch<Product[]>("/product");
+          const activeCount = prods.filter((p) => p.isActive).length;
+          const lowStockCount = prods.filter((p) => p.stock <= 5).length;
+          return {
+            totalSales: 0,
+            activeProductsCount: activeCount,
+            lowStockCount: lowStockCount,
+            totalOrders: 0,
+          };
+        } catch {
+          return {
+            totalSales: 0,
+            activeProductsCount: 0,
+            lowStockCount: 0,
+            totalOrders: 0,
+          };
+        }
       }
     },
   });

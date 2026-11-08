@@ -279,7 +279,7 @@ export default function ProfileDashboardPage() {
                           />
                         </div>
                         <div className="text-start">
-                          <div className="text-xs font-bold text-foreground line-clamp-1 max-w-[200px]">
+                          <div className="text-xs font-bold text-foreground line-clamp-1 max-w-50">
                             {item.title}
                           </div>
                           <div className="text-[11px] text-muted-foreground font-mono mt-0.5">

@@ -13,7 +13,7 @@ import {
   Eye,
   Store,
 } from "lucide-react";
-import { useProducts, useAdminMetrics } from "@/lib/api";
+import { useAdminProducts, useAdminMetrics } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
   Table,
@@ -28,7 +28,7 @@ import { buttonVariants } from "@/components/ui/button";
 
 export default function AdminDashboardPage() {
   const { data: metrics, isLoading: isMetricsLoading } = useAdminMetrics();
-  const { data: products, isLoading: isProductsLoading } = useProducts();
+  const { data: products, isLoading: isProductsLoading } = useAdminProducts();
 
   const recentProducts = products?.slice(0, 5) || [];
 
@@ -234,18 +234,18 @@ export default function AdminDashboardPage() {
                       {/* دسته‌بندی */}
                       <TableCell>
                         <span className="text-xs text-muted-foreground font-medium">
-                          {product.categoryName || "عمومی"}
+                          {product.category?.name || product.categoryName || "عمومی"}
                         </span>
                       </TableCell>
 
                       {/* قیمت */}
                       <TableCell>
                         <div className="font-extrabold text-xs sm:text-sm text-foreground">
-                          {product.price.toLocaleString("fa-IR")}
+                          {(product.discountPrice ?? product.price).toLocaleString("fa-IR")}
                         </div>
-                        {product.discountPrice && (
+                        {product.discountPrice != null && (
                           <div className="text-[11px] text-muted-foreground line-through">
-                            {product.discountPrice.toLocaleString("fa-IR")}
+                            {product.price.toLocaleString("fa-IR")}
                           </div>
                         )}
                       </TableCell>

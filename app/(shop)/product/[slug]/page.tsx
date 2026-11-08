@@ -171,7 +171,7 @@ export default function SingleProductPage({ params }: PageProps) {
             <>
               <ChevronLeft className="size-3.5 text-muted-foreground/60 shrink-0" />
               <Link
-                href={`/category/${product.category.slug || "all"}`}
+                href={product.category.slug ? `/category/${product.category.slug}` : "/products"}
                 className="hover:text-primary transition-colors"
               >
                 {product.category.name}
@@ -537,6 +537,19 @@ export default function SingleProductPage({ params }: PageProps) {
                       <td className="p-3.5 font-bold text-foreground">گارانتی و خدمات</td>
                       <td className="p-3.5 text-muted-foreground">۲۴ ماه تعویض قطعات شرکتی</td>
                     </tr>
+                    {product.specs &&
+                      typeof product.specs === "object" &&
+                      Object.entries(product.specs).map(([key, val], idx) => (
+                        <tr
+                          key={key}
+                          className={`border-b border-border/60 ${
+                            idx % 2 === 0 ? "bg-muted/10" : ""
+                          }`}
+                        >
+                          <td className="p-3.5 font-bold text-foreground">{key}</td>
+                          <td className="p-3.5 text-muted-foreground font-mono">{String(val)}</td>
+                        </tr>
+                      ))}
                     <tr>
                       <td className="p-3.5 font-bold text-foreground">موجودی انبار مرکزی</td>
                       <td className="p-3.5 text-muted-foreground">
