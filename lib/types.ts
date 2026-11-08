@@ -1,6 +1,6 @@
 /**
  * Centralized TypeScript types for Smart Electric API responses and entities.
- * Strictly mirrors NestJS backend models and DTOs (Prisma 7, PostgreSQL).
+ * Strictly mirrors NestJS backend Prisma schema & DTOs (PostgreSQL).
  * All nullable fields are explicitly typed with `| null`.
  */
 
@@ -12,10 +12,13 @@ export type UserRole = "ADMIN" | "CUSTOMER" | string;
 
 export interface User {
   id: number;
-  name: string;
   phone: string;
+  name: string;
   role: UserRole;
+  isActive?: boolean;
   avatarUrl?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface RequestOtpResponse {
@@ -58,7 +61,7 @@ export interface Product {
   sku: string | null;
   isActive: boolean;
   images: ProductImage[];
-  category?: { id: number; name: string; slug?: string };
+  category?: Category | { id: number; name: string; slug?: string };
   categoryName?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -79,6 +82,7 @@ export interface Category {
   metaDescription: string | null;
   sortOrder: number;
   isActive: boolean;
+  products?: Product[];
   createdAt: string;
   updatedAt?: string;
 }
@@ -118,7 +122,7 @@ export interface UpdateAddressInput extends Partial<CreateAddressInput> {
 }
 
 // ----------------------------------------------------
-// Order & Payment Types
+// Order & Payment Types (Mirrors Prisma Order, OrderItem, Enums)
 // ----------------------------------------------------
 
 export type OrderStatus =
@@ -141,7 +145,7 @@ export interface OrderItem {
   orderId: number;
   productId: number;
   title: string;
-  price: number; // unit price at purchase time
+  price: number; // Unit price at order time in Toman
   quantity: number;
   image?: string | null;
   product?: Product;
@@ -149,23 +153,29 @@ export interface OrderItem {
 
 export interface Order {
   id: number;
-  orderNumber: string;
   userId: number;
-  addressId: number;
+  orderNumber: string;
   status: OrderStatus;
-  paymentStatus: PaymentStatus;
   paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
+  receiptUrl: string | null;
   itemsPrice: number;
   shippingPrice: number;
   totalPrice: number;
-  paidAt: string | null;
-  receiptUrl: string | null;
+  receiverName: string;
+  receiverPhone: string;
+  province: string;
+  city: string;
+  addressLine: string;
+  postalCode: string;
+  note: string | null;
   trackingCode?: string | null;
   adminNote: string | null;
-  note: string | null;
+  paidAt: string | null;
   createdAt: string;
   updatedAt: string;
   items: OrderItem[];
+  addressId?: number;
   address?: Address;
 }
 

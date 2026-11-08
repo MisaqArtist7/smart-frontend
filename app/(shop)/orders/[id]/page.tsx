@@ -335,7 +335,7 @@ export default function OrderDetailsPage() {
             </div>
 
             {/* کارت مشخصات آدرس تحویل */}
-            {order.address && (
+            {(order.receiverName || order.address) && (
               <div className="rounded-2xl border border-border bg-card p-5 shadow-xs space-y-2.5 text-xs">
                 <div className="flex items-center gap-2 font-bold text-foreground pb-2 border-b border-border/60">
                   <MapPin className="size-4 text-primary" />
@@ -344,13 +344,13 @@ export default function OrderDetailsPage() {
 
                 <div className="space-y-1 text-muted-foreground leading-relaxed">
                   <div className="font-bold text-foreground">
-                    {order.address.receiverName} ({order.address.receiverPhone})
+                    {order.receiverName || order.address?.receiverName} ({order.receiverPhone || order.address?.receiverPhone})
                   </div>
                   <div>
-                    {order.address.province}، {order.address.city}، {order.address.addressLine}
+                    {order.province || order.address?.province}، {order.city || order.address?.city}، {order.addressLine || order.address?.addressLine}
                   </div>
                   <div className="font-mono text-[11px]">
-                    کد پستی: {order.address.postalCode}
+                    کد پستی: {order.postalCode || order.address?.postalCode}
                   </div>
                 </div>
               </div>

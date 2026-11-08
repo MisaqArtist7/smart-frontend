@@ -1,7 +1,7 @@
 /**
  * Centralized API Client and Data Layer for Smart Electric
  * Provides typed apiFetch with 401 refresh-and-retry logic, ApiError,
- * and TanStack Query hooks.
+ * and TanStack Query hooks strictly synchronized with NestJS backend (Prisma PostgreSQL).
  */
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -14,11 +14,6 @@ import type {
   Order,
   CreateOrderInput,
   ApiErrorResponse,
-  Address,
-  CreateAddressInput,
-  UpdateAddressInput,
-  Order,
-  CreateOrderInput,
 } from "./types";
 
 export * from "./types";
@@ -187,6 +182,8 @@ export async function apiFetch<T>(
       message = "شما اجازه دسترسی به این بخش را ندارید (دسترسی غیرمجاز ۴۰۳)";
     } else if (response.status === 404) {
       message = "اطلاعات یا منبع مورد نظر یافت نشد (خطای ۴۰۴)";
+    } else if (response.status === 409) {
+      message = "تداخل در درخواست یا اتمام سقف مجاز (خطای ۴۰۹)";
     } else if (response.status === 429) {
       message = "کمی صبر کنید. تعداد درخواست‌های ارسالی بیش از حد مجاز است";
     }
@@ -202,7 +199,7 @@ export async function apiFetch<T>(
 }
 
 // ----------------------------------------------------
-// Data Layer Inputs & Types
+// DTOs & Inputs
 // ----------------------------------------------------
 
 export interface ProductCategory {
@@ -255,12 +252,11 @@ export interface AdminMetrics {
 }
 
 // ----------------------------------------------------
-// هوک‌های TanStack Query برای محصولات (Products)
-// متصل به API واقعی با باطل‌سازی خودکار کش
+// 1. هوک‌های محصولات (Products)
 // ----------------------------------------------------
 
 /**
- * دریافت عمومی محصولات فعال از GET /product
+ * دریافت لیست محصولات عمومی فعال
  */
 export function useProducts() {
   return useQuery<Product[]>({
@@ -273,8 +269,7 @@ export function useProducts() {
 }
 
 /**
- * دریافت لیست محصولات برای پنل مدیریت (شامل فعال و غیرفعال)
- * تلاش اولیه برای GET /admin/product و در صورت ۴۰۴ استفاده از /product
+ * دریافت لیست محصولات پنل مدیریت (شامل فعال و غیرفعال)
  */
 export function useAdminProducts() {
   return useQuery<Product[]>({
@@ -294,198 +289,8 @@ export function useAdminProducts() {
   });
 }
 
-// ----------------------------------------------------
-// هوک‌های TanStack Query برای آدرس‌ها (Addresses)
-// ----------------------------------------------------
-
-export function useAddresses() {
-  return useQuery<Address[]>({
-    queryKey: ["addresses"],
-    queryFn: async () => {
-      try {
-        const data = await apiFetch<Address[]>("/addresses");
-        return Array.isArray(data) ? data : [];
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          const fallback = await apiFetch<Address[]>("/address");
-          return Array.isArray(fallback) ? fallback : [];
-        }
-        throw err;
-      }
-    },
-  });
-}
-
-export function useCreateAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (input: CreateAddressInput) => {
-      const payload: Record<string, unknown> = {
-        title: input.title.trim(),
-        receiverName: input.receiverName.trim(),
-        receiverPhone: input.receiverPhone.trim(),
-        province: input.province.trim(),
-        city: input.city.trim(),
-        addressLine: input.addressLine.trim(),
-        postalCode: input.postalCode.trim(),
-        isDefault: Boolean(input.isDefault),
-      };
-
-      try {
-        return await apiFetch<Address>("/addresses", {
-          method: "POST",
-          body: payload,
-        });
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          return await apiFetch<Address>("/address", {
-            method: "POST",
-            body: payload,
-          });
-        }
-        throw err;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-    },
-  });
-}
-
-export function useUpdateAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({ id, ...input }: UpdateAddressInput) => {
-      const payload: Record<string, unknown> = {};
-
-      if (input.title !== undefined) payload.title = input.title.trim();
-      if (input.receiverName !== undefined) payload.receiverName = input.receiverName.trim();
-      if (input.receiverPhone !== undefined) payload.receiverPhone = input.receiverPhone.trim();
-      if (input.province !== undefined) payload.province = input.province.trim();
-      if (input.city !== undefined) payload.city = input.city.trim();
-      if (input.addressLine !== undefined) payload.addressLine = input.addressLine.trim();
-      if (input.postalCode !== undefined) payload.postalCode = input.postalCode.trim();
-      if (input.isDefault !== undefined) payload.isDefault = Boolean(input.isDefault);
-
-      try {
-        return await apiFetch<Address>(`/addresses/${id}`, {
-          method: "PATCH",
-          body: payload,
-        });
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          return await apiFetch<Address>(`/address/${id}`, {
-            method: "PATCH",
-            body: payload,
-          });
-        }
-        throw err;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-    },
-  });
-}
-
-export function useDeleteAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: number) => {
-      try {
-        return await apiFetch<{ message?: string }>(`/addresses/${id}`, {
-          method: "DELETE",
-        });
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          return await apiFetch<{ message?: string }>(`/address/${id}`, {
-            method: "DELETE",
-          });
-        }
-        throw err;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-    },
-  });
-}
-
-export function useSetDefaultAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: number) => {
-      try {
-        return await apiFetch<Address>(`/addresses/${id}/default`, {
-          method: "PATCH",
-        });
-      } catch {
-        return await apiFetch<Address>(`/addresses/${id}`, {
-          method: "PATCH",
-          body: { isDefault: true },
-        });
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-    },
-  });
-}
-
-// ----------------------------------------------------
-// هوک‌های TanStack Query برای سفارش‌ها (Orders)
-// ----------------------------------------------------
-
-export function useCreateOrder() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (input: CreateOrderInput) => {
-      const payload: Record<string, unknown> = {
-        addressId: Number(input.addressId),
-        paymentMethod: "CARD_TO_CARD",
-        items: input.items.map((i) => ({
-          productId: Number(i.productId),
-          quantity: Number(i.quantity),
-        })),
-      };
-
-      if (input.note && input.note.trim()) {
-        payload.note = input.note.trim();
-      }
-
-      return await apiFetch<Order>("/orders", {
-        method: "POST",
-        body: payload,
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
-      queryClient.invalidateQueries({ queryKey: ["my-orders"] });
-      queryClient.invalidateQueries({ queryKey: ["admin-metrics"] });
-    },
-  });
-}
-
-export function useOrder(id: number | string) {
-  return useQuery<Order | null>({
-    queryKey: ["order", id],
-    queryFn: async () => {
-      if (!id) return null;
-      return await apiFetch<Order>(`/orders/${id}`);
-    },
-    enabled: Boolean(id),
-  });
-}
-
 /**
  * دریافت جزئیات تک‌محصول با شناسه عددی یا اسلاگ
- * در صورت جستجو با اسلاگ، در صورت عدم پشتیبانی بک‌اند از /product/by-slug/:slug،
- * به صورت خودکار محصول از لیست واکشی می‌شود.
  */
 export function useProduct(slugOrId: string | number) {
   return useQuery<Product | null>({
@@ -515,8 +320,7 @@ export function useProduct(slugOrId: string | number) {
 }
 
 /**
- * ثبت محصول جدید با متد POST به /product
- * رعایت کامل قواعد DTO: عدم ارسال فیلد تصاویر، تبدیل اعداد، حذف فیلدهای اختیاری خالی
+ * ایجاد محصول جدید
  */
 export function useCreateProduct() {
   const queryClient = useQueryClient();
@@ -528,15 +332,11 @@ export function useCreateProduct() {
         slug: input.slug.trim(),
         categoryId: Number(input.categoryId),
         price: Number(input.price),
-        stock: Number(input.stock ?? 0),
-        isActive: input.isActive ?? true,
+        stock: Number(input.stock),
+        isActive: Boolean(input.isActive),
       };
 
-      if (
-        input.discountPrice !== undefined &&
-        input.discountPrice !== null &&
-        !isNaN(Number(input.discountPrice))
-      ) {
+      if (input.discountPrice !== undefined && input.discountPrice !== null) {
         payload.discountPrice = Number(input.discountPrice);
       }
       if (input.sku && input.sku.trim()) {
@@ -545,7 +345,7 @@ export function useCreateProduct() {
       if (input.description && input.description.trim()) {
         payload.description = input.description.trim();
       }
-      if (input.specs && typeof input.specs === "object" && Object.keys(input.specs).length > 0) {
+      if (input.specs && typeof input.specs === "object") {
         payload.specs = input.specs;
       }
       if (input.metaTitle && input.metaTitle.trim()) {
@@ -568,197 +368,8 @@ export function useCreateProduct() {
   });
 }
 
-// ----------------------------------------------------
-// هوک‌های TanStack Query برای آدرس‌ها (Addresses)
-// ----------------------------------------------------
-
-export function useAddresses() {
-  return useQuery<Address[]>({
-    queryKey: ["addresses"],
-    queryFn: async () => {
-      try {
-        const data = await apiFetch<Address[]>("/addresses");
-        return Array.isArray(data) ? data : [];
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          const fallback = await apiFetch<Address[]>("/address");
-          return Array.isArray(fallback) ? fallback : [];
-        }
-        throw err;
-      }
-    },
-  });
-}
-
-export function useCreateAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (input: CreateAddressInput) => {
-      const payload: Record<string, unknown> = {
-        title: input.title.trim(),
-        receiverName: input.receiverName.trim(),
-        receiverPhone: input.receiverPhone.trim(),
-        province: input.province.trim(),
-        city: input.city.trim(),
-        addressLine: input.addressLine.trim(),
-        postalCode: input.postalCode.trim(),
-        isDefault: Boolean(input.isDefault),
-      };
-
-      try {
-        return await apiFetch<Address>("/addresses", {
-          method: "POST",
-          body: payload,
-        });
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          return await apiFetch<Address>("/address", {
-            method: "POST",
-            body: payload,
-          });
-        }
-        throw err;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-    },
-  });
-}
-
-export function useUpdateAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({ id, ...input }: UpdateAddressInput) => {
-      const payload: Record<string, unknown> = {};
-
-      if (input.title !== undefined) payload.title = input.title.trim();
-      if (input.receiverName !== undefined) payload.receiverName = input.receiverName.trim();
-      if (input.receiverPhone !== undefined) payload.receiverPhone = input.receiverPhone.trim();
-      if (input.province !== undefined) payload.province = input.province.trim();
-      if (input.city !== undefined) payload.city = input.city.trim();
-      if (input.addressLine !== undefined) payload.addressLine = input.addressLine.trim();
-      if (input.postalCode !== undefined) payload.postalCode = input.postalCode.trim();
-      if (input.isDefault !== undefined) payload.isDefault = Boolean(input.isDefault);
-
-      try {
-        return await apiFetch<Address>(`/addresses/${id}`, {
-          method: "PATCH",
-          body: payload,
-        });
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          return await apiFetch<Address>(`/address/${id}`, {
-            method: "PATCH",
-            body: payload,
-          });
-        }
-        throw err;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-    },
-  });
-}
-
-export function useDeleteAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: number) => {
-      try {
-        return await apiFetch<{ message?: string }>(`/addresses/${id}`, {
-          method: "DELETE",
-        });
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          return await apiFetch<{ message?: string }>(`/address/${id}`, {
-            method: "DELETE",
-          });
-        }
-        throw err;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-    },
-  });
-}
-
-export function useSetDefaultAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: number) => {
-      try {
-        return await apiFetch<Address>(`/addresses/${id}/default`, {
-          method: "PATCH",
-        });
-      } catch {
-        return await apiFetch<Address>(`/addresses/${id}`, {
-          method: "PATCH",
-          body: { isDefault: true },
-        });
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-    },
-  });
-}
-
-// ----------------------------------------------------
-// هوک‌های TanStack Query برای سفارش‌ها (Orders)
-// ----------------------------------------------------
-
-export function useCreateOrder() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (input: CreateOrderInput) => {
-      const payload: Record<string, unknown> = {
-        addressId: Number(input.addressId),
-        paymentMethod: "CARD_TO_CARD",
-        items: input.items.map((i) => ({
-          productId: Number(i.productId),
-          quantity: Number(i.quantity),
-        })),
-      };
-
-      if (input.note && input.note.trim()) {
-        payload.note = input.note.trim();
-      }
-
-      return await apiFetch<Order>("/orders", {
-        method: "POST",
-        body: payload,
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
-      queryClient.invalidateQueries({ queryKey: ["my-orders"] });
-      queryClient.invalidateQueries({ queryKey: ["admin-metrics"] });
-    },
-  });
-}
-
-export function useOrder(id: number | string) {
-  return useQuery<Order | null>({
-    queryKey: ["order", id],
-    queryFn: async () => {
-      if (!id) return null;
-      return await apiFetch<Order>(`/orders/${id}`);
-    },
-    enabled: Boolean(id),
-  });
-}
-
 /**
- * ویرایش محصول با متد PATCH به /product/:id
- * ارسال فیلدهای تغییریافته و ارسال null برای فیلدهای نالبل پاک‌شده
+ * ویرایش محصول
  */
 export function useUpdateProduct() {
   const queryClient = useQueryClient();
@@ -771,259 +382,40 @@ export function useUpdateProduct() {
       if (input.slug !== undefined) payload.slug = input.slug.trim();
       if (input.categoryId !== undefined) payload.categoryId = Number(input.categoryId);
       if (input.price !== undefined) payload.price = Number(input.price);
+      if (input.discountPrice !== undefined) {
+        payload.discountPrice = input.discountPrice !== null ? Number(input.discountPrice) : null;
+      }
       if (input.stock !== undefined) payload.stock = Number(input.stock);
       if (input.isActive !== undefined) payload.isActive = Boolean(input.isActive);
-
-      if (input.discountPrice === null) {
-        payload.discountPrice = null;
-      } else if (
-        input.discountPrice !== undefined &&
-        !isNaN(Number(input.discountPrice))
-      ) {
-        payload.discountPrice = Number(input.discountPrice);
-      }
-
-      if (input.sku === null) {
-        payload.sku = null;
-      } else if (input.sku && input.sku.trim()) {
-        payload.sku = input.sku.trim();
-      }
-
-      if (input.description === null) {
-        payload.description = null;
-      } else if (input.description && input.description.trim()) {
-        payload.description = input.description.trim();
-      }
-
-      if (input.specs === null) {
-        payload.specs = null;
-      } else if (input.specs !== undefined) {
-        payload.specs = input.specs;
-      }
-
-      if (input.metaTitle === null) {
-        payload.metaTitle = null;
-      } else if (input.metaTitle && input.metaTitle.trim()) {
-        payload.metaTitle = input.metaTitle.trim();
-      }
-
-      if (input.metaDescription === null) {
-        payload.metaDescription = null;
-      } else if (input.metaDescription && input.metaDescription.trim()) {
-        payload.metaDescription = input.metaDescription.trim();
-      }
+      if (input.sku !== undefined) payload.sku = input.sku ? input.sku.trim() : null;
+      if (input.description !== undefined) payload.description = input.description ? input.description.trim() : null;
+      if (input.specs !== undefined) payload.specs = input.specs;
+      if (input.metaTitle !== undefined) payload.metaTitle = input.metaTitle ? input.metaTitle.trim() : null;
+      if (input.metaDescription !== undefined) payload.metaDescription = input.metaDescription ? input.metaDescription.trim() : null;
 
       return await apiFetch<Product>(`/product/${id}`, {
         method: "PATCH",
         body: payload,
       });
     },
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["admin-products"] });
-      queryClient.invalidateQueries({ queryKey: ["product", variables.id] });
+      queryClient.invalidateQueries({ queryKey: ["product"] });
       queryClient.invalidateQueries({ queryKey: ["admin-metrics"] });
     },
-  });
-}
-
-// ----------------------------------------------------
-// هوک‌های TanStack Query برای آدرس‌ها (Addresses)
-// ----------------------------------------------------
-
-export function useAddresses() {
-  return useQuery<Address[]>({
-    queryKey: ["addresses"],
-    queryFn: async () => {
-      try {
-        const data = await apiFetch<Address[]>("/addresses");
-        return Array.isArray(data) ? data : [];
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          const fallback = await apiFetch<Address[]>("/address");
-          return Array.isArray(fallback) ? fallback : [];
-        }
-        throw err;
-      }
-    },
-  });
-}
-
-export function useCreateAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (input: CreateAddressInput) => {
-      const payload: Record<string, unknown> = {
-        title: input.title.trim(),
-        receiverName: input.receiverName.trim(),
-        receiverPhone: input.receiverPhone.trim(),
-        province: input.province.trim(),
-        city: input.city.trim(),
-        addressLine: input.addressLine.trim(),
-        postalCode: input.postalCode.trim(),
-        isDefault: Boolean(input.isDefault),
-      };
-
-      try {
-        return await apiFetch<Address>("/addresses", {
-          method: "POST",
-          body: payload,
-        });
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          return await apiFetch<Address>("/address", {
-            method: "POST",
-            body: payload,
-          });
-        }
-        throw err;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-    },
-  });
-}
-
-export function useUpdateAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({ id, ...input }: UpdateAddressInput) => {
-      const payload: Record<string, unknown> = {};
-
-      if (input.title !== undefined) payload.title = input.title.trim();
-      if (input.receiverName !== undefined) payload.receiverName = input.receiverName.trim();
-      if (input.receiverPhone !== undefined) payload.receiverPhone = input.receiverPhone.trim();
-      if (input.province !== undefined) payload.province = input.province.trim();
-      if (input.city !== undefined) payload.city = input.city.trim();
-      if (input.addressLine !== undefined) payload.addressLine = input.addressLine.trim();
-      if (input.postalCode !== undefined) payload.postalCode = input.postalCode.trim();
-      if (input.isDefault !== undefined) payload.isDefault = Boolean(input.isDefault);
-
-      try {
-        return await apiFetch<Address>(`/addresses/${id}`, {
-          method: "PATCH",
-          body: payload,
-        });
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          return await apiFetch<Address>(`/address/${id}`, {
-            method: "PATCH",
-            body: payload,
-          });
-        }
-        throw err;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-    },
-  });
-}
-
-export function useDeleteAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: number) => {
-      try {
-        return await apiFetch<{ message?: string }>(`/addresses/${id}`, {
-          method: "DELETE",
-        });
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          return await apiFetch<{ message?: string }>(`/address/${id}`, {
-            method: "DELETE",
-          });
-        }
-        throw err;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-    },
-  });
-}
-
-export function useSetDefaultAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: number) => {
-      try {
-        return await apiFetch<Address>(`/addresses/${id}/default`, {
-          method: "PATCH",
-        });
-      } catch {
-        return await apiFetch<Address>(`/addresses/${id}`, {
-          method: "PATCH",
-          body: { isDefault: true },
-        });
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-    },
-  });
-}
-
-// ----------------------------------------------------
-// هوک‌های TanStack Query برای سفارش‌ها (Orders)
-// ----------------------------------------------------
-
-export function useCreateOrder() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (input: CreateOrderInput) => {
-      const payload: Record<string, unknown> = {
-        addressId: Number(input.addressId),
-        paymentMethod: "CARD_TO_CARD",
-        items: input.items.map((i) => ({
-          productId: Number(i.productId),
-          quantity: Number(i.quantity),
-        })),
-      };
-
-      if (input.note && input.note.trim()) {
-        payload.note = input.note.trim();
-      }
-
-      return await apiFetch<Order>("/orders", {
-        method: "POST",
-        body: payload,
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
-      queryClient.invalidateQueries({ queryKey: ["my-orders"] });
-      queryClient.invalidateQueries({ queryKey: ["admin-metrics"] });
-    },
-  });
-}
-
-export function useOrder(id: number | string) {
-  return useQuery<Order | null>({
-    queryKey: ["order", id],
-    queryFn: async () => {
-      if (!id) return null;
-      return await apiFetch<Order>(`/orders/${id}`);
-    },
-    enabled: Boolean(id),
   });
 }
 
 /**
- * حذف محصول با متد DELETE از /product/:id
+ * حذف محصول
  */
 export function useDeleteProduct() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: number | string) => {
-      return await apiFetch<{ message: string }>(`/product/${id}`, {
+    mutationFn: async (id: number) => {
+      return await apiFetch<{ success?: boolean; message?: string }>(`/product/${id}`, {
         method: "DELETE",
       });
     },
@@ -1036,225 +428,22 @@ export function useDeleteProduct() {
 }
 
 // ----------------------------------------------------
-// هوک‌های TanStack Query برای آدرس‌ها (Addresses)
-// ----------------------------------------------------
-
-export function useAddresses() {
-  return useQuery<Address[]>({
-    queryKey: ["addresses"],
-    queryFn: async () => {
-      try {
-        const data = await apiFetch<Address[]>("/addresses");
-        return Array.isArray(data) ? data : [];
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          const fallback = await apiFetch<Address[]>("/address");
-          return Array.isArray(fallback) ? fallback : [];
-        }
-        throw err;
-      }
-    },
-  });
-}
-
-export function useCreateAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (input: CreateAddressInput) => {
-      const payload: Record<string, unknown> = {
-        title: input.title.trim(),
-        receiverName: input.receiverName.trim(),
-        receiverPhone: input.receiverPhone.trim(),
-        province: input.province.trim(),
-        city: input.city.trim(),
-        addressLine: input.addressLine.trim(),
-        postalCode: input.postalCode.trim(),
-        isDefault: Boolean(input.isDefault),
-      };
-
-      try {
-        return await apiFetch<Address>("/addresses", {
-          method: "POST",
-          body: payload,
-        });
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          return await apiFetch<Address>("/address", {
-            method: "POST",
-            body: payload,
-          });
-        }
-        throw err;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-    },
-  });
-}
-
-export function useUpdateAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({ id, ...input }: UpdateAddressInput) => {
-      const payload: Record<string, unknown> = {};
-
-      if (input.title !== undefined) payload.title = input.title.trim();
-      if (input.receiverName !== undefined) payload.receiverName = input.receiverName.trim();
-      if (input.receiverPhone !== undefined) payload.receiverPhone = input.receiverPhone.trim();
-      if (input.province !== undefined) payload.province = input.province.trim();
-      if (input.city !== undefined) payload.city = input.city.trim();
-      if (input.addressLine !== undefined) payload.addressLine = input.addressLine.trim();
-      if (input.postalCode !== undefined) payload.postalCode = input.postalCode.trim();
-      if (input.isDefault !== undefined) payload.isDefault = Boolean(input.isDefault);
-
-      try {
-        return await apiFetch<Address>(`/addresses/${id}`, {
-          method: "PATCH",
-          body: payload,
-        });
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          return await apiFetch<Address>(`/address/${id}`, {
-            method: "PATCH",
-            body: payload,
-          });
-        }
-        throw err;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-    },
-  });
-}
-
-export function useDeleteAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: number) => {
-      try {
-        return await apiFetch<{ message?: string }>(`/addresses/${id}`, {
-          method: "DELETE",
-        });
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          return await apiFetch<{ message?: string }>(`/address/${id}`, {
-            method: "DELETE",
-          });
-        }
-        throw err;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-    },
-  });
-}
-
-export function useSetDefaultAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: number) => {
-      try {
-        return await apiFetch<Address>(`/addresses/${id}/default`, {
-          method: "PATCH",
-        });
-      } catch {
-        return await apiFetch<Address>(`/addresses/${id}`, {
-          method: "PATCH",
-          body: { isDefault: true },
-        });
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-    },
-  });
-}
-
-// ----------------------------------------------------
-// هوک‌های TanStack Query برای سفارش‌ها (Orders)
-// ----------------------------------------------------
-
-export function useCreateOrder() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (input: CreateOrderInput) => {
-      const payload: Record<string, unknown> = {
-        addressId: Number(input.addressId),
-        paymentMethod: "CARD_TO_CARD",
-        items: input.items.map((i) => ({
-          productId: Number(i.productId),
-          quantity: Number(i.quantity),
-        })),
-      };
-
-      if (input.note && input.note.trim()) {
-        payload.note = input.note.trim();
-      }
-
-      return await apiFetch<Order>("/orders", {
-        method: "POST",
-        body: payload,
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
-      queryClient.invalidateQueries({ queryKey: ["my-orders"] });
-      queryClient.invalidateQueries({ queryKey: ["admin-metrics"] });
-    },
-  });
-}
-
-export function useOrder(id: number | string) {
-  return useQuery<Order | null>({
-    queryKey: ["order", id],
-    queryFn: async () => {
-      if (!id) return null;
-      return await apiFetch<Order>(`/orders/${id}`);
-    },
-    enabled: Boolean(id),
-  });
-}
-
-// ----------------------------------------------------
-// هوک‌های TanStack Query برای دسته‌بندی‌ها (Categories)
-// متصل به /categories (GET, POST, PUT, DELETE)
+// 2. هوک‌های دسته‌بندی‌ها (Categories)
 // ----------------------------------------------------
 
 /**
- * دریافت لیست دسته‌بندی‌ها با متد GET از /categories
+ * دریافت لیست دسته‌بندی‌ها
  */
 export function useCategories() {
   return useQuery<Category[]>({
     queryKey: ["categories"],
     queryFn: async () => {
-      const data = await apiFetch<Category[]>("/categories");
-      return Array.isArray(data) ? data : [];
-    },
-  });
-}
-
-// ----------------------------------------------------
-// هوک‌های TanStack Query برای آدرس‌ها (Addresses)
-// ----------------------------------------------------
-
-export function useAddresses() {
-  return useQuery<Address[]>({
-    queryKey: ["addresses"],
-    queryFn: async () => {
       try {
-        const data = await apiFetch<Address[]>("/addresses");
+        const data = await apiFetch<Category[]>("/categories");
         return Array.isArray(data) ? data : [];
       } catch (err) {
         if (err instanceof ApiError && err.status === 404) {
-          const fallback = await apiFetch<Address[]>("/address");
+          const fallback = await apiFetch<Category[]>("/category");
           return Array.isArray(fallback) ? fallback : [];
         }
         throw err;
@@ -1263,174 +452,8 @@ export function useAddresses() {
   });
 }
 
-export function useCreateAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (input: CreateAddressInput) => {
-      const payload: Record<string, unknown> = {
-        title: input.title.trim(),
-        receiverName: input.receiverName.trim(),
-        receiverPhone: input.receiverPhone.trim(),
-        province: input.province.trim(),
-        city: input.city.trim(),
-        addressLine: input.addressLine.trim(),
-        postalCode: input.postalCode.trim(),
-        isDefault: Boolean(input.isDefault),
-      };
-
-      try {
-        return await apiFetch<Address>("/addresses", {
-          method: "POST",
-          body: payload,
-        });
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          return await apiFetch<Address>("/address", {
-            method: "POST",
-            body: payload,
-          });
-        }
-        throw err;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-    },
-  });
-}
-
-export function useUpdateAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({ id, ...input }: UpdateAddressInput) => {
-      const payload: Record<string, unknown> = {};
-
-      if (input.title !== undefined) payload.title = input.title.trim();
-      if (input.receiverName !== undefined) payload.receiverName = input.receiverName.trim();
-      if (input.receiverPhone !== undefined) payload.receiverPhone = input.receiverPhone.trim();
-      if (input.province !== undefined) payload.province = input.province.trim();
-      if (input.city !== undefined) payload.city = input.city.trim();
-      if (input.addressLine !== undefined) payload.addressLine = input.addressLine.trim();
-      if (input.postalCode !== undefined) payload.postalCode = input.postalCode.trim();
-      if (input.isDefault !== undefined) payload.isDefault = Boolean(input.isDefault);
-
-      try {
-        return await apiFetch<Address>(`/addresses/${id}`, {
-          method: "PATCH",
-          body: payload,
-        });
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          return await apiFetch<Address>(`/address/${id}`, {
-            method: "PATCH",
-            body: payload,
-          });
-        }
-        throw err;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-    },
-  });
-}
-
-export function useDeleteAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: number) => {
-      try {
-        return await apiFetch<{ message?: string }>(`/addresses/${id}`, {
-          method: "DELETE",
-        });
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          return await apiFetch<{ message?: string }>(`/address/${id}`, {
-            method: "DELETE",
-          });
-        }
-        throw err;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-    },
-  });
-}
-
-export function useSetDefaultAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: number) => {
-      try {
-        return await apiFetch<Address>(`/addresses/${id}/default`, {
-          method: "PATCH",
-        });
-      } catch {
-        return await apiFetch<Address>(`/addresses/${id}`, {
-          method: "PATCH",
-          body: { isDefault: true },
-        });
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-    },
-  });
-}
-
-// ----------------------------------------------------
-// هوک‌های TanStack Query برای سفارش‌ها (Orders)
-// ----------------------------------------------------
-
-export function useCreateOrder() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (input: CreateOrderInput) => {
-      const payload: Record<string, unknown> = {
-        addressId: Number(input.addressId),
-        paymentMethod: "CARD_TO_CARD",
-        items: input.items.map((i) => ({
-          productId: Number(i.productId),
-          quantity: Number(i.quantity),
-        })),
-      };
-
-      if (input.note && input.note.trim()) {
-        payload.note = input.note.trim();
-      }
-
-      return await apiFetch<Order>("/orders", {
-        method: "POST",
-        body: payload,
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
-      queryClient.invalidateQueries({ queryKey: ["my-orders"] });
-      queryClient.invalidateQueries({ queryKey: ["admin-metrics"] });
-    },
-  });
-}
-
-export function useOrder(id: number | string) {
-  return useQuery<Order | null>({
-    queryKey: ["order", id],
-    queryFn: async () => {
-      if (!id) return null;
-      return await apiFetch<Order>(`/orders/${id}`);
-    },
-    enabled: Boolean(id),
-  });
-}
-
 /**
- * دریافت اطلاعات تک‌دسته‌بندی با متد GET از /categories/:id
+ * دریافت یک دسته‌بندی با شناسه
  */
 export function useCategory(id: number | string) {
   return useQuery<Category | null>({
@@ -1441,8 +464,7 @@ export function useCategory(id: number | string) {
         return await apiFetch<Category>(`/categories/${id}`);
       } catch (err) {
         if (err instanceof ApiError && err.status === 404) {
-          const list = await apiFetch<Category[]>("/categories");
-          return list.find((c) => String(c.id) === String(id)) || null;
+          return await apiFetch<Category>(`/category/${id}`);
         }
         throw err;
       }
@@ -1452,7 +474,7 @@ export function useCategory(id: number | string) {
 }
 
 /**
- * ایجاد دسته‌بندی جدید با متد POST به /categories
+ * ایجاد دسته‌بندی جدید
  */
 export function useCreateCategory() {
   const queryClient = useQueryClient();
@@ -1462,8 +484,6 @@ export function useCreateCategory() {
       const payload: Record<string, unknown> = {
         name: input.name.trim(),
         slug: input.slug.trim(),
-        sortOrder: input.sortOrder ?? 0,
-        isActive: input.isActive ?? true,
       };
 
       if (input.parentId !== undefined && input.parentId !== null) {
@@ -1484,64 +504,21 @@ export function useCreateCategory() {
       if (input.metaDescription && input.metaDescription.trim()) {
         payload.metaDescription = input.metaDescription.trim();
       }
-
-      return await apiFetch<Category>("/categories", {
-        method: "POST",
-        body: payload,
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
-    },
-  });
-}
-
-// ----------------------------------------------------
-// هوک‌های TanStack Query برای آدرس‌ها (Addresses)
-// ----------------------------------------------------
-
-export function useAddresses() {
-  return useQuery<Address[]>({
-    queryKey: ["addresses"],
-    queryFn: async () => {
-      try {
-        const data = await apiFetch<Address[]>("/addresses");
-        return Array.isArray(data) ? data : [];
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          const fallback = await apiFetch<Address[]>("/address");
-          return Array.isArray(fallback) ? fallback : [];
-        }
-        throw err;
+      if (input.sortOrder !== undefined) {
+        payload.sortOrder = Number(input.sortOrder);
       }
-    },
-  });
-}
-
-export function useCreateAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (input: CreateAddressInput) => {
-      const payload: Record<string, unknown> = {
-        title: input.title.trim(),
-        receiverName: input.receiverName.trim(),
-        receiverPhone: input.receiverPhone.trim(),
-        province: input.province.trim(),
-        city: input.city.trim(),
-        addressLine: input.addressLine.trim(),
-        postalCode: input.postalCode.trim(),
-        isDefault: Boolean(input.isDefault),
-      };
+      if (input.isActive !== undefined) {
+        payload.isActive = Boolean(input.isActive);
+      }
 
       try {
-        return await apiFetch<Address>("/addresses", {
+        return await apiFetch<Category>("/categories", {
           method: "POST",
           body: payload,
         });
       } catch (err) {
         if (err instanceof ApiError && err.status === 404) {
-          return await apiFetch<Address>("/address", {
+          return await apiFetch<Category>("/category", {
             method: "POST",
             body: payload,
           });
@@ -1550,201 +527,44 @@ export function useCreateAddress() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
     },
-  });
-}
-
-export function useUpdateAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({ id, ...input }: UpdateAddressInput) => {
-      const payload: Record<string, unknown> = {};
-
-      if (input.title !== undefined) payload.title = input.title.trim();
-      if (input.receiverName !== undefined) payload.receiverName = input.receiverName.trim();
-      if (input.receiverPhone !== undefined) payload.receiverPhone = input.receiverPhone.trim();
-      if (input.province !== undefined) payload.province = input.province.trim();
-      if (input.city !== undefined) payload.city = input.city.trim();
-      if (input.addressLine !== undefined) payload.addressLine = input.addressLine.trim();
-      if (input.postalCode !== undefined) payload.postalCode = input.postalCode.trim();
-      if (input.isDefault !== undefined) payload.isDefault = Boolean(input.isDefault);
-
-      try {
-        return await apiFetch<Address>(`/addresses/${id}`, {
-          method: "PATCH",
-          body: payload,
-        });
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          return await apiFetch<Address>(`/address/${id}`, {
-            method: "PATCH",
-            body: payload,
-          });
-        }
-        throw err;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-    },
-  });
-}
-
-export function useDeleteAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: number) => {
-      try {
-        return await apiFetch<{ message?: string }>(`/addresses/${id}`, {
-          method: "DELETE",
-        });
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          return await apiFetch<{ message?: string }>(`/address/${id}`, {
-            method: "DELETE",
-          });
-        }
-        throw err;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-    },
-  });
-}
-
-export function useSetDefaultAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: number) => {
-      try {
-        return await apiFetch<Address>(`/addresses/${id}/default`, {
-          method: "PATCH",
-        });
-      } catch {
-        return await apiFetch<Address>(`/addresses/${id}`, {
-          method: "PATCH",
-          body: { isDefault: true },
-        });
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-    },
-  });
-}
-
-// ----------------------------------------------------
-// هوک‌های TanStack Query برای سفارش‌ها (Orders)
-// ----------------------------------------------------
-
-export function useCreateOrder() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (input: CreateOrderInput) => {
-      const payload: Record<string, unknown> = {
-        addressId: Number(input.addressId),
-        paymentMethod: "CARD_TO_CARD",
-        items: input.items.map((i) => ({
-          productId: Number(i.productId),
-          quantity: Number(i.quantity),
-        })),
-      };
-
-      if (input.note && input.note.trim()) {
-        payload.note = input.note.trim();
-      }
-
-      return await apiFetch<Order>("/orders", {
-        method: "POST",
-        body: payload,
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
-      queryClient.invalidateQueries({ queryKey: ["my-orders"] });
-      queryClient.invalidateQueries({ queryKey: ["admin-metrics"] });
-    },
-  });
-}
-
-export function useOrder(id: number | string) {
-  return useQuery<Order | null>({
-    queryKey: ["order", id],
-    queryFn: async () => {
-      if (!id) return null;
-      return await apiFetch<Order>(`/orders/${id}`);
-    },
-    enabled: Boolean(id),
   });
 }
 
 /**
- * ویرایش دسته‌بندی با متد PUT به /categories/:id
+ * ویرایش دسته‌بندی
  */
 export function useUpdateCategory() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, ...payload }: UpdateCategoryInput) => {
-      const body: Record<string, unknown> = {};
+    mutationFn: async ({ id, ...input }: UpdateCategoryInput) => {
+      const payload: Record<string, unknown> = {};
 
-      if (payload.name !== undefined) body.name = payload.name.trim();
-      if (payload.slug !== undefined) body.slug = payload.slug.trim();
-      if (payload.sortOrder !== undefined) body.sortOrder = Number(payload.sortOrder);
-      if (payload.isActive !== undefined) body.isActive = Boolean(payload.isActive);
-
-      if (payload.parentId === null) {
-        body.parentId = null;
-      } else if (payload.parentId !== undefined) {
-        body.parentId = Number(payload.parentId);
+      if (input.name !== undefined) payload.name = input.name.trim();
+      if (input.slug !== undefined) payload.slug = input.slug.trim();
+      if (input.parentId !== undefined) {
+        payload.parentId = input.parentId !== null ? Number(input.parentId) : null;
       }
-
-      if (payload.description === null) {
-        body.description = null;
-      } else if (payload.description && payload.description.trim()) {
-        body.description = payload.description.trim();
-      }
-
-      if (payload.image === null) {
-        body.image = null;
-      } else if (payload.image && payload.image.trim()) {
-        body.image = payload.image.trim();
-      }
-
-      if (payload.imageAlt === null) {
-        body.imageAlt = null;
-      } else if (payload.imageAlt && payload.imageAlt.trim()) {
-        body.imageAlt = payload.imageAlt.trim();
-      }
-
-      if (payload.metaTitle === null) {
-        body.metaTitle = null;
-      } else if (payload.metaTitle && payload.metaTitle.trim()) {
-        body.metaTitle = payload.metaTitle.trim();
-      }
-
-      if (payload.metaDescription === null) {
-        body.metaDescription = null;
-      } else if (payload.metaDescription && payload.metaDescription.trim()) {
-        body.metaDescription = payload.metaDescription.trim();
-      }
+      if (input.description !== undefined) payload.description = input.description ? input.description.trim() : null;
+      if (input.image !== undefined) payload.image = input.image ? input.image.trim() : null;
+      if (input.imageAlt !== undefined) payload.imageAlt = input.imageAlt ? input.imageAlt.trim() : null;
+      if (input.metaTitle !== undefined) payload.metaTitle = input.metaTitle ? input.metaTitle.trim() : null;
+      if (input.metaDescription !== undefined) payload.metaDescription = input.metaDescription ? input.metaDescription.trim() : null;
+      if (input.sortOrder !== undefined) payload.sortOrder = Number(input.sortOrder);
+      if (input.isActive !== undefined) payload.isActive = Boolean(input.isActive);
 
       try {
         return await apiFetch<Category>(`/categories/${id}`, {
-          method: "PUT",
-          body,
+          method: "PATCH",
+          body: payload,
         });
       } catch (err) {
         if (err instanceof ApiError && err.status === 404) {
-          return await apiFetch<Category>(`/categories/${id}`, {
+          return await apiFetch<Category>(`/category/${id}`, {
             method: "PATCH",
-            body,
+            body: payload,
           });
         }
         throw err;
@@ -1756,205 +576,26 @@ export function useUpdateCategory() {
   });
 }
 
-// ----------------------------------------------------
-// هوک‌های TanStack Query برای آدرس‌ها (Addresses)
-// ----------------------------------------------------
-
-export function useAddresses() {
-  return useQuery<Address[]>({
-    queryKey: ["addresses"],
-    queryFn: async () => {
-      try {
-        const data = await apiFetch<Address[]>("/addresses");
-        return Array.isArray(data) ? data : [];
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          const fallback = await apiFetch<Address[]>("/address");
-          return Array.isArray(fallback) ? fallback : [];
-        }
-        throw err;
-      }
-    },
-  });
-}
-
-export function useCreateAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (input: CreateAddressInput) => {
-      const payload: Record<string, unknown> = {
-        title: input.title.trim(),
-        receiverName: input.receiverName.trim(),
-        receiverPhone: input.receiverPhone.trim(),
-        province: input.province.trim(),
-        city: input.city.trim(),
-        addressLine: input.addressLine.trim(),
-        postalCode: input.postalCode.trim(),
-        isDefault: Boolean(input.isDefault),
-      };
-
-      try {
-        return await apiFetch<Address>("/addresses", {
-          method: "POST",
-          body: payload,
-        });
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          return await apiFetch<Address>("/address", {
-            method: "POST",
-            body: payload,
-          });
-        }
-        throw err;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-    },
-  });
-}
-
-export function useUpdateAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({ id, ...input }: UpdateAddressInput) => {
-      const payload: Record<string, unknown> = {};
-
-      if (input.title !== undefined) payload.title = input.title.trim();
-      if (input.receiverName !== undefined) payload.receiverName = input.receiverName.trim();
-      if (input.receiverPhone !== undefined) payload.receiverPhone = input.receiverPhone.trim();
-      if (input.province !== undefined) payload.province = input.province.trim();
-      if (input.city !== undefined) payload.city = input.city.trim();
-      if (input.addressLine !== undefined) payload.addressLine = input.addressLine.trim();
-      if (input.postalCode !== undefined) payload.postalCode = input.postalCode.trim();
-      if (input.isDefault !== undefined) payload.isDefault = Boolean(input.isDefault);
-
-      try {
-        return await apiFetch<Address>(`/addresses/${id}`, {
-          method: "PATCH",
-          body: payload,
-        });
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          return await apiFetch<Address>(`/address/${id}`, {
-            method: "PATCH",
-            body: payload,
-          });
-        }
-        throw err;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-    },
-  });
-}
-
-export function useDeleteAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: number) => {
-      try {
-        return await apiFetch<{ message?: string }>(`/addresses/${id}`, {
-          method: "DELETE",
-        });
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          return await apiFetch<{ message?: string }>(`/address/${id}`, {
-            method: "DELETE",
-          });
-        }
-        throw err;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-    },
-  });
-}
-
-export function useSetDefaultAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: number) => {
-      try {
-        return await apiFetch<Address>(`/addresses/${id}/default`, {
-          method: "PATCH",
-        });
-      } catch {
-        return await apiFetch<Address>(`/addresses/${id}`, {
-          method: "PATCH",
-          body: { isDefault: true },
-        });
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-    },
-  });
-}
-
-// ----------------------------------------------------
-// هوک‌های TanStack Query برای سفارش‌ها (Orders)
-// ----------------------------------------------------
-
-export function useCreateOrder() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (input: CreateOrderInput) => {
-      const payload: Record<string, unknown> = {
-        addressId: Number(input.addressId),
-        paymentMethod: "CARD_TO_CARD",
-        items: input.items.map((i) => ({
-          productId: Number(i.productId),
-          quantity: Number(i.quantity),
-        })),
-      };
-
-      if (input.note && input.note.trim()) {
-        payload.note = input.note.trim();
-      }
-
-      return await apiFetch<Order>("/orders", {
-        method: "POST",
-        body: payload,
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
-      queryClient.invalidateQueries({ queryKey: ["my-orders"] });
-      queryClient.invalidateQueries({ queryKey: ["admin-metrics"] });
-    },
-  });
-}
-
-export function useOrder(id: number | string) {
-  return useQuery<Order | null>({
-    queryKey: ["order", id],
-    queryFn: async () => {
-      if (!id) return null;
-      return await apiFetch<Order>(`/orders/${id}`);
-    },
-    enabled: Boolean(id),
-  });
-}
-
 /**
- * حذف دسته‌بندی با متد DELETE از /categories/:id
+ * حذف دسته‌بندی
  */
 export function useDeleteCategory() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (id: number) => {
-      return await apiFetch<{ success?: boolean; message?: string }>(`/categories/${id}`, {
-        method: "DELETE",
-      });
+      try {
+        return await apiFetch<{ success?: boolean; message?: string }>(`/categories/${id}`, {
+          method: "DELETE",
+        });
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 404) {
+          return await apiFetch<{ success?: boolean; message?: string }>(`/category/${id}`, {
+            method: "DELETE",
+          });
+        }
+        throw err;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
@@ -1963,9 +604,12 @@ export function useDeleteCategory() {
 }
 
 // ----------------------------------------------------
-// هوک‌های TanStack Query برای آدرس‌ها (Addresses)
+// 3. هوک‌های آدرس‌ها (Addresses)
 // ----------------------------------------------------
 
+/**
+ * دریافت آدرس‌های کاربر فعلی
+ */
 export function useAddresses() {
   return useQuery<Address[]>({
     queryKey: ["addresses"],
@@ -1981,231 +625,12 @@ export function useAddresses() {
         throw err;
       }
     },
-  });
-}
-
-export function useCreateAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (input: CreateAddressInput) => {
-      const payload: Record<string, unknown> = {
-        title: input.title.trim(),
-        receiverName: input.receiverName.trim(),
-        receiverPhone: input.receiverPhone.trim(),
-        province: input.province.trim(),
-        city: input.city.trim(),
-        addressLine: input.addressLine.trim(),
-        postalCode: input.postalCode.trim(),
-        isDefault: Boolean(input.isDefault),
-      };
-
-      try {
-        return await apiFetch<Address>("/addresses", {
-          method: "POST",
-          body: payload,
-        });
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          return await apiFetch<Address>("/address", {
-            method: "POST",
-            body: payload,
-          });
-        }
-        throw err;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-    },
-  });
-}
-
-export function useUpdateAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({ id, ...input }: UpdateAddressInput) => {
-      const payload: Record<string, unknown> = {};
-
-      if (input.title !== undefined) payload.title = input.title.trim();
-      if (input.receiverName !== undefined) payload.receiverName = input.receiverName.trim();
-      if (input.receiverPhone !== undefined) payload.receiverPhone = input.receiverPhone.trim();
-      if (input.province !== undefined) payload.province = input.province.trim();
-      if (input.city !== undefined) payload.city = input.city.trim();
-      if (input.addressLine !== undefined) payload.addressLine = input.addressLine.trim();
-      if (input.postalCode !== undefined) payload.postalCode = input.postalCode.trim();
-      if (input.isDefault !== undefined) payload.isDefault = Boolean(input.isDefault);
-
-      try {
-        return await apiFetch<Address>(`/addresses/${id}`, {
-          method: "PATCH",
-          body: payload,
-        });
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          return await apiFetch<Address>(`/address/${id}`, {
-            method: "PATCH",
-            body: payload,
-          });
-        }
-        throw err;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-    },
-  });
-}
-
-export function useDeleteAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: number) => {
-      try {
-        return await apiFetch<{ message?: string }>(`/addresses/${id}`, {
-          method: "DELETE",
-        });
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          return await apiFetch<{ message?: string }>(`/address/${id}`, {
-            method: "DELETE",
-          });
-        }
-        throw err;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-    },
-  });
-}
-
-export function useSetDefaultAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: number) => {
-      try {
-        return await apiFetch<Address>(`/addresses/${id}/default`, {
-          method: "PATCH",
-        });
-      } catch {
-        return await apiFetch<Address>(`/addresses/${id}`, {
-          method: "PATCH",
-          body: { isDefault: true },
-        });
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-    },
-  });
-}
-
-// ----------------------------------------------------
-// هوک‌های TanStack Query برای سفارش‌ها (Orders)
-// ----------------------------------------------------
-
-export function useCreateOrder() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (input: CreateOrderInput) => {
-      const payload: Record<string, unknown> = {
-        addressId: Number(input.addressId),
-        paymentMethod: "CARD_TO_CARD",
-        items: input.items.map((i) => ({
-          productId: Number(i.productId),
-          quantity: Number(i.quantity),
-        })),
-      };
-
-      if (input.note && input.note.trim()) {
-        payload.note = input.note.trim();
-      }
-
-      return await apiFetch<Order>("/orders", {
-        method: "POST",
-        body: payload,
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
-      queryClient.invalidateQueries({ queryKey: ["my-orders"] });
-      queryClient.invalidateQueries({ queryKey: ["admin-metrics"] });
-    },
-  });
-}
-
-export function useOrder(id: number | string) {
-  return useQuery<Order | null>({
-    queryKey: ["order", id],
-    queryFn: async () => {
-      if (!id) return null;
-      return await apiFetch<Order>(`/orders/${id}`);
-    },
-    enabled: Boolean(id),
   });
 }
 
 /**
- * شاخص‌های آماری پیشخوان مدیریت
+ * افزودن آدرس جدید
  */
-export function useAdminMetrics() {
-  return useQuery<AdminMetrics>({
-    queryKey: ["admin-metrics"],
-    queryFn: async () => {
-      try {
-        return await apiFetch<AdminMetrics>("/admin/metrics");
-      } catch {
-        // Fallback calculation from public products if /admin/metrics endpoint doesn't exist
-        try {
-          const prods = await apiFetch<Product[]>("/product");
-          const activeCount = prods.filter((p) => p.isActive).length;
-          const lowStockCount = prods.filter((p) => p.stock <= 5).length;
-          return {
-            totalSales: 0,
-            activeProductsCount: activeCount,
-            lowStockCount: lowStockCount,
-            totalOrders: 0,
-          };
-        } catch {
-          return {
-            totalSales: 0,
-            activeProductsCount: 0,
-            lowStockCount: 0,
-            totalOrders: 0,
-          };
-        }
-      }
-    },
-  });
-}
-
-// ----------------------------------------------------
-// هوک‌های آدرس‌ها (Addresses)
-// ----------------------------------------------------
-
-export function useAddresses() {
-  return useQuery<Address[]>({
-    queryKey: ["addresses"],
-    queryFn: async () => {
-      try {
-        const data = await apiFetch<Address[]>("/addresses");
-        return Array.isArray(data) ? data : [];
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          const fallback = await apiFetch<Address[]>("/address");
-          return Array.isArray(fallback) ? fallback : [];
-        }
-        throw err;
-      }
-    },
-  });
-}
-
 export function useCreateAddress() {
   const queryClient = useQueryClient();
 
@@ -2245,6 +670,9 @@ export function useCreateAddress() {
   });
 }
 
+/**
+ * ویرایش آدرس
+ */
 export function useUpdateAddress() {
   const queryClient = useQueryClient();
 
@@ -2282,6 +710,9 @@ export function useUpdateAddress() {
   });
 }
 
+/**
+ * حذف آدرس
+ */
 export function useDeleteAddress() {
   const queryClient = useQueryClient();
 
@@ -2306,6 +737,9 @@ export function useDeleteAddress() {
   });
 }
 
+/**
+ * تنظیم آدرس پیش‌فرض
+ */
 export function useSetDefaultAddress() {
   const queryClient = useQueryClient();
 
@@ -2329,9 +763,12 @@ export function useSetDefaultAddress() {
 }
 
 // ----------------------------------------------------
-// هوک‌های سفارش‌ها (Orders)
+// 4. هوک‌های سفارش‌ها (Orders)
 // ----------------------------------------------------
 
+/**
+ * ثبت سفارش جدید با روش پرداخت کارت‌به‌کارت
+ */
 export function useCreateOrder() {
   const queryClient = useQueryClient();
 
@@ -2347,7 +784,7 @@ export function useCreateOrder() {
       };
 
       if (input.note && input.note.trim()) {
-        payload.note = input.note.trim();
+        payload.note = input.note.trim().slice(0, 500);
       }
 
       return await apiFetch<Order>("/orders", {
@@ -2358,11 +795,15 @@ export function useCreateOrder() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       queryClient.invalidateQueries({ queryKey: ["my-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
       queryClient.invalidateQueries({ queryKey: ["admin-metrics"] });
     },
   });
 }
 
+/**
+ * دریافت جزئیات یک سفارش با شناسه
+ */
 export function useOrder(id: number | string | undefined | null) {
   return useQuery<Order | null>({
     queryKey: ["order", id],
@@ -2374,6 +815,9 @@ export function useOrder(id: number | string | undefined | null) {
   });
 }
 
+/**
+ * دریافت تاریخچه سفارش‌های کاربر جاری
+ */
 export function useMyOrders() {
   return useQuery<Order[]>({
     queryKey: ["my-orders"],
@@ -2392,20 +836,49 @@ export function useMyOrders() {
   });
 }
 
-// ----------------------------------------------------
-// هوک‌های TanStack Query برای آدرس‌ها (Addresses)
-// ----------------------------------------------------
+/**
+ * بارگذاری تصویر یا مشخصات فیش واریزی کارت‌به‌کارت
+ */
+export function useUploadReceipt() {
+  const queryClient = useQueryClient();
 
-export function useAddresses() {
-  return useQuery<Address[]>({
-    queryKey: ["addresses"],
+  return useMutation({
+    mutationFn: async ({ orderId, receipt }: { orderId: number | string; receipt: File | string }) => {
+      if (receipt instanceof File) {
+        const formData = new FormData();
+        formData.append("file", receipt);
+        return await apiFetch<Order>(`/orders/${orderId}/receipt`, {
+          method: "POST",
+          body: formData,
+        });
+      } else {
+        return await apiFetch<Order>(`/orders/${orderId}/receipt`, {
+          method: "POST",
+          body: { receiptUrl: receipt },
+        });
+      }
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["order", variables.orderId] });
+      queryClient.invalidateQueries({ queryKey: ["my-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+    },
+  });
+}
+
+/**
+ * دریافت تمام سفارش‌ها برای پنل ادمین
+ */
+export function useAdminOrders() {
+  return useQuery<Order[]>({
+    queryKey: ["admin-orders"],
     queryFn: async () => {
       try {
-        const data = await apiFetch<Address[]>("/addresses");
+        const data = await apiFetch<Order[]>("/admin/orders");
         return Array.isArray(data) ? data : [];
       } catch (err) {
         if (err instanceof ApiError && err.status === 404) {
-          const fallback = await apiFetch<Address[]>("/address");
+          const fallback = await apiFetch<Order[]>("/orders");
           return Array.isArray(fallback) ? fallback : [];
         }
         throw err;
@@ -2414,168 +887,36 @@ export function useAddresses() {
   });
 }
 
-export function useCreateAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (input: CreateAddressInput) => {
-      const payload: Record<string, unknown> = {
-        title: input.title.trim(),
-        receiverName: input.receiverName.trim(),
-        receiverPhone: input.receiverPhone.trim(),
-        province: input.province.trim(),
-        city: input.city.trim(),
-        addressLine: input.addressLine.trim(),
-        postalCode: input.postalCode.trim(),
-        isDefault: Boolean(input.isDefault),
-      };
-
-      try {
-        return await apiFetch<Address>("/addresses", {
-          method: "POST",
-          body: payload,
-        });
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          return await apiFetch<Address>("/address", {
-            method: "POST",
-            body: payload,
-          });
-        }
-        throw err;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-    },
-  });
-}
-
-export function useUpdateAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({ id, ...input }: UpdateAddressInput) => {
-      const payload: Record<string, unknown> = {};
-
-      if (input.title !== undefined) payload.title = input.title.trim();
-      if (input.receiverName !== undefined) payload.receiverName = input.receiverName.trim();
-      if (input.receiverPhone !== undefined) payload.receiverPhone = input.receiverPhone.trim();
-      if (input.province !== undefined) payload.province = input.province.trim();
-      if (input.city !== undefined) payload.city = input.city.trim();
-      if (input.addressLine !== undefined) payload.addressLine = input.addressLine.trim();
-      if (input.postalCode !== undefined) payload.postalCode = input.postalCode.trim();
-      if (input.isDefault !== undefined) payload.isDefault = Boolean(input.isDefault);
-
-      try {
-        return await apiFetch<Address>(`/addresses/${id}`, {
-          method: "PATCH",
-          body: payload,
-        });
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          return await apiFetch<Address>(`/address/${id}`, {
-            method: "PATCH",
-            body: payload,
-          });
-        }
-        throw err;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-    },
-  });
-}
-
-export function useDeleteAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: number) => {
-      try {
-        return await apiFetch<{ message?: string }>(`/addresses/${id}`, {
-          method: "DELETE",
-        });
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          return await apiFetch<{ message?: string }>(`/address/${id}`, {
-            method: "DELETE",
-          });
-        }
-        throw err;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-    },
-  });
-}
-
-export function useSetDefaultAddress() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: number) => {
-      try {
-        return await apiFetch<Address>(`/addresses/${id}/default`, {
-          method: "PATCH",
-        });
-      } catch {
-        return await apiFetch<Address>(`/addresses/${id}`, {
-          method: "PATCH",
-          body: { isDefault: true },
-        });
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses"] });
-    },
-  });
-}
-
 // ----------------------------------------------------
-// هوک‌های TanStack Query برای سفارش‌ها (Orders)
+// 5. شاخص‌های آماری پیشخوان مدیریت (Admin Metrics)
 // ----------------------------------------------------
 
-export function useCreateOrder() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (input: CreateOrderInput) => {
-      const payload: Record<string, unknown> = {
-        addressId: Number(input.addressId),
-        paymentMethod: "CARD_TO_CARD",
-        items: input.items.map((i) => ({
-          productId: Number(i.productId),
-          quantity: Number(i.quantity),
-        })),
-      };
-
-      if (input.note && input.note.trim()) {
-        payload.note = input.note.trim();
-      }
-
-      return await apiFetch<Order>("/orders", {
-        method: "POST",
-        body: payload,
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
-      queryClient.invalidateQueries({ queryKey: ["my-orders"] });
-      queryClient.invalidateQueries({ queryKey: ["admin-metrics"] });
-    },
-  });
-}
-
-export function useOrder(id: number | string) {
-  return useQuery<Order | null>({
-    queryKey: ["order", id],
+export function useAdminMetrics() {
+  return useQuery<AdminMetrics>({
+    queryKey: ["admin-metrics"],
     queryFn: async () => {
-      if (!id) return null;
-      return await apiFetch<Order>(`/orders/${id}`);
+      try {
+        return await apiFetch<AdminMetrics>("/admin/metrics");
+      } catch {
+        try {
+          const prods = await apiFetch<Product[]>("/product");
+          const activeCount = prods.filter((p) => p.isActive).length;
+          const lowStockCount = prods.filter((p) => p.stock <= 5).length;
+          return {
+            totalSales: 0,
+            activeProductsCount: activeCount,
+            lowStockCount: lowStockCount,
+            totalOrders: 0,
+          };
+        } catch {
+          return {
+            totalSales: 0,
+            activeProductsCount: 0,
+            lowStockCount: 0,
+            totalOrders: 0,
+          };
+        }
+      }
     },
-    enabled: Boolean(id),
   });
 }
