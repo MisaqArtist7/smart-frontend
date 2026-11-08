@@ -18,7 +18,11 @@ import {
   MessageSquare,
   AlertCircle,
   RotateCcw,
-  Info,
+  Navigation,
+  ExternalLink,
+  Compass,
+  Building2,
+  Map,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/components/providers/auth-provider";
@@ -26,9 +30,9 @@ import {
   useSubmitContact,
   CONTACT_SUBJECT_OPTIONS,
   normalizePhone,
-  ApiError,
   type ContactSubject,
 } from "@/lib/api/contact";
+import { ApiError } from "@/lib/api";
 
 /**
  * شمای اعتبارسنجی فرم تماس با ما مطابق با قوانین بک‌اند
@@ -96,7 +100,7 @@ export function ContactUsClient() {
     mode: "onTouched",
   });
 
-  // مقداردهی اولیه فیلدها در صورت ورود کاربر
+  // مقداردهی اولیه فیلدها در صورت لاگین بودن کاربر
   useEffect(() => {
     if (user) {
       const currentName = getValues("fullName");
@@ -110,17 +114,32 @@ export function ContactUsClient() {
     }
   }, [user, setValue, getValues]);
 
-  // متغیرهای محیطی اطلاعات تماس فروشگاه
-  const shopPhone = process.env.NEXT_PUBLIC_SHOP_PHONE?.trim();
-  const shopAddress = process.env.NEXT_PUBLIC_SHOP_ADDRESS?.trim();
-  const shopWorkingHours = process.env.NEXT_PUBLIC_SHOP_WORKING_HOURS?.trim();
-  const shopEmail = process.env.NEXT_PUBLIC_SHOP_EMAIL?.trim();
+  // متغیرهای اطلاعات تماس و آدرس حضوری فروشگاه با مقادیر پیش‌فرض اسمارت الکتریک
+  const shopPhone =
+    process.env.NEXT_PUBLIC_SHOP_PHONE?.trim() || "۰۲۱-۹۱۰۱۵۵۵۵";
+  const shopMobile =
+    process.env.NEXT_PUBLIC_SHOP_MOBILE?.trim() || "۰۹۱۲۲۱۹۳۵۵۱";
+  const shopAddress =
+    process.env.NEXT_PUBLIC_SHOP_ADDRESS?.trim() ||
+    "تهران، خیابان لاله‌زار جنوبی، کوچه باربد، پاساژ ادیسون، طبقه همکف، پلاک ۱۲";
+  const shopWorkingHours =
+    process.env.NEXT_PUBLIC_SHOP_WORKING_HOURS?.trim() ||
+    "شنبه تا چهارشنبه ۹ الی ۱۸ | پنجشنبه‌ها ۹ الی ۱۴";
+  const shopEmail =
+    process.env.NEXT_PUBLIC_SHOP_EMAIL?.trim() || "info@smart-electric.ir";
 
-  const hasAnyContactInfo = Boolean(
-    shopPhone || shopAddress || shopWorkingHours || shopEmail
-  );
+  // پیوندهای مسیریابی با اپلیکیشن‌های نقشه
+  const neshanUrl =
+    process.env.NEXT_PUBLIC_SHOP_NESHAN_URL?.trim() ||
+    "https://neshan.org/maps/@35.6912,51.4211,16z";
+  const baladUrl =
+    process.env.NEXT_PUBLIC_SHOP_BALAD_URL?.trim() ||
+    "https://balad.ir/location?latitude=35.6912&longitude=51.4211";
+  const googleMapsUrl =
+    process.env.NEXT_PUBLIC_SHOP_MAP_URL?.trim() ||
+    "https://www.google.com/maps/search/?api=1&query=35.6912,51.4211";
 
-  // شمارشگر زنده کاراکترهای پیام با useWatch
+  // شمارشگر زنده کاراکترهای پیام
   const currentMessage = useWatch({ control, name: "message", defaultValue: "" }) || "";
   const messageLength = currentMessage.length;
   const isMessageTooLong = messageLength > 2000;
@@ -183,107 +202,176 @@ export function ContactUsClient() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
       {/* =========================================================================
-          ستون اطلاعات تماس (خواندن پویا فقط از متغیرهای محیطی)
+          ستون اطلاعات تماس، آدرس حضوری و نقشه (۵ ستون در دسکتاپ)
           ========================================================================= */}
       <div className="lg:col-span-5 space-y-4">
-        {shopPhone && (
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-xs transition-colors hover:border-primary/40">
-            <div className="flex items-start gap-3.5">
-              <div className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">
-                <PhoneCall className="size-5" />
-              </div>
-              <div className="space-y-1.5 flex-1">
-                <span className="block text-xs font-bold text-muted-foreground">
-                  تماس تلفنی و پشتیبانی
-                </span>
-                <a
-                  href={`tel:${shopPhone}`}
-                  dir="ltr"
-                  className="text-base font-black text-foreground hover:text-primary transition-colors inline-block text-start"
-                >
-                  {shopPhone}
-                </a>
-              </div>
+        {/* کارت آدرس حضوری و فروشگاه */}
+        <div className="rounded-2xl border border-border bg-card p-5 shadow-xs transition-colors hover:border-primary/40">
+          <div className="flex items-start gap-3.5">
+            <div className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">
+              <Building2 className="size-5" />
             </div>
-          </div>
-        )}
-
-        {shopWorkingHours && (
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-xs transition-colors hover:border-primary/40">
-            <div className="flex items-start gap-3.5">
-              <div className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">
-                <Clock className="size-5" />
-              </div>
-              <div className="space-y-1 flex-1 text-right">
-                <span className="block text-xs font-bold text-muted-foreground">
-                  ساعات کاری و پاسخگویی
-                </span>
-                <p className="text-sm font-semibold text-foreground leading-relaxed">
-                  {shopWorkingHours}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {shopAddress && (
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-xs transition-colors hover:border-primary/40">
-            <div className="flex items-start gap-3.5">
-              <div className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">
-                <MapPin className="size-5" />
-              </div>
-              <div className="space-y-1 flex-1 text-right">
-                <span className="block text-xs font-bold text-muted-foreground">
-                  آدرس دفتر مرکزی و فروشگاه
-                </span>
-                <p className="text-xs sm:text-sm font-semibold text-foreground leading-relaxed">
-                  {shopAddress}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {shopEmail && (
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-xs transition-colors hover:border-primary/40">
-            <div className="flex items-start gap-3.5">
-              <div className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">
-                <Mail className="size-5" />
-              </div>
-              <div className="space-y-1 flex-1 text-right">
-                <span className="block text-xs font-bold text-muted-foreground">
-                  پست الکترونیک رسمی
-                </span>
-                <a
-                  href={`mailto:${shopEmail}`}
-                  dir="ltr"
-                  className="text-xs sm:text-sm font-bold text-foreground hover:text-primary transition-colors block text-start"
-                >
-                  {shopEmail}
-                </a>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* پیام راهنما در صورت خالی بودن مقادیر تماس در محیط */}
-        {!hasAnyContactInfo && (
-          <div className="rounded-2xl border border-border/80 bg-muted/40 p-5 text-right space-y-2">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Info className="size-4.5 text-primary" />
-              <span className="text-xs font-bold text-foreground">
-                ارتباط مستقیم با کارشناسان
+            <div className="space-y-1.5 flex-1 text-right">
+              <span className="block text-xs font-bold text-muted-foreground">
+                آدرس دفتر مرکزی و فروشگاه حضوری
+              </span>
+              <p className="text-xs sm:text-sm font-semibold text-foreground leading-relaxed">
+                {shopAddress}
+              </p>
+              <span className="block text-[11px] text-muted-foreground">
+                امکان مراجعه حضوری و دریافت کالا در ساعات کاری رسمی
               </span>
             </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              برای پیگیری سفارشات، سوالات فنی یا پشتیبانی، فرم ارسال پیام را تکمیل کنید. کارشناسان ما در سریع‌ترین زمان ممکن پاسخگوی شما خواهند بود.
-            </p>
           </div>
-        )}
+        </div>
+
+        {/* کارت تماس تلفنی و خطوط ویژه */}
+        <div className="rounded-2xl border border-border bg-card p-5 shadow-xs transition-colors hover:border-primary/40">
+          <div className="flex items-start gap-3.5">
+            <div className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">
+              <PhoneCall className="size-5" />
+            </div>
+            <div className="space-y-2.5 flex-1">
+              <span className="block text-xs font-bold text-muted-foreground text-right">
+                تماس تلفنی و مشاوره تخصصی
+              </span>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs text-muted-foreground">تلفن دفتر مرکزی:</span>
+                  <a
+                    href={`tel:${shopPhone.replace(/[^0-9]/g, "")}`}
+                    dir="ltr"
+                    className="text-sm sm:text-base font-black text-foreground hover:text-primary transition-colors text-start"
+                  >
+                    {shopPhone}
+                  </a>
+                </div>
+                {shopMobile && (
+                  <div className="flex items-center justify-between gap-2 border-t border-border/40 pt-2">
+                    <span className="text-xs text-muted-foreground">پشتیبانی و همراه:</span>
+                    <a
+                      href={`tel:${shopMobile.replace(/[^0-9]/g, "")}`}
+                      dir="ltr"
+                      className="text-xs sm:text-sm font-bold text-muted-foreground hover:text-primary transition-colors text-start"
+                    >
+                      {shopMobile}
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* کارت پست الکترونیک */}
+        <div className="rounded-2xl border border-border bg-card p-5 shadow-xs transition-colors hover:border-primary/40">
+          <div className="flex items-start gap-3.5">
+            <div className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">
+              <Mail className="size-5" />
+            </div>
+            <div className="space-y-1.5 flex-1 text-right">
+              <span className="block text-xs font-bold text-muted-foreground">
+                پست الکترونیک رسمی
+              </span>
+              <a
+                href={`mailto:${shopEmail}`}
+                dir="ltr"
+                className="text-xs sm:text-sm font-bold text-foreground hover:text-primary transition-colors block text-start"
+              >
+                {shopEmail}
+              </a>
+              <span className="block text-[11px] text-muted-foreground">
+                ارسال استعلام بها، پیش‌فاکتور رسمی و مکاتبات سازمانی
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* کارت ساعات کاری */}
+        <div className="rounded-2xl border border-border bg-card p-5 shadow-xs transition-colors hover:border-primary/40">
+          <div className="flex items-start gap-3.5">
+            <div className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">
+              <Clock className="size-5" />
+            </div>
+            <div className="space-y-1 flex-1 text-right">
+              <span className="block text-xs font-bold text-muted-foreground">
+                ساعات کاری و پاسخگویی
+              </span>
+              <p className="text-sm font-semibold text-foreground leading-relaxed">
+                {shopWorkingHours}
+              </p>
+              <span className="block text-[11px] text-muted-foreground">
+                (ثبت سفارش و پاسخگویی آنلاین در تمام روزهای هفته فعال است)
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* بخش نقشه موقعیت مکانی و مسیریابی هوشمند */}
+        <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-xs">
+          <div className="p-4 border-b border-border/60 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Map className="size-4.5 text-primary" />
+              <h3 className="text-sm font-bold text-foreground">
+                موقعیت مکانی فروشگاه روی نقشه
+              </h3>
+            </div>
+            <span className="text-[11px] text-muted-foreground flex items-center gap-1 font-medium">
+              <MapPin className="size-3 text-primary" />
+              لاله‌زار جنوبی
+            </span>
+          </div>
+
+          {/* نمای نقشه */}
+          <div className="relative aspect-video w-full bg-muted/40 overflow-hidden">
+            <iframe
+              title="موقعیت مکانی فروشگاه اسمارت الکتریک روی نقشه"
+              src="https://www.openstreetmap.org/export/embed.html?bbox=51.4170%2C35.6880%2C51.4250%2C35.6940&layer=mapnik&marker=35.6912%2C51.4211"
+              className="w-full h-full border-0 grayscale-[15%] contrast-105"
+              loading="lazy"
+            />
+          </div>
+
+          {/* دکمه‌های مسیریابی با اپلیکیشن‌های محبوب */}
+          <div className="p-3.5 bg-muted/20 border-t border-border/60 space-y-2">
+            <span className="block text-[11px] font-semibold text-muted-foreground text-right">
+              مسیریابی با اپلیکیشن‌های نقشه:
+            </span>
+            <div className="grid grid-cols-3 gap-2">
+              <a
+                href={neshanUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-card hover:bg-card/80 border border-border px-2 py-2 text-xs font-bold text-foreground shadow-xs transition-colors hover:text-primary hover:border-primary/40 text-center"
+              >
+                <Navigation className="size-3.5 text-primary shrink-0" />
+                <span>نشان</span>
+              </a>
+              <a
+                href={baladUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-card hover:bg-card/80 border border-border px-2 py-2 text-xs font-bold text-foreground shadow-xs transition-colors hover:text-primary hover:border-primary/40 text-center"
+              >
+                <Compass className="size-3.5 text-primary shrink-0" />
+                <span>بلد</span>
+              </a>
+              <a
+                href={googleMapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-card hover:bg-card/80 border border-border px-2 py-2 text-xs font-bold text-foreground shadow-xs transition-colors hover:text-primary hover:border-primary/40 text-center"
+              >
+                <ExternalLink className="size-3.5 text-primary shrink-0" />
+                <span>گوگل مپس</span>
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* =========================================================================
-          ستون فرم ارسال پیام
+          ستون فرم ارسال پیام (۷ ستون در دسکتاپ)
           ========================================================================= */}
       <div className="lg:col-span-7">
         <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-sm">
