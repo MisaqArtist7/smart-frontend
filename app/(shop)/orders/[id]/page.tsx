@@ -6,7 +6,6 @@ import Image from "next/image";
 import { useParams, useSearchParams } from "next/navigation";
 import {
   CheckCircle2,
-  Clock,
   MapPin,
   CreditCard,
   Truck,
@@ -17,7 +16,6 @@ import {
   Loader2,
   AlertCircle,
   FileText,
-  ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import Header from "@/components/layout/Header";
@@ -25,7 +23,6 @@ import Footer from "@/components/layout/footer";
 import { useOrder, type OrderStatus, type PaymentStatus } from "@/lib/api";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 
 const ORDER_STATUS_LABELS: Record<OrderStatus, { text: string; color: string }> = {
   PENDING: { text: "در انتظار پرداخت / بررسی", color: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20" },

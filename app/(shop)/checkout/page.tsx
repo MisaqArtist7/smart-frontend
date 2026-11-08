@@ -12,11 +12,9 @@ import {
   ShieldCheck,
   Plus,
   ShoppingBag,
-  AlertTriangle,
   Loader2,
   CheckCircle2,
   ArrowLeft,
-  Info,
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/footer";
@@ -27,7 +25,6 @@ import {
   useCreateOrder,
   useProducts,
   ApiError,
-  type Address,
 } from "@/lib/api";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Button } from "@/components/ui/button";
@@ -104,15 +101,11 @@ export default function CheckoutPage() {
     }
   }, [freshProducts, syncWithProducts]);
 
-  // انتخاب آدرس
+  // انتخاب آدرس تحویل
   const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (addresses.length > 0 && selectedAddressId === null) {
-      const defaultAddr = addresses.find((a) => a.isDefault) || addresses[0];
-      setSelectedAddressId(defaultAddr.id);
-    }
-  }, [addresses, selectedAddressId]);
+  const effectiveAddressId =
+    selectedAddressId ??
+    (addresses.find((a) => a.isDefault)?.id || addresses[0]?.id || null);
 
   // فرم ایجاد آدرس درون‌خطی
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
@@ -219,7 +212,7 @@ export default function CheckoutPage() {
 
   // ثبت نهایی سفارش
   const handleFinalSubmit = async () => {
-    if (!selectedAddressId) {
+    if (!effectiveAddressId) {
       toast.error("لطفاً یک آدرس تحویل را انتخاب کنید یا آدرس جدیدی اضافه نمایید.");
       return;
     }
@@ -233,7 +226,7 @@ export default function CheckoutPage() {
       // ارسال ساختار دقیق DTO به بک‌اند:
       // فقط addressId, paymentMethod: "CARD_TO_CARD", items: [{ productId, quantity }], note?
       const res = await createOrderMutation.mutateAsync({
-        addressId: selectedAddressId,
+        addressId: effectiveAddressId,
         paymentMethod: "CARD_TO_CARD",
         items: items.map((i) => ({
           productId: i.id,
@@ -381,7 +374,7 @@ export default function CheckoutPage() {
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     {addresses.map((addr) => {
-                      const isSelected = selectedAddressId === addr.id;
+                      const isSelected = effectiveAddressId === addr.id;
                       return (
                         <div
                           key={addr.id}
@@ -571,7 +564,7 @@ export default function CheckoutPage() {
 
                 <Button
                   onClick={handleFinalSubmit}
-                  disabled={createOrderMutation.isPending || !selectedAddressId || items.length === 0}
+                  disabled={createOrderMutation.isPending || !effectiveAddressId || items.length === 0}
                   className="w-full h-12 rounded-2xl bg-primary text-primary-foreground font-black text-xs sm:text-sm shadow-xs hover:bg-primary/90 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.98]"
                 >
                   {createOrderMutation.isPending ? (

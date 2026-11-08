@@ -29,7 +29,6 @@ import { Input } from "@/components/ui/input";
 export default function CartPage() {
   const router = useRouter();
   const [couponInput, setCouponInput] = useState("");
-  const [syncWarnings, setSyncWarnings] = useState<string[]>([]);
 
   const mounted = useSyncExternalStore(
     () => () => {},
@@ -45,9 +44,10 @@ export default function CartPage() {
     applyCoupon,
     removeCoupon,
     syncWithProducts,
+    warnings,
+    dismissWarnings,
     getRawTotal,
     getDiscountTotal,
-    getShippingFee,
     getFinalTotal,
     getTotalCount,
   } = useCartStore();
@@ -57,18 +57,13 @@ export default function CartPage() {
   // همگام‌سازی سبد خرید با قیمت‌ها و وضعیت موجودی واقعی به محض باز شدن صفحه
   useEffect(() => {
     if (freshProducts && freshProducts.length > 0) {
-      const warnings = syncWithProducts(freshProducts);
-      if (warnings.length > 0) {
-        setSyncWarnings(warnings);
-        warnings.forEach((msg) => toast.warning(msg));
-      }
+      syncWithProducts(freshProducts);
     }
   }, [freshProducts, syncWithProducts]);
 
   const totalCount = mounted ? getTotalCount() : 0;
   const rawTotal = mounted ? getRawTotal() : 0;
   const discountTotal = mounted ? getDiscountTotal() : 0;
-  const shippingFee = mounted ? getShippingFee() : 0;
   const finalTotal = mounted ? getFinalTotal() : 0;
 
   // اعمال کد تخفیف
@@ -91,7 +86,6 @@ export default function CartPage() {
   const handleClearAll = () => {
     if (window.confirm("آیا از حذف تمام کالاهای موجود در سبد خرید اطمینان دارید؟")) {
       clearCart();
-      setSyncWarnings([]);
       toast.info("سبد خرید شما خالی شد.");
     }
   };
@@ -129,14 +123,23 @@ export default function CartPage() {
         </div>
 
         {/* هشدار تغییر قیمت، موجودی یا حذف کالاهای ناموجود */}
-        {syncWarnings.length > 0 && (
-          <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 space-y-2 text-amber-900 dark:text-amber-200 text-xs sm:text-sm">
-            <div className="font-bold flex items-center gap-2">
-              <AlertTriangle className="size-4 text-amber-600 shrink-0" />
-              <span>توجه: برخی تغییرات در کالاهای سبد خرید شما اعمال شد</span>
+        {warnings.length > 0 && (
+          <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 space-y-2 text-amber-900 dark:text-amber-200 text-xs sm:text-sm relative">
+            <div className="flex items-center justify-between">
+              <div className="font-bold flex items-center gap-2">
+                <AlertTriangle className="size-4 text-amber-600 shrink-0" />
+                <span>توجه: برخی تغییرات در کالاهای سبد خرید شما اعمال شد</span>
+              </div>
+              <button
+                type="button"
+                onClick={dismissWarnings}
+                className="text-xs text-amber-800 dark:text-amber-300 hover:underline cursor-pointer"
+              >
+                بستن هشدار
+              </button>
             </div>
             <ul className="list-disc list-inside space-y-1 pr-2 text-xs">
-              {syncWarnings.map((w, idx) => (
+              {warnings.map((w, idx) => (
                 <li key={idx}>{w}</li>
               ))}
             </ul>

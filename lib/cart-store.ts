@@ -31,6 +31,7 @@ export interface CouponData {
 interface CartStoreState {
   items: CartItem[];
   storedItems: StoredCartItem[];
+  warnings: string[];
   coupon: CouponData | null;
   selectedShippingMethod: "post" | "express" | "tipax" | "freight";
   selectedPaymentMethod: "card_to_card";
@@ -41,6 +42,7 @@ interface CartStoreState {
   removeItem: (id: number) => void;
   updateQuantity: (id: number, quantity: number) => void;
   clearCart: () => void;
+  dismissWarnings: () => void;
 
   // همگام‌سازی با محصولات واقعی و اعتبارسنجی قیمت و موجودی
   syncWithProducts: (products: Product[]) => string[];
@@ -68,6 +70,7 @@ export const useCartStore = create<CartStoreState>()(
       // در ابتدا خالی، هیچ داده ماکی ذخیره نمی‌شود
       items: [],
       storedItems: [],
+      warnings: [],
       coupon: null,
       selectedShippingMethod: "post",
       selectedPaymentMethod: "card_to_card",
@@ -165,7 +168,11 @@ export const useCartStore = create<CartStoreState>()(
       },
 
       clearCart: () => {
-        set({ items: [], storedItems: [], coupon: null, orderNote: "" });
+        set({ items: [], storedItems: [], warnings: [], coupon: null, orderNote: "" });
+      },
+
+      dismissWarnings: () => {
+        set({ warnings: [] });
       },
 
       /**
@@ -246,7 +253,7 @@ export const useCartStore = create<CartStoreState>()(
           });
         }
 
-        set({ items: updatedItems, storedItems: updatedStored });
+        set({ items: updatedItems, storedItems: updatedStored, warnings });
         return warnings;
       },
 
