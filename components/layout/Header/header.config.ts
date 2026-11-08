@@ -153,7 +153,7 @@ export const DEFAULT_HEADER_CONFIG: HeaderConfig = {
       {
         id: "contact",
         title: "تماس با ما",
-        href: "/contact",
+        href: "/contact-us",
         icon: PhoneCall,
       },
     ],

@@ -254,6 +254,79 @@ export interface AdminCancelOrderInput {
 }
 
 // ----------------------------------------------------
+// Contact Us Types
+// ----------------------------------------------------
+
+export type ContactSubject =
+  | "ORDER_ISSUE"
+  | "PAYMENT_ISSUE"
+  | "PRODUCT_QUESTION"
+  | "DELIVERY_ISSUE"
+  | "OTHER";
+
+export type ContactStatus = "NEW" | "IN_PROGRESS" | "DONE";
+
+export interface SubmitContactInput {
+  fullName: string;
+  phone: string;
+  subject: ContactSubject;
+  message: string;
+  website?: string;
+}
+
+export interface SubmitContactResponse {
+  message: string;
+}
+
+export interface ContactMessage {
+  id: number;
+  fullName: string;
+  phone: string;
+  subject: ContactSubject;
+  message: string;
+  status: ContactStatus;
+  adminNote?: string | null;
+  userId?: number | null;
+  user?: {
+    id: number;
+    name: string;
+    phone?: string;
+  } | null;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface AdminContactCounts {
+  NEW: number;
+  IN_PROGRESS: number;
+  DONE: number;
+}
+
+export interface AdminContactListResponse {
+  items: ContactMessage[];
+  total: number;
+  page: number;
+  limit: number;
+  counts: AdminContactCounts;
+}
+
+export interface AdminContactQueryOptions {
+  page?: number;
+  limit?: number;
+  status?: ContactStatus | "";
+  subject?: ContactSubject | "";
+  search?: string;
+  dateFrom?: string;
+  dateTo?: string;
+}
+
+export interface UpdateAdminContactInput {
+  id: number;
+  status?: ContactStatus;
+  adminNote?: string;
+}
+
+// ----------------------------------------------------
 // API Error & Common Response Types
 // ----------------------------------------------------
 
