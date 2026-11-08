@@ -7,7 +7,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
   Product,
-  ProductImage,
   Category,
   ApiErrorResponse,
 } from "./types";
