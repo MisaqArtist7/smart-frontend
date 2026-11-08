@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { MapPin, Search, Shield, Phone, Mail } from "lucide-react";
+import { Search, Shield, Phone, Loader2, Users } from "lucide-react";
+import { useAdminUsers } from "@/lib/api";
+import { toPersianDigits } from "@/lib/account-data";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -14,63 +16,36 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 
-const MOCK_USERS = [
-  {
-    id: "usr-1",
-    fullName: "میثاق هنرمند",
-    phoneNumber: "۰۹۱۲۲۱۹۳۵۵۱",
-    email: "misaq@example.com",
-    role: "ADMIN",
-    ordersCount: 14,
-    city: "تهران",
-    address: "تهران، لاله زار جنوبی، کوچه بوشهری، پاساژ نیرو الکتریک، پلاک ۱۲",
-    postalCode: "۱۱۴۴۸۹۳۴۵۶",
-    createdAt: "۱۴۰۳/۰۷/۱۵",
-  },
-  {
-    id: "usr-2",
-    fullName: "رضا محمدی",
-    phoneNumber: "۰۹۱۸۳۳۲۴۴۵۵",
-    email: "reza.m@gmail.com",
-    role: "USER",
-    ordersCount: 3,
-    city: "اصفهان",
-    address: "اصفهان، شهرک صنعتی مورچه خورت، خیابان رازی، فاز ۲، پلاک ۸",
-    postalCode: "۸۳۳۴۵۱۲۷۸۹",
-    createdAt: "۱۴۰۳/۰۸/۰۱",
-  },
-  {
-    id: "usr-3",
-    fullName: "سارا کریمی",
-    phoneNumber: "۰۹۳۵۱۲۳۴۵۶۷",
-    email: "sara.karimi@yahoo.com",
-    role: "USER",
-    ordersCount: 1,
-    city: "شیراز",
-    address: "شیراز، بلوار پاسداران، کوچه ۱۸، ساختمان پارس، واحد ۴",
-    postalCode: "۷۱۳۴۵۹۸۷۶۵",
-    createdAt: "۱۴۰۳/۰۸/۰۸",
-  },
-];
-
 export default function AdminUsersPage() {
   const [searchTerm, setSearchTerm] = useState("");
+  const { data: users = [], isLoading } = useAdminUsers();
 
-  const filteredUsers = MOCK_USERS.filter(
-    (u) =>
-      u.fullName.includes(searchTerm) ||
-      u.phoneNumber.includes(searchTerm) ||
-      u.city.includes(searchTerm)
-  );
+  const filteredUsers = users.filter((u) => {
+    const term = searchTerm.trim().toLowerCase();
+    const nameMatch = u.name?.toLowerCase().includes(term);
+    const phoneMatch = u.phone?.includes(term);
+    return nameMatch || phoneMatch;
+  });
+
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return "-";
+    try {
+      return new Intl.DateTimeFormat("fa-IR", {
+        dateStyle: "medium",
+      }).format(new Date(dateStr));
+    } catch {
+      return dateStr;
+    }
+  };
 
   return (
     <div className="space-y-6 select-none">
       <div>
         <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
-          کاربران و نشانی‌ها
+          کاربران و مشتریان
         </h1>
         <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-          مدیریت حساب‌های کاربری خریداران، سطوح دسترسی و آدرس‌های تحویل سفارش
+          مشاهده حساب‌های کاربری ثبت‌شده در سیستم، نقش‌ها و شماره‌های تماس
         </p>
       </div>
 
@@ -82,7 +57,7 @@ export default function AdminUsersPage() {
             <Input
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="جستجو در نام، شماره موبایل یا شهر..."
+              placeholder="جستجو در نام یا شماره موبایل..."
               className="ps-9 h-10 rounded-xl"
             />
           </div>
@@ -98,73 +73,89 @@ export default function AdminUsersPage() {
                 <TableRow>
                   <TableHead>نام کاربر</TableHead>
                   <TableHead>شماره تماس</TableHead>
-                  <TableHead>نقش</TableHead>
-                  <TableHead>شهر و استان</TableHead>
-                  <TableHead>آدرس پستی</TableHead>
-                  <TableHead className="text-center">سفارشات</TableHead>
-                  <TableHead>عضویت</TableHead>
+                  <TableHead>نقش کاربری</TableHead>
+                  <TableHead>وضعیت حساب</TableHead>
+                  <TableHead>تاریخ ثبت نام</TableHead>
                 </TableRow>
               </TableHeader>
 
               <TableBody>
-                {filteredUsers.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell>
-                      <div className="font-bold text-xs sm:text-sm text-foreground">
-                        {user.fullName}
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="py-12 text-center text-xs text-muted-foreground">
+                      <div className="flex items-center justify-center gap-2">
+                        <Loader2 className="size-4 animate-spin text-primary" />
+                        <span>در حال بارگذاری لیست کاربران از سرور...</span>
                       </div>
-                      <div className="text-[11px] text-muted-foreground flex items-center gap-1 font-mono">
-                        <Mail className="size-3" />
-                        {user.email}
-                      </div>
-                    </TableCell>
-
-                    <TableCell>
-                      <span className="font-mono text-xs font-semibold text-foreground flex items-center gap-1">
-                        <Phone className="size-3 text-muted-foreground" />
-                        {user.phoneNumber}
-                      </span>
-                    </TableCell>
-
-                    <TableCell>
-                      {user.role === "ADMIN" ? (
-                        <Badge className="bg-primary text-primary-foreground text-[10px] gap-1">
-                          <Shield className="size-3" />
-                          مدیر سیستم
-                        </Badge>
-                      ) : (
-                        <Badge variant="outline" className="text-muted-foreground text-[10px]">
-                          مشتری
-                        </Badge>
-                      )}
-                    </TableCell>
-
-                    <TableCell>
-                      <span className="text-xs font-semibold text-foreground">
-                        {user.city}
-                      </span>
-                    </TableCell>
-
-                    <TableCell>
-                      <div className="text-xs text-muted-foreground line-clamp-1 max-w-xs flex items-center gap-1">
-                        <MapPin className="size-3 text-primary shrink-0" />
-                        <span>{user.address}</span>
-                      </div>
-                    </TableCell>
-
-                    <TableCell className="text-center">
-                      <span className="text-xs font-bold text-foreground">
-                        {user.ordersCount} خرید
-                      </span>
-                    </TableCell>
-
-                    <TableCell>
-                      <span className="text-xs text-muted-foreground font-mono">
-                        {user.createdAt}
-                      </span>
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : filteredUsers.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="py-12 text-center text-xs text-muted-foreground">
+                      <div className="space-y-2">
+                        <Users className="size-8 mx-auto opacity-30 stroke-1" />
+                        <div className="font-bold text-foreground">کاربری در سیستم یافت نشد.</div>
+                        <p className="text-[11px] text-muted-foreground">
+                          {searchTerm
+                            ? "با عبارت جستجو شده کاربری پیدا نشد."
+                            : "هنوز کاربری در سیستم ثبت‌نام نکرده است یا پاسخی از سرور دریافت نشد."}
+                        </p>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredUsers.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell>
+                        <div className="font-bold text-xs sm:text-sm text-foreground">
+                          {user.name || "کاربر گرامی"}
+                        </div>
+                        <div className="text-[11px] text-muted-foreground font-mono">
+                          شناسه: #{user.id}
+                        </div>
+                      </TableCell>
+
+                      <TableCell>
+                        <span className="font-mono text-xs font-semibold text-foreground flex items-center gap-1" dir="ltr">
+                          <Phone className="size-3 text-muted-foreground" />
+                          {toPersianDigits(user.phone)}
+                        </span>
+                      </TableCell>
+
+                      <TableCell>
+                        {user.role === "ADMIN" ? (
+                          <Badge className="bg-primary text-primary-foreground text-[10px] gap-1">
+                            <Shield className="size-3" />
+                            مدیر سیستم
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-muted-foreground text-[10px]">
+                            مشتری
+                          </Badge>
+                        )}
+                      </TableCell>
+
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={
+                            user.isActive !== false
+                              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-[10px]"
+                              : "bg-destructive/10 text-destructive border-destructive/20 text-[10px]"
+                          }
+                        >
+                          {user.isActive !== false ? "فعال" : "مسدود / غیرفعال"}
+                        </Badge>
+                      </TableCell>
+
+                      <TableCell>
+                        <span className="text-xs text-muted-foreground font-mono">
+                          {formatDate(user.createdAt)}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>

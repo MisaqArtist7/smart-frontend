@@ -18,7 +18,7 @@ import { useAuth } from "@/components/providers/auth-provider";
 import { toPersianDigits } from "@/lib/account-data";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export default function ProfileSettingsPage() {
@@ -143,7 +143,9 @@ export default function ProfileSettingsPage() {
                 <div>
                   <div className="text-[11px] text-muted-foreground">تاریخ پیوستن:</div>
                   <div className="text-xs font-bold text-foreground font-mono mt-0.5">
-                    {user.registeredAt}
+                    {user?.createdAt
+                      ? new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium" }).format(new Date(user.createdAt))
+                      : "عضویت فعال"}
                   </div>
                 </div>
               </div>

@@ -6,6 +6,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
+  User,
   Product,
   Category,
   Address,
@@ -882,6 +883,28 @@ export function useAdminOrders() {
           return Array.isArray(fallback) ? fallback : [];
         }
         throw err;
+      }
+    },
+  });
+}
+
+/**
+ * دریافت لیست کاربران برای پنل ادمین
+ */
+export function useAdminUsers() {
+  return useQuery<User[]>({
+    queryKey: ["admin-users"],
+    queryFn: async () => {
+      try {
+        const data = await apiFetch<User[]>("/admin/users");
+        return Array.isArray(data) ? data : [];
+      } catch {
+        try {
+          const fallback = await apiFetch<User[]>("/users");
+          return Array.isArray(fallback) ? fallback : [];
+        } catch {
+          return [];
+        }
       }
     },
   });

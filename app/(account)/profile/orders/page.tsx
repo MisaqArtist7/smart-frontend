@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import Image from "next/link";
 import Link from "next/link";
 import { toast } from "sonner";
 import {

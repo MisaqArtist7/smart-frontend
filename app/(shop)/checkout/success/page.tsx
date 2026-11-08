@@ -19,8 +19,8 @@ import {
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/footer";
-import { useAccountStore } from "@/lib/account-store";
-import { formatPrice, toPersianDigits, type Order } from "@/lib/account-data";
+import { useMyOrders, type Order } from "@/lib/api";
+import { formatPrice, toPersianDigits } from "@/lib/account-data";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -36,7 +36,7 @@ function SuccessContent() {
     () => false
   );
 
-  const { orders } = useAccountStore();
+  const { data: orders = [], isLoading } = useMyOrders();
 
   const currentOrder: Order | undefined =
     orders.find((o) => o.orderNumber === orderNumberParam) || orders[0];
@@ -48,7 +48,7 @@ function SuccessContent() {
     setTimeout(() => setCopiedCode(null), 2500);
   };
 
-  if (!mounted) {
+  if (!mounted || isLoading) {
     return (
       <div className="py-16 text-center text-muted-foreground">
         در حال آماده‌سازی فاکتور سفارش...
@@ -57,8 +57,8 @@ function SuccessContent() {
   }
 
   // در صورت نبود هیچ سفارشی (فالبک امن)
-  const displayOrderNumber = currentOrder?.orderNumber || orderNumberParam || "SE-140308-0001";
-  const displayTrackingCode = currentOrder?.trackingCode || "TRK-98342011";
+  const displayOrderNumber = currentOrder?.orderNumber || orderNumberParam || "سفارش ثبت‌شده";
+  const displayTrackingCode = currentOrder?.trackingCode || "در انتظار ثبت کد رهگیری پستی";
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
@@ -137,9 +137,7 @@ function SuccessContent() {
                 {currentOrder?.paymentStatus === "PAID" ? "پرداخت موفق" : "در انتظار تایید"}
               </Badge>
               <span className="text-xs text-muted-foreground">
-                ({currentOrder?.paymentMethod === "ONLINE"
-                  ? "درگاه شاپرک"
-                  : currentOrder?.paymentMethod === "CARD_TO_CARD"
+                ({currentOrder?.paymentMethod === "CARD_TO_CARD"
                   ? "کارت‌به‌کارت"
                   : "پرداخت در محل"})
               </span>
