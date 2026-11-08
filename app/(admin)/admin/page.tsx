@@ -47,6 +47,17 @@ export default function AdminDashboardPage() {
 
         <div className="flex items-center gap-2.5">
           <Link
+            href="/admin/orders"
+            className={buttonVariants({
+              variant: "outline",
+              className: "gap-2 rounded-xl text-xs sm:text-sm font-semibold",
+            })}
+          >
+            <ShoppingBag className="size-4 text-primary" />
+            <span>مدیریت سفارش‌ها</span>
+          </Link>
+
+          <Link
             href="/"
             target="_blank"
             className={buttonVariants({
@@ -136,24 +147,27 @@ export default function AdminDashboardPage() {
         </Card>
 
         {/* ۴. کل سفارشات */}
-        <Card className="rounded-2xl border-border bg-card shadow-xs hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 p-5">
-            <CardTitle className="text-xs font-bold text-muted-foreground">
-              تعداد کل سفارشات
-            </CardTitle>
-            <div className="size-9 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-              <ShoppingBag className="size-4.5" />
-            </div>
-          </CardHeader>
-          <CardContent className="p-5 pt-0">
-            <div className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
-              {isMetricsLoading ? "..." : `${metrics?.totalOrders.toLocaleString("fa-IR")} سفارش`}
-            </div>
-            <p className="text-[11px] text-muted-foreground font-normal mt-1.5">
-              ۹۸٪ سفارشات با موفقیت ارسال شدند
-            </p>
-          </CardContent>
-        </Card>
+        <Link href="/admin/orders" className="block focus:outline-none group">
+          <Card className="rounded-2xl border-border bg-card shadow-xs hover:border-blue-500/40 hover:shadow-md transition-all">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 p-5">
+              <CardTitle className="text-xs font-bold text-muted-foreground group-hover:text-blue-600 transition-colors">
+                تعداد کل سفارشات
+              </CardTitle>
+              <div className="size-9 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                <ShoppingBag className="size-4.5" />
+              </div>
+            </CardHeader>
+            <CardContent className="p-5 pt-0">
+              <div className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
+                {isMetricsLoading ? "..." : `${metrics?.totalOrders.toLocaleString("fa-IR")} سفارش`}
+              </div>
+              <p className="text-[11px] text-primary font-semibold mt-1.5 flex items-center gap-1">
+                <span>مشاهده سفارش‌ها</span>
+                <ArrowUpLeft className="size-3" />
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       {/* جدول تازه‌ترین محصولات */}

@@ -15,13 +15,15 @@ import {
   ExternalLink,
   AlertCircle,
   X,
+  Loader2,
 } from "lucide-react";
 import {
   useAdminProducts,
-  useCategories,
+  useAdminCategories,
   useCreateProduct,
   useUpdateProduct,
   useDeleteProduct,
+  ApiError,
   type Product,
 } from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
@@ -123,10 +125,11 @@ export default function AdminProductsPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [conflictProduct, setConflictProduct] = useState<{ id: number; title: string } | null>(null);
   const [isActiveValue, setIsActiveValue] = useState(true);
 
   const { data: products = [], isLoading: isProductsLoading } = useAdminProducts();
-  const { data: categories = [] } = useCategories();
+  const { data: categories = [] } = useAdminCategories();
   const createProductMutation = useCreateProduct();
   const updateProductMutation = useUpdateProduct();
   const deleteProductMutation = useDeleteProduct();
@@ -245,9 +248,28 @@ export default function AdminProductsPage() {
       await deleteProductMutation.mutateAsync(id);
       toast.success(`محصول «${title}» با موفقیت حذف گردید.`);
     } catch (err: unknown) {
-      toast.error((err as Error).message || "خطا در حذف محصول");
+      if (err instanceof ApiError && err.status === 409) {
+        setConflictProduct({ id, title });
+      } else {
+        toast.error((err as Error).message || "خطا در حذف محصول");
+      }
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  // غیرفعال‌سازی محصول در صورت بروز تداخل حذف با سوابق سفارشات قبلی (خطای ۴۰۹)
+  const handleDeactivateConflictProduct = async () => {
+    if (!conflictProduct) return;
+    try {
+      await updateProductMutation.mutateAsync({
+        id: conflictProduct.id,
+        isActive: false,
+      });
+      toast.success(`محصول «${conflictProduct.title}» به جای حذف، با موفقیت غیرفعال شد.`);
+      setConflictProduct(null);
+    } catch (err: unknown) {
+      toast.error((err as Error).message || "خطا در غیرفعال‌سازی محصول");
     }
   };
 
@@ -717,6 +739,54 @@ export default function AdminProductsPage() {
             </DialogFooter>
           </form>
         </DialogContent>
+      </Dialog>
+
+      {/* دیالوگ راهنمای خطای ۴۰۹ (پیشنهاد غیرفعال‌سازی به جای حذف) */}
+      <Dialog open={!!conflictProduct} onOpenChange={(open) => !open && setConflictProduct(null)}>
+        {conflictProduct && (
+          <DialogContent className="max-w-md rounded-2xl" dir="rtl">
+            <DialogHeader>
+              <div className="size-12 rounded-2xl bg-amber-500/10 text-amber-600 flex items-center justify-center mb-1">
+                <AlertCircle className="size-6" />
+              </div>
+              <DialogTitle className="text-base font-black">
+                عدم امکان حذف فیزیکی محصول (خطای ۴۰۹)
+              </DialogTitle>
+              <DialogDescription className="text-xs leading-relaxed text-muted-foreground">
+                محصول «{conflictProduct.title}» قبلاً در سفارش‌های مشتریان ثبت شده است و جهت حفظ سوابق فاکتورها قابل حذف از پایگاه داده نیست.
+                آیا می‌خواهید این محصول را به جای حذف، <strong className="text-foreground">غیرفعال (عدم نمایش در فروشگاه)</strong> کنید؟
+              </DialogDescription>
+            </DialogHeader>
+
+            <DialogFooter className="gap-2 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setConflictProduct(null)}
+                className="rounded-xl text-xs"
+              >
+                انصراف
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                onClick={handleDeactivateConflictProduct}
+                disabled={updateProductMutation.isPending}
+                className="rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold gap-1.5"
+              >
+                {updateProductMutation.isPending ? (
+                  <span className="flex items-center gap-1.5">
+                    <Loader2 className="size-3.5 animate-spin" />
+                    <span>در حال تغییر وضعیت...</span>
+                  </span>
+                ) : (
+                  <span>غیرفعال‌سازی محصول</span>
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        )}
       </Dialog>
     </div>
   );

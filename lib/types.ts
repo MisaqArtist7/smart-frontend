@@ -206,6 +206,54 @@ export interface PaginatedOrdersResponse {
 }
 
 // ----------------------------------------------------
+// Admin Orders Management Types
+// ----------------------------------------------------
+
+export interface AdminOrderListItem extends Order {
+  hasReceipt?: boolean;
+  user?: {
+    id: number;
+    name: string;
+    phone: string;
+  };
+}
+
+export interface AdminOrdersQueryOptions {
+  page?: number;
+  limit?: number;
+  status?: OrderStatus | "";
+  paymentStatus?: PaymentStatus | "";
+  search?: string;
+  dateFrom?: string;
+  dateTo?: string;
+}
+
+export interface AdminOrdersResponse {
+  items: AdminOrderListItem[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface ReviewReceiptInput {
+  orderId: number;
+  action: "approve" | "reject";
+  adminNote?: string;
+}
+
+export interface UpdateOrderStatusInput {
+  orderId: number;
+  status: "SHIPPED" | "DELIVERED";
+  trackingCode?: string;
+  adminNote?: string;
+}
+
+export interface AdminCancelOrderInput {
+  orderId: number;
+  adminNote?: string;
+}
+
+// ----------------------------------------------------
 // API Error & Common Response Types
 // ----------------------------------------------------
 

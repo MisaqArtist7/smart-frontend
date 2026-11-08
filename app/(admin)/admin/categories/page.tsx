@@ -19,10 +19,11 @@ import {
   ImageIcon,
 } from "lucide-react";
 import {
-  useCategories,
+  useAdminCategories,
   useCreateCategory,
   useUpdateCategory,
   useDeleteCategory,
+  ApiError,
   type Category,
   type CreateCategoryInput,
 } from "@/lib/api";
@@ -110,7 +111,7 @@ export default function AdminCategoriesPage() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [isActiveValue, setIsActiveValue] = useState(true);
 
-  const { data: categories = [], isLoading } = useCategories();
+  const { data: categories = [], isLoading } = useAdminCategories();
   const createCategoryMutation = useCreateCategory();
   const updateCategoryMutation = useUpdateCategory();
   const deleteCategoryMutation = useDeleteCategory();
@@ -246,8 +247,12 @@ export default function AdminCategoriesPage() {
       await deleteCategoryMutation.mutateAsync(id);
       toast.success(`دسته‌بندی «${name}» با موفقیت حذف شد.`);
     } catch (err: unknown) {
-      const error = err as Error;
-      toast.error(error.message || "خطا در حذف دسته‌بندی");
+      if (err instanceof ApiError && err.status === 409) {
+        toast.error("امکان حذف این دسته‌بندی وجود ندارد؛ این دسته دارای کالا یا زیردسته‌های وابسته است.");
+      } else {
+        const error = err as Error;
+        toast.error(error.message || "خطا در حذف دسته‌بندی");
+      }
     } finally {
       setDeletingId(null);
     }

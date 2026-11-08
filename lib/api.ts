@@ -17,6 +17,12 @@ import type {
   ApiErrorResponse,
   PaymentInfoResponse,
   PaginatedOrdersResponse,
+  AdminOrderListItem,
+  AdminOrdersQueryOptions,
+  AdminOrdersResponse,
+  ReviewReceiptInput,
+  UpdateOrderStatusInput,
+  AdminCancelOrderInput,
 } from "./types";
 
 export * from "./types";
@@ -1023,19 +1029,249 @@ export async function fetchReceiptBlob(orderId: number | string): Promise<string
   return URL.createObjectURL(blob);
 }
 
+export type AdminOrdersResult = AdminOrderListItem[] & {
+  items: AdminOrderListItem[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+};
+
 /**
- * دریافت تمام سفارش‌ها برای پنل ادمین
+ * دریافت لیست سفارش‌ها برای پنل ادمین با قابلیت صفحه‌بندی، فیلتر وضعیت و جستجو
  */
-export function useAdminOrders() {
-  return useQuery<Order[]>({
-    queryKey: ["admin-orders"],
+export function useAdminOrders(options: AdminOrdersQueryOptions = {}) {
+  const page = options.page ?? 1;
+  const limit = options.limit ?? 10;
+  const status = options.status || undefined;
+  const paymentStatus = options.paymentStatus || undefined;
+  const search = options.search?.trim() || undefined;
+  const dateFrom = options.dateFrom || undefined;
+  const dateTo = options.dateTo || undefined;
+
+  return useQuery<AdminOrdersResult>({
+    queryKey: [
+      "admin-orders",
+      { page, limit, status, paymentStatus, search, dateFrom, dateTo },
+    ],
+    queryFn: async () => {
+      const q = new URLSearchParams();
+      if (page) q.set("page", String(page));
+      if (limit) q.set("limit", String(limit));
+      if (status) q.set("status", status);
+      if (paymentStatus) q.set("paymentStatus", paymentStatus);
+      if (search) q.set("search", search);
+      if (dateFrom) q.set("dateFrom", dateFrom);
+      if (dateTo) q.set("dateTo", dateTo);
+
+      const qs = q.toString();
+      const endpoint = `/admin/orders${qs ? `?${qs}` : ""}`;
+
+      try {
+        const data = await apiFetch<AdminOrdersResponse | AdminOrderListItem[]>(endpoint);
+        let items: AdminOrderListItem[] = [];
+        let total = 0;
+        let currentPage = page;
+        let currentLimit = limit;
+
+        if (Array.isArray(data)) {
+          items = data;
+          total = data.length;
+          currentPage = 1;
+          currentLimit = data.length || limit;
+        } else if (data && typeof data === "object") {
+          items = Array.isArray(data.items) ? data.items : [];
+          total = typeof data.total === "number" ? data.total : items.length;
+          currentPage = typeof data.page === "number" ? data.page : page;
+          currentLimit = typeof data.limit === "number" ? data.limit : limit;
+        }
+
+        const totalPages = Math.max(1, Math.ceil(total / (currentLimit || 10)));
+        const resArray = [...items] as AdminOrdersResult;
+        resArray.items = items;
+        resArray.total = total;
+        resArray.page = currentPage;
+        resArray.limit = currentLimit;
+        resArray.totalPages = totalPages;
+        return resArray;
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 404) {
+          try {
+            const fallback = await apiFetch<AdminOrderListItem[]>("/orders");
+            const items = Array.isArray(fallback) ? fallback : [];
+            const resArray = [...items] as AdminOrdersResult;
+            resArray.items = items;
+            resArray.total = items.length;
+            resArray.page = 1;
+            resArray.limit = items.length || limit;
+            resArray.totalPages = 1;
+            return resArray;
+          } catch {
+            const emptyArray = [] as unknown as AdminOrdersResult;
+            emptyArray.items = [];
+            emptyArray.total = 0;
+            emptyArray.page = page;
+            emptyArray.limit = limit;
+            emptyArray.totalPages = 1;
+            return emptyArray;
+          }
+        }
+        throw err;
+      }
+    },
+  });
+}
+
+/**
+ * دریافت جزئیات یک سفارش در پنل ادمین
+ */
+export function useAdminOrder(id: number | string | undefined | null) {
+  return useQuery<AdminOrderListItem | null>({
+    queryKey: ["admin-order", id],
+    queryFn: async () => {
+      if (!id) return null;
+      return await apiFetch<AdminOrderListItem>(`/admin/orders/${id}`);
+    },
+    enabled: Boolean(id),
+  });
+}
+
+/**
+ * دریافت تصویر فیش واریزی در پنل ادمین با اعتبارسنجی کوکی
+ */
+export async function fetchAdminReceiptBlob(orderId: number | string): Promise<string> {
+  const res = await fetch(`${API_BASE_URL}/admin/orders/${orderId}/receipt`, {
+    credentials: "include",
+    headers: {
+      Accept: "image/*, application/json",
+    },
+  });
+
+  if (!res.ok) {
+    if (res.status === 404) {
+      return fetchReceiptBlob(orderId);
+    }
+    throw new Error(`خطا در دریافت تصویر فیش توسط ادمین (${res.status})`);
+  }
+
+  const contentType = res.headers.get("content-type") || "";
+  if (contentType.includes("application/json")) {
+    const data = await res.json();
+    if (data?.url || data?.receiptUrl) {
+      return data.url || data.receiptUrl;
+    }
+  }
+
+  const blob = await res.blob();
+  return URL.createObjectURL(blob);
+}
+
+/**
+ * تایید یا رد فیش واریزی توسط ادمین
+ * PATCH /admin/orders/:id/payment { action: "approve" | "reject", adminNote?: string }
+ */
+export function useReviewReceipt() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (input: ReviewReceiptInput) => {
+      const payload: Record<string, unknown> = {
+        action: input.action,
+      };
+      if (input.adminNote && input.adminNote.trim()) {
+        payload.adminNote = input.adminNote.trim().slice(0, 500);
+      }
+
+      return await apiFetch<Order>(`/admin/orders/${input.orderId}/payment`, {
+        method: "PATCH",
+        body: payload,
+      });
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-order", variables.orderId] });
+      queryClient.invalidateQueries({ queryKey: ["admin-metrics"] });
+      queryClient.invalidateQueries({ queryKey: ["order", variables.orderId] });
+    },
+  });
+}
+
+/**
+ * تغییر وضعیت پردازش سفارش توسط ادمین (CONFIRMED -> SHIPPED -> DELIVERED)
+ * PATCH /admin/orders/:id/status { status, trackingCode?, adminNote? }
+ */
+export function useUpdateAdminOrderStatus() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (input: UpdateOrderStatusInput) => {
+      const payload: Record<string, unknown> = {
+        status: input.status,
+      };
+      if (input.trackingCode && input.trackingCode.trim()) {
+        payload.trackingCode = input.trackingCode.trim().slice(0, 50);
+      }
+      if (input.adminNote && input.adminNote.trim()) {
+        payload.adminNote = input.adminNote.trim().slice(0, 500);
+      }
+
+      return await apiFetch<Order>(`/admin/orders/${input.orderId}/status`, {
+        method: "PATCH",
+        body: payload,
+      });
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-order", variables.orderId] });
+      queryClient.invalidateQueries({ queryKey: ["admin-metrics"] });
+      queryClient.invalidateQueries({ queryKey: ["order", variables.orderId] });
+    },
+  });
+}
+
+/**
+ * لغو سفارش توسط ادمین و بازگرداندن اتمیک موجودی اقلام به انبار
+ * POST /admin/orders/:id/cancel { adminNote? }
+ */
+export function useAdminCancelOrder() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (input: AdminCancelOrderInput) => {
+      const payload: Record<string, unknown> = {};
+      if (input.adminNote && input.adminNote.trim()) {
+        payload.adminNote = input.adminNote.trim().slice(0, 500);
+      }
+
+      return await apiFetch<Order>(`/admin/orders/${input.orderId}/cancel`, {
+        method: "POST",
+        body: payload,
+      });
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-order", variables.orderId] });
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-metrics"] });
+      queryClient.invalidateQueries({ queryKey: ["order", variables.orderId] });
+    },
+  });
+}
+
+/**
+ * دریافت لیست تمام دسته‌بندی‌ها (فعال و غیرفعال) برای پنل ادمین
+ * GET /admin/categories
+ */
+export function useAdminCategories() {
+  return useQuery<Category[]>({
+    queryKey: ["admin-categories"],
     queryFn: async () => {
       try {
-        const data = await apiFetch<Order[]>("/admin/orders");
+        const data = await apiFetch<Category[]>("/admin/categories");
         return Array.isArray(data) ? data : [];
       } catch (err) {
         if (err instanceof ApiError && err.status === 404) {
-          const fallback = await apiFetch<Order[]>("/orders");
+          const fallback = await apiFetch<Category[]>("/categories");
           return Array.isArray(fallback) ? fallback : [];
         }
         throw err;

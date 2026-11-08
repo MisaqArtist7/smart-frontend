@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import Image from "next/image";
 import {
   LayoutDashboard,
+  ShoppingBag,
   Package,
   Layers,
   Users,
@@ -28,6 +29,11 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
     title: "پیشخوان",
     href: "/admin",
     icon: LayoutDashboard,
+  },
+  {
+    title: "مدیریت سفارش‌ها",
+    href: "/admin/orders",
+    icon: ShoppingBag,
   },
   {
     title: "محصولات",
