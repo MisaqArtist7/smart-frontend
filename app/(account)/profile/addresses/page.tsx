@@ -72,7 +72,7 @@ const addressFormSchema = z.object({
   postalCode: z
     .string()
     .regex(/^\d{10}$/, "کد پستی باید دقیقاً یک عدد ۱۰ رقمی باشد"),
-  isDefault: z.boolean().default(false),
+  isDefault: z.boolean(),
 });
 
 type AddressFormValues = z.infer<typeof addressFormSchema>;
