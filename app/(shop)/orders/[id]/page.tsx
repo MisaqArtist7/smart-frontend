@@ -245,7 +245,7 @@ export default function OrderDetailsPage() {
             ممکن است شماره سفارش اشتباه باشد یا دسترسی به این سفارش متعلق به حساب شما نباشد.
           </p>
           <Link
-            href="/orders"
+            href="/profile/orders"
             className="inline-flex items-center gap-2 bg-primary text-primary-foreground text-xs font-bold px-5 py-2.5 rounded-xl shadow-xs hover:bg-primary/90"
           >
             بازگشت به سفارش‌های من
@@ -829,7 +829,7 @@ export default function OrderDetailsPage() {
             {/* لینک‌های ناوبری سریع */}
             <div className="flex flex-col gap-2 pt-1">
               <Link
-                href="/orders"
+                href="/profile/orders"
                 className="w-full h-11 rounded-xl bg-card border border-border hover:bg-muted text-foreground font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition-colors"
               >
                 <PackageCheck className="size-4 text-primary" />

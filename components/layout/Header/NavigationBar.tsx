@@ -242,7 +242,7 @@ export function NavigationBar({
                 </DropdownMenuItem>
 
                 <DropdownMenuItem
-                  onClick={() => router.push("/orders")}
+                  onClick={() => router.push("/profile/orders")}
                   className="flex items-center gap-2 cursor-pointer text-xs font-bold text-primary py-2 rounded-lg"
                 >
                   <PackageCheck className="size-4 text-primary" />

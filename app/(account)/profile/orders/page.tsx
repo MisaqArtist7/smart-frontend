@@ -7,7 +7,6 @@ import {
   AlertCircle,
   Copy,
   Check,
-  Upload,
   Eye,
   CreditCard,
   MapPin,
@@ -306,17 +305,13 @@ export default function ProfileOrdersPage() {
                           </span>
                         </div>
 
-                        <Button
-                          size="sm"
-                          onClick={() => {
-                            setReceiptModalOrder(order);
-                            setReceiptUrlInput("");
-                          }}
-                          className="bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold gap-1.5 shrink-0 self-start sm:self-auto cursor-pointer"
+                        <Link
+                          href={`/orders/${order.id}`}
+                          className="bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold gap-1.5 shrink-0 self-start sm:self-auto cursor-pointer inline-flex items-center px-3 py-2 shadow-xs transition-colors"
                         >
-                          <Upload className="size-3.5" />
-                          <span>ثبت فیش واریزی</span>
-                        </Button>
+                          <CreditCard className="size-3.5" />
+                          <span>پرداخت و ثبت فیش</span>
+                        </Link>
                       </div>
                     )}
 

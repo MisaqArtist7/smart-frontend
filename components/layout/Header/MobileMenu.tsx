@@ -147,7 +147,7 @@ export function MobileMenu({
                   <span>پروفایل</span>
                 </Link>
                 <Link
-                  href="/orders"
+                  href="/profile/orders"
                   onClick={onClose}
                   className="flex items-center gap-1.5 p-2 rounded-lg bg-card border border-border/60 font-bold text-primary hover:bg-accent text-[11px]"
                 >
