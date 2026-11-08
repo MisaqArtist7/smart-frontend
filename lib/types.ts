@@ -102,6 +102,21 @@ export interface Address {
   updatedAt?: string;
 }
 
+export interface CreateAddressInput {
+  title: string;
+  receiverName: string;
+  receiverPhone: string;
+  province: string;
+  city: string;
+  addressLine: string;
+  postalCode: string;
+  isDefault?: boolean;
+}
+
+export interface UpdateAddressInput extends Partial<CreateAddressInput> {
+  id: number;
+}
+
 // ----------------------------------------------------
 // Order & Payment Types
 // ----------------------------------------------------
@@ -152,6 +167,18 @@ export interface Order {
   updatedAt: string;
   items: OrderItem[];
   address?: Address;
+}
+
+export interface CreateOrderItemInput {
+  productId: number;
+  quantity: number;
+}
+
+export interface CreateOrderInput {
+  addressId: number;
+  paymentMethod: "CARD_TO_CARD";
+  items: CreateOrderItemInput[];
+  note?: string;
 }
 
 // ----------------------------------------------------

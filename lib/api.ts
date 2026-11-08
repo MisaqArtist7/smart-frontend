@@ -9,6 +9,11 @@ import type {
   Product,
   Category,
   ApiErrorResponse,
+  Address,
+  CreateAddressInput,
+  UpdateAddressInput,
+  Order,
+  CreateOrderInput,
 } from "./types";
 
 export * from "./types";
@@ -665,6 +670,214 @@ export function useAdminMetrics() {
             totalOrders: 0,
           };
         }
+      }
+    },
+  });
+}
+
+// ----------------------------------------------------
+// هوک‌های آدرس‌ها (Addresses)
+// ----------------------------------------------------
+
+export function useAddresses() {
+  return useQuery<Address[]>({
+    queryKey: ["addresses"],
+    queryFn: async () => {
+      try {
+        const data = await apiFetch<Address[]>("/addresses");
+        return Array.isArray(data) ? data : [];
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 404) {
+          const fallback = await apiFetch<Address[]>("/address");
+          return Array.isArray(fallback) ? fallback : [];
+        }
+        throw err;
+      }
+    },
+  });
+}
+
+export function useCreateAddress() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (input: CreateAddressInput) => {
+      const payload: Record<string, unknown> = {
+        title: input.title.trim(),
+        receiverName: input.receiverName.trim(),
+        receiverPhone: input.receiverPhone.trim(),
+        province: input.province.trim(),
+        city: input.city.trim(),
+        addressLine: input.addressLine.trim(),
+        postalCode: input.postalCode.trim(),
+      };
+      if (input.isDefault !== undefined) {
+        payload.isDefault = Boolean(input.isDefault);
+      }
+
+      try {
+        return await apiFetch<Address>("/addresses", {
+          method: "POST",
+          body: payload,
+        });
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 404) {
+          return await apiFetch<Address>("/address", {
+            method: "POST",
+            body: payload,
+          });
+        }
+        throw err;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["addresses"] });
+    },
+  });
+}
+
+export function useUpdateAddress() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, ...input }: UpdateAddressInput) => {
+      const payload: Record<string, unknown> = {};
+
+      if (input.title !== undefined) payload.title = input.title.trim();
+      if (input.receiverName !== undefined) payload.receiverName = input.receiverName.trim();
+      if (input.receiverPhone !== undefined) payload.receiverPhone = input.receiverPhone.trim();
+      if (input.province !== undefined) payload.province = input.province.trim();
+      if (input.city !== undefined) payload.city = input.city.trim();
+      if (input.addressLine !== undefined) payload.addressLine = input.addressLine.trim();
+      if (input.postalCode !== undefined) payload.postalCode = input.postalCode.trim();
+      if (input.isDefault !== undefined) payload.isDefault = Boolean(input.isDefault);
+
+      try {
+        return await apiFetch<Address>(`/addresses/${id}`, {
+          method: "PATCH",
+          body: payload,
+        });
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 404) {
+          return await apiFetch<Address>(`/address/${id}`, {
+            method: "PATCH",
+            body: payload,
+          });
+        }
+        throw err;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["addresses"] });
+    },
+  });
+}
+
+export function useDeleteAddress() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: number) => {
+      try {
+        return await apiFetch<{ message?: string }>(`/addresses/${id}`, {
+          method: "DELETE",
+        });
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 404) {
+          return await apiFetch<{ message?: string }>(`/address/${id}`, {
+            method: "DELETE",
+          });
+        }
+        throw err;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["addresses"] });
+    },
+  });
+}
+
+export function useSetDefaultAddress() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: number) => {
+      try {
+        return await apiFetch<Address>(`/addresses/${id}/default`, {
+          method: "PATCH",
+        });
+      } catch {
+        return await apiFetch<Address>(`/addresses/${id}`, {
+          method: "PATCH",
+          body: { isDefault: true },
+        });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["addresses"] });
+    },
+  });
+}
+
+// ----------------------------------------------------
+// هوک‌های سفارش‌ها (Orders)
+// ----------------------------------------------------
+
+export function useCreateOrder() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (input: CreateOrderInput) => {
+      const payload: Record<string, unknown> = {
+        addressId: Number(input.addressId),
+        paymentMethod: "CARD_TO_CARD",
+        items: input.items.map((i) => ({
+          productId: Number(i.productId),
+          quantity: Number(i.quantity),
+        })),
+      };
+
+      if (input.note && input.note.trim()) {
+        payload.note = input.note.trim();
+      }
+
+      return await apiFetch<Order>("/orders", {
+        method: "POST",
+        body: payload,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      queryClient.invalidateQueries({ queryKey: ["my-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-metrics"] });
+    },
+  });
+}
+
+export function useOrder(id: number | string | undefined | null) {
+  return useQuery<Order | null>({
+    queryKey: ["order", id],
+    queryFn: async () => {
+      if (!id) return null;
+      return await apiFetch<Order>(`/orders/${id}`);
+    },
+    enabled: Boolean(id),
+  });
+}
+
+export function useMyOrders() {
+  return useQuery<Order[]>({
+    queryKey: ["my-orders"],
+    queryFn: async () => {
+      try {
+        const data = await apiFetch<Order[]>("/orders/my");
+        return Array.isArray(data) ? data : [];
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 404) {
+          const fallback = await apiFetch<Order[]>("/orders");
+          return Array.isArray(fallback) ? fallback : [];
+        }
+        throw err;
       }
     },
   });

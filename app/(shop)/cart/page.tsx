@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useSyncExternalStore } from "react";
+import React, { useState, useEffect, useSyncExternalStore } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -16,16 +16,20 @@ import {
   Tag,
   CheckCircle2,
   X,
+  AlertTriangle,
+  Loader2,
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/footer";
 import { useCartStore } from "@/lib/cart-store";
+import { useProducts } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export default function CartPage() {
   const router = useRouter();
   const [couponInput, setCouponInput] = useState("");
+  const [syncWarnings, setSyncWarnings] = useState<string[]>([]);
 
   const mounted = useSyncExternalStore(
     () => () => {},
@@ -40,12 +44,26 @@ export default function CartPage() {
     coupon,
     applyCoupon,
     removeCoupon,
+    syncWithProducts,
     getRawTotal,
     getDiscountTotal,
     getShippingFee,
     getFinalTotal,
     getTotalCount,
   } = useCartStore();
+
+  const { data: freshProducts, isLoading: isProductsLoading } = useProducts();
+
+  // همگام‌سازی سبد خرید با قیمت‌ها و وضعیت موجودی واقعی به محض باز شدن صفحه
+  useEffect(() => {
+    if (freshProducts && freshProducts.length > 0) {
+      const warnings = syncWithProducts(freshProducts);
+      if (warnings.length > 0) {
+        setSyncWarnings(warnings);
+        warnings.forEach((msg) => toast.warning(msg));
+      }
+    }
+  }, [freshProducts, syncWithProducts]);
 
   const totalCount = mounted ? getTotalCount() : 0;
   const rawTotal = mounted ? getRawTotal() : 0;
@@ -73,6 +91,7 @@ export default function CartPage() {
   const handleClearAll = () => {
     if (window.confirm("آیا از حذف تمام کالاهای موجود در سبد خرید اطمینان دارید؟")) {
       clearCart();
+      setSyncWarnings([]);
       toast.info("سبد خرید شما خالی شد.");
     }
   };
@@ -104,10 +123,25 @@ export default function CartPage() {
               <span className="size-6 rounded-full bg-muted flex items-center justify-center text-xs">
                 ۳
               </span>
-              <span>پرداخت و ثبت نهایی</span>
+              <span>پرداخت کارت‌به‌کارت و ثبت</span>
             </div>
           </div>
         </div>
+
+        {/* هشدار تغییر قیمت، موجودی یا حذف کالاهای ناموجود */}
+        {syncWarnings.length > 0 && (
+          <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 space-y-2 text-amber-900 dark:text-amber-200 text-xs sm:text-sm">
+            <div className="font-bold flex items-center gap-2">
+              <AlertTriangle className="size-4 text-amber-600 shrink-0" />
+              <span>توجه: برخی تغییرات در کالاهای سبد خرید شما اعمال شد</span>
+            </div>
+            <ul className="list-disc list-inside space-y-1 pr-2 text-xs">
+              {syncWarnings.map((w, idx) => (
+                <li key={idx}>{w}</li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {/* حالت سبد خرید خالی */}
         {mounted && items.length === 0 ? (
@@ -146,6 +180,12 @@ export default function CartPage() {
                   <span className="text-xs font-bold text-muted-foreground bg-muted/60 px-2.5 py-0.5 rounded-full">
                     {totalCount} عدد
                   </span>
+                  {isProductsLoading && (
+                    <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                      <Loader2 className="size-3 animate-spin" />
+                      در حال بررسی موجودی و قیمت زنده...
+                    </span>
+                  )}
                 </div>
 
                 <button
@@ -203,12 +243,12 @@ export default function CartPage() {
                         <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 text-[11px] text-muted-foreground">
                           <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
                             <CheckCircle2 className="size-3.5" />
-                            موجود در انبار
+                            موجود در انبار ({item.stock.toLocaleString("fa-IR")} عدد)
                           </span>
                           <span>•</span>
                           <span className="flex items-center gap-1">
                             <ShieldCheck className="size-3.5 text-primary" />
-                            گارانتی اصالت و سلامت فیزیکی
+                            ضمانت اصالت و سلامت کالا
                           </span>
                         </div>
 
@@ -260,11 +300,11 @@ export default function CartPage() {
                 })}
               </div>
 
-              {/* یادداشت اطمینان خرید */}
+              {/* یادداشت شیوه ارسال و پس‌کرایه */}
               <div className="rounded-2xl border border-primary/20 bg-primary/[0.03] p-4 text-xs text-muted-foreground flex items-center gap-3">
                 <Truck className="size-5 text-primary shrink-0" />
                 <span>
-                  سفارش‌های ثبت شده تا ساعت ۱۴ در تهران همان روز ارسال شده و سایر استان‌ها ظرف ۲۴ تا ۴۸ ساعت کاری تحویل می‌گردند.
+                  <strong>نحوه پرداخت هزینه پستی:</strong> هزینه ارسال سفارش پس‌کرایه بوده و در محل به مامور محترم پست یا باربری پرداخت می‌گردد (هزینه ارسال در پیش‌فاکتور ۰ تومان محاسبه شده است).
                 </span>
               </div>
             </div>
@@ -347,22 +387,16 @@ export default function CartPage() {
 
                   {/* هزینه ارسال */}
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">هزینه ارسال:</span>
-                    {shippingFee === 0 ? (
-                      <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                        رایگان
-                      </span>
-                    ) : (
-                      <span className="font-mono font-bold text-foreground">
-                        {shippingFee.toLocaleString("fa-IR")} تومان
-                      </span>
-                    )}
+                    <span className="text-muted-foreground">هزینه ارسال پستی:</span>
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                      پس‌کرایه (۰ تومان در فاکتور)
+                    </span>
                   </div>
 
                   {/* خط جداکننده و مبلغ نهایی */}
                   <div className="pt-3 border-t border-border flex items-baseline justify-between">
                     <span className="font-black text-xs sm:text-sm text-foreground">
-                      مبلغ قابل پرداخت:
+                      مبلغ قابل پرداخت سفارش:
                     </span>
                     <div className="text-end">
                       <span className="text-xl sm:text-2xl font-black text-primary font-mono tracking-tight">
@@ -383,7 +417,7 @@ export default function CartPage() {
                 </Button>
 
                 <p className="text-[11px] text-muted-foreground text-center leading-relaxed">
-                  هزینه سفارش شامل مالیات بر ارزش افزوده می‌باشد.
+                  روش پرداخت به صورت کارت‌به‌کارت با بررسی و تایید مستقیم رسید می‌باشد.
                 </p>
               </div>
             </div>
