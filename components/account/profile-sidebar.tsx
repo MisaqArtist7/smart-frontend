@@ -32,7 +32,7 @@ export const PROFILE_NAV_ITEMS: NavItem[] = [
   },
   {
     title: "سفارش‌های من",
-    href: "/profile/orders",
+    href: "/orders",
     icon: PackageCheck,
   },
   {
@@ -108,6 +108,8 @@ export function ProfileSidebar({ className, onNavigate }: ProfileSidebarProps) {
             const isActive =
               item.href === "/profile"
                 ? pathname === "/profile"
+                : item.href === "/orders"
+                ? pathname.startsWith("/orders") || pathname.startsWith("/profile/orders")
                 : pathname.startsWith(item.href);
 
             return (

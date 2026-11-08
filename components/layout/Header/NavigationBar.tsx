@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   LayoutGrid,
   ChevronDown,
@@ -9,7 +10,18 @@ import {
   User,
   UserCheck,
   ChevronLeft,
+  PackageCheck,
+  LayoutDashboard,
+  LogOut,
 } from "lucide-react";
+import { useAuth } from "@/components/providers/auth-provider";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import type { NavigationBarProps } from "./header.types";
 
 /**
@@ -25,6 +37,8 @@ export function NavigationBar({
   const { categoriesTitle, categories, navLinks, authButton, cartButton } =
     config;
 
+  const router = useRouter();
+  const { logout } = useAuth();
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -195,19 +209,81 @@ export function NavigationBar({
             </span>
           </Link>
 
-          {/* دکمه ورود / عضویت یا نام کاربری پس از لاگین */}
-          <Link
-            href={authButton.href}
-            title={authButton.isLoggedIn ? `حساب کاربری: ${authButton.text}` : authButton.text}
-            className="flex items-center gap-2 rounded-lg bg-primary text-primary-foreground px-3.5 py-2 text-sm font-semibold shadow-xs transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 max-w-[180px]"
-          >
-            {authButton.isLoggedIn ? (
-              <UserCheck className="size-4 shrink-0 text-primary-foreground" />
-            ) : (
+          {/* دکمه ورود / عضویت یا منوی کشویی کاربر پس از لاگین */}
+          {authButton.isLoggedIn ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                title={`حساب کاربری: ${authButton.text}`}
+                className="flex items-center gap-1.5 rounded-lg bg-primary text-primary-foreground px-3 py-2 text-xs sm:text-sm font-semibold shadow-xs transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 max-w-[180px] cursor-pointer"
+                aria-label="منوی حساب کاربری"
+              >
+                <UserCheck className="size-4 shrink-0 text-primary-foreground" />
+                <span className="truncate">{authButton.text}</span>
+                <ChevronDown className="size-3.5 shrink-0 opacity-80" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52 rounded-xl p-1.5" dir="rtl">
+                <div className="px-3 py-2 text-xs border-b border-border/60 mb-1">
+                  <span className="font-bold text-foreground block truncate">
+                    {authButton.userName || authButton.text}
+                  </span>
+                  {authButton.phone && (
+                    <span className="text-[11px] font-mono text-muted-foreground block mt-0.5">
+                      {authButton.phone}
+                    </span>
+                  )}
+                </div>
+
+                <DropdownMenuItem
+                  onClick={() => router.push("/profile")}
+                  className="flex items-center gap-2 cursor-pointer text-xs font-medium py-2 rounded-lg"
+                >
+                  <User className="size-4 text-muted-foreground" />
+                  <span>پروفایل من</span>
+                </DropdownMenuItem>
+
+                <DropdownMenuItem
+                  onClick={() => router.push("/orders")}
+                  className="flex items-center gap-2 cursor-pointer text-xs font-bold text-primary py-2 rounded-lg"
+                >
+                  <PackageCheck className="size-4 text-primary" />
+                  <span>سفارش‌های من</span>
+                </DropdownMenuItem>
+
+                {authButton.role === "ADMIN" && (
+                  <DropdownMenuItem
+                    onClick={() => router.push("/admin")}
+                    className="flex items-center gap-2 cursor-pointer text-xs font-medium py-2 rounded-lg"
+                  >
+                    <LayoutDashboard className="size-4 text-muted-foreground" />
+                    <span>پنل مدیریت</span>
+                  </DropdownMenuItem>
+                )}
+
+                <DropdownMenuSeparator />
+
+                <DropdownMenuItem
+                  onClick={() => {
+                    if (window.confirm("آیا قصد خروج از حساب کاربری خود را دارید؟")) {
+                      logout();
+                    }
+                  }}
+                  className="flex items-center gap-2 cursor-pointer text-xs font-medium text-destructive focus:text-destructive py-2 rounded-lg"
+                >
+                  <LogOut className="size-4" />
+                  <span>خروج از حساب</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Link
+              href={authButton.href}
+              title={authButton.text}
+              className="flex items-center gap-2 rounded-lg bg-primary text-primary-foreground px-3.5 py-2 text-sm font-semibold shadow-xs transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 max-w-[180px]"
+            >
               <User className="size-4 shrink-0" />
-            )}
-            <span className="truncate">{authButton.text}</span>
-          </Link>
+              <span className="truncate">{authButton.text}</span>
+            </Link>
+          )}
         </div>
       </div>
     </nav>

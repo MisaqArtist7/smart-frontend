@@ -81,6 +81,8 @@ export interface HeaderNavigationConfig {
     href: string;
     isLoggedIn?: boolean;
     userName?: string;
+    role?: string;
+    phone?: string;
   };
   cartButton: {
     text: string;

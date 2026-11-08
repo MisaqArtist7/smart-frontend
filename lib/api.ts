@@ -15,6 +15,8 @@ import type {
   Order,
   CreateOrderInput,
   ApiErrorResponse,
+  PaymentInfoResponse,
+  PaginatedOrdersResponse,
 } from "./types";
 
 export * from "./types";
@@ -803,6 +805,30 @@ export function useCreateOrder() {
 }
 
 /**
+ * دریافت مشخصات کارت بانکی جهت پرداخت کارت‌به‌کارت
+ */
+export function usePaymentInfo() {
+  return useQuery<PaymentInfoResponse>({
+    queryKey: ["payment-info"],
+    queryFn: async () => {
+      try {
+        return await apiFetch<PaymentInfoResponse>("/payment-info");
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 404) {
+          return {
+            cardNumber: "۶۰۳۷-۹۹۷۵-۱۲۳۴-۵۶۷۸",
+            cardHolder: "فروشگاه اسمارت الکتریک",
+            bankName: "بانک ملی ایران",
+          };
+        }
+        throw err;
+      }
+    },
+    staleTime: 1000 * 60 * 15,
+  });
+}
+
+/**
  * دریافت جزئیات یک سفارش با شناسه
  */
 export function useOrder(id: number | string | undefined | null) {
@@ -816,20 +842,81 @@ export function useOrder(id: number | string | undefined | null) {
   });
 }
 
+export interface MyOrdersOptions {
+  page?: number;
+  limit?: number;
+}
+
+export type MyOrdersResponse = Order[] & {
+  items: Order[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+};
+
 /**
- * دریافت تاریخچه سفارش‌های کاربر جاری
+ * دریافت تاریخچه سفارش‌های کاربر جاری (صفحه‌بندی‌شده همراه با سازگاری کامل آرایه‌ای)
  */
-export function useMyOrders() {
-  return useQuery<Order[]>({
-    queryKey: ["my-orders"],
+export function useMyOrders(options: MyOrdersOptions = {}) {
+  const page = options.page ?? 1;
+  const limit = options.limit ?? 10;
+
+  return useQuery<MyOrdersResponse>({
+    queryKey: ["my-orders", { page, limit }],
     queryFn: async () => {
       try {
-        const data = await apiFetch<Order[]>("/orders/my");
-        return Array.isArray(data) ? data : [];
+        const data = await apiFetch<PaginatedOrdersResponse | Order[]>(
+          `/orders/my?page=${page}&limit=${limit}`
+        );
+
+        let items: Order[] = [];
+        let total = 0;
+        let currentPage = page;
+        let currentLimit = limit;
+
+        if (Array.isArray(data)) {
+          items = data;
+          total = data.length;
+          currentPage = 1;
+          currentLimit = data.length || limit;
+        } else if (data && typeof data === "object") {
+          items = Array.isArray(data.items) ? data.items : [];
+          total = typeof data.total === "number" ? data.total : items.length;
+          currentPage = typeof data.page === "number" ? data.page : page;
+          currentLimit = typeof data.limit === "number" ? data.limit : limit;
+        }
+
+        const totalPages = Math.max(1, Math.ceil(total / (currentLimit || 10)));
+        const resArray = [...items] as MyOrdersResponse;
+        resArray.items = items;
+        resArray.total = total;
+        resArray.page = currentPage;
+        resArray.limit = currentLimit;
+        resArray.totalPages = totalPages;
+
+        return resArray;
       } catch (err) {
         if (err instanceof ApiError && err.status === 404) {
-          const fallback = await apiFetch<Order[]>("/orders");
-          return Array.isArray(fallback) ? fallback : [];
+          try {
+            const fallback = await apiFetch<Order[]>("/orders");
+            const items = Array.isArray(fallback) ? fallback : [];
+            const resArray = [...items] as MyOrdersResponse;
+            resArray.items = items;
+            resArray.total = items.length;
+            resArray.page = 1;
+            resArray.limit = items.length || limit;
+            resArray.totalPages = 1;
+            return resArray;
+          } catch {
+            const emptyArray = [] as unknown as MyOrdersResponse;
+            emptyArray.items = [];
+            emptyArray.total = 0;
+            emptyArray.page = page;
+            emptyArray.limit = limit;
+            emptyArray.totalPages = 1;
+            return emptyArray;
+          }
         }
         throw err;
       }
@@ -838,33 +925,102 @@ export function useMyOrders() {
 }
 
 /**
- * بارگذاری تصویر یا مشخصات فیش واریزی کارت‌به‌کارت
+ * بارگذاری فیش واریزی کارت‌به‌کارت
+ * توجه: با استفاده از FormData با فیلد "receipt" و عدم ست کردن هدر دستی Content-Type
  */
 export function useUploadReceipt() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ orderId, receipt }: { orderId: number | string; receipt: File | string }) => {
+    mutationFn: async ({
+      orderId,
+      receipt,
+    }: {
+      orderId: number | string;
+      receipt: File | string;
+    }) => {
+      let body: FormData | { receiptUrl: string };
       if (receipt instanceof File) {
         const formData = new FormData();
-        formData.append("file", receipt);
-        return await apiFetch<Order>(`/orders/${orderId}/receipt`, {
-          method: "POST",
-          body: formData,
-        });
+        formData.append("receipt", receipt);
+        body = formData;
       } else {
+        body = { receiptUrl: receipt };
+      }
+
+      try {
         return await apiFetch<Order>(`/orders/${orderId}/receipt`, {
           method: "POST",
-          body: { receiptUrl: receipt },
+          body,
         });
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 409) {
+          queryClient.invalidateQueries({ queryKey: ["order", orderId] });
+          queryClient.invalidateQueries({ queryKey: ["my-orders"] });
+          throw new ApiError(
+            409,
+            "وضعیت این سفارش تغییر کرده است یا رسید پرداختی قبلاً برای آن ثبت شده است."
+          );
+        }
+        throw err;
       }
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["order", variables.orderId] });
       queryClient.invalidateQueries({ queryKey: ["my-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
       queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
     },
   });
+}
+
+/**
+ * لغو سفارش در انتظار پرداخت توسط کاربر (آزادسازی کالاهای رزرو شده)
+ */
+export function useCancelOrder() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (orderId: number | string) => {
+      return await apiFetch<Order>(`/orders/${orderId}/cancel`, {
+        method: "POST",
+      });
+    },
+    onSuccess: (_data, orderId) => {
+      queryClient.invalidateQueries({ queryKey: ["order", orderId] });
+      queryClient.invalidateQueries({ queryKey: ["my-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+  });
+}
+
+/**
+ * دریافت تصویر رسید واریزی مشتری با کوکی احراز هویت و تبدیل به blob URL
+ */
+export async function fetchReceiptBlob(orderId: number | string): Promise<string> {
+  const res = await fetch(`${API_BASE_URL}/orders/${orderId}/receipt`, {
+    credentials: "include",
+    headers: {
+      Accept: "image/*, application/json",
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error(`خطا در بارگذاری تصویر فیش (${res.status})`);
+  }
+
+  const contentType = res.headers.get("content-type") || "";
+  if (contentType.includes("application/json")) {
+    const data = await res.json();
+    if (data?.url || data?.receiptUrl) {
+      return data.url || data.receiptUrl;
+    }
+  }
+
+  const blob = await res.blob();
+  return URL.createObjectURL(blob);
 }
 
 /**

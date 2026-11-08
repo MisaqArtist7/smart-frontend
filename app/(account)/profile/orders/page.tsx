@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import {
-  PackageCheck,
   AlertCircle,
   Copy,
   Check,
@@ -16,8 +15,6 @@ import {
   FileCheck,
   Loader2,
   Clock,
-  Truck,
-  ShieldCheck,
   ShoppingBag,
   ChevronLeft,
 } from "lucide-react";
@@ -26,12 +23,9 @@ import {
   useUploadReceipt,
   ApiError,
   type Order,
-  type OrderStatus,
-  type PaymentStatus,
 } from "@/lib/api";
 import {
   formatPrice,
-  toPersianDigits,
 } from "@/lib/account-data";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -46,43 +40,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-const ORDER_STATUS_CONFIG: Record<
-  OrderStatus,
-  { label: string; badgeClass: string; icon: React.ComponentType<{ className?: string }> }
-> = {
-  PENDING: {
-    label: "در انتظار بررسی و پرداخت",
-    badgeClass: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
-    icon: Clock,
-  },
-  CONFIRMED: {
-    label: "تایید شده و در حال بسته‌بندی",
-    badgeClass: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
-    icon: ShieldCheck,
-  },
-  SHIPPED: {
-    label: "تحویل به پست / در مسیر ارسال",
-    badgeClass: "bg-primary/10 text-primary border-primary/20",
-    icon: Truck,
-  },
-  DELIVERED: {
-    label: "تحویل داده شده",
-    badgeClass: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
-    icon: PackageCheck,
-  },
-  CANCELLED: {
-    label: "لغو شده",
-    badgeClass: "bg-destructive/10 text-destructive border-destructive/20",
-    icon: AlertCircle,
-  },
-};
-
-const PAYMENT_STATUS_CONFIG: Record<PaymentStatus, { label: string; isPaid: boolean }> = {
-  PENDING: { label: "در انتظار پرداخت", isPaid: false },
-  WAITING_REVIEW: { label: "رسید ارسال شده (در انتظار تایید)", isPaid: false },
-  PAID: { label: "پرداخت شده", isPaid: true },
-  FAILED: { label: "ناموفق یا رد شده", isPaid: false },
-};
+import {
+  ORDER_STATUS_CONFIG,
+  PAYMENT_STATUS_CONFIG,
+  toPersianDigits,
+} from "@/lib/order-utils";
 
 type TabFilter = "all" | "in-progress" | "delivered" | "cancelled";
 
@@ -303,7 +265,7 @@ export default function ProfileOrdersPage() {
                       <span className="text-muted-foreground/40">|</span>
                       <span
                         className={`font-semibold ${
-                          paymentCfg.isPaid
+                          order.paymentStatus === "PAID"
                             ? "text-emerald-600 dark:text-emerald-400"
                             : "text-amber-600 dark:text-amber-400"
                         }`}

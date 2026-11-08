@@ -89,6 +89,8 @@ export interface HeaderNavigationConfig {
     href: string;
     isLoggedIn?: boolean;
     userName?: string;
+    role?: string;
+    phone?: string;
   };
   cartButton: {
     text: string;
@@ -351,6 +353,8 @@ export function Header({
           : (userConfig?.navigation?.authButton?.href || "/login"),
         isLoggedIn,
         userName: isLoggedIn ? displayName : undefined,
+        role: isLoggedIn ? (authUser?.role || role || undefined) : undefined,
+        phone: isLoggedIn ? authUser?.phone : undefined,
       },
       cartButton: {
         ...DEFAULT_HEADER_CONFIG.navigation.cartButton,

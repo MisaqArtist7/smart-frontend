@@ -191,6 +191,20 @@ export interface CreateOrderInput {
   note?: string;
 }
 
+export interface PaymentInfoResponse {
+  cardNumber: string;
+  cardHolder: string;
+  bankName?: string;
+}
+
+export interface PaginatedOrdersResponse {
+  items: Order[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages?: number;
+}
+
 // ----------------------------------------------------
 // API Error & Common Response Types
 // ----------------------------------------------------
