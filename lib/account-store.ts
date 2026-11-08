@@ -29,7 +29,7 @@ interface AccountStore {
   updateAddress: (id: string, address: Partial<Omit<Address, "id" | "userId">>) => void;
   deleteAddress: (id: string) => void;
   setDefaultAddress: (id: string) => void;
-  uploadReceipt: (orderId: string, receiptUrl: string) => void;
+  uploadReceipt: (orderId: string | number, receiptUrl: string) => void;
   addOrder: (order: Order) => void;
 }
 
@@ -56,6 +56,9 @@ export const useAccountStore = create<AccountStore>()(
 
       logout: () =>
         set(() => ({
+          user: INITIAL_USER,
+          addresses: [],
+          orders: [],
           isAuthenticated: false,
         })),
 
@@ -92,7 +95,6 @@ export const useAccountStore = create<AccountStore>()(
       deleteAddress: (id) =>
         set((state) => {
           const remaining = state.addresses.filter((a) => a.id !== id);
-          // اگر آدرس پیش‌فرض حذف شد و آدرس دیگری وجود داشت، اولین را پیش‌فرض کن
           if (remaining.length > 0 && !remaining.some((a) => a.isDefault)) {
             remaining[0].isDefault = true;
           }
@@ -114,8 +116,7 @@ export const useAccountStore = create<AccountStore>()(
               ? {
                   ...o,
                   receiptUrl,
-                  paymentStatus: "PAID",
-                  status: o.status === "PENDING" ? "CONFIRMED" : o.status,
+                  paymentStatus: "WAITING_REVIEW",
                 }
               : o
           ),
@@ -128,7 +129,20 @@ export const useAccountStore = create<AccountStore>()(
     }),
     {
       name: "smart-electric-account",
+      // پاکسازی هرگونه داده ساختگی قدیمی از localStorage در صورت وجود
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          if (state.orders && state.orders.some((o) => String(o.id).startsWith("ord-1") || String(o.id).startsWith("ord-2") || String(o.id).startsWith("ord-3") || String(o.id).startsWith("ord-4"))) {
+            state.orders = [];
+          }
+          if (state.addresses && state.addresses.some((a) => a.id === "addr-1" || a.id === "addr-2")) {
+            state.addresses = [];
+          }
+          if (state.user && state.user.name === "میثاق هنرمند" && !state.isAuthenticated) {
+            state.user = INITIAL_USER;
+          }
+        }
+      },
     }
   )
 );
-

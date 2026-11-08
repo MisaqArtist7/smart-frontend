@@ -12,7 +12,6 @@ import {
   CheckCircle2,
   User as UserIcon,
 } from "lucide-react";
-import { useAccountStore } from "@/lib/account-store";
 import { useAuth } from "@/components/providers/auth-provider";
 import { toPersianDigits } from "@/lib/account-data";
 import { Badge } from "@/components/ui/badge";
@@ -55,9 +54,8 @@ interface ProfileSidebarProps {
 
 export function ProfileSidebar({ className, onNavigate }: ProfileSidebarProps) {
   const pathname = usePathname();
-  const storeUser = useAccountStore((s) => s.user);
-  const { user: authUser, logout } = useAuth();
-  const user = authUser || storeUser;
+  const { user, logout } = useAuth();
+  const currentUser = user || { name: "کاربر گرامی", phone: "", avatarUrl: "" };
 
   const handleLogout = async () => {
     if (window.confirm("آیا قصد خروج از حساب کاربری خود را دارید؟")) {
@@ -71,11 +69,11 @@ export function ProfileSidebar({ className, onNavigate }: ProfileSidebarProps) {
         {/* کارت اطلاعات کاربر در بالای سایدبار */}
         <div className="flex items-center gap-3.5 pb-4 border-b border-border/70">
           <div className="relative size-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-lg shrink-0 shadow-xs">
-            {user.avatarUrl ? (
+            {currentUser.avatarUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={user.avatarUrl}
-                alt={user.name}
+                src={currentUser.avatarUrl}
+                alt={currentUser.name || "کاربر"}
                 className="size-full object-cover rounded-2xl"
               />
             ) : (
@@ -86,7 +84,7 @@ export function ProfileSidebar({ className, onNavigate }: ProfileSidebarProps) {
           <div className="flex flex-col min-w-0 flex-1">
             <div className="flex items-center justify-between gap-2">
               <span className="font-extrabold text-sm sm:text-base text-foreground truncate">
-                {user.name}
+                {currentUser.name || "کاربر گرامی"}
               </span>
               <Badge
                 variant="outline"
@@ -98,7 +96,7 @@ export function ProfileSidebar({ className, onNavigate }: ProfileSidebarProps) {
             </div>
 
             <span className="text-xs text-muted-foreground font-mono mt-0.5 tracking-wider">
-              {toPersianDigits(user.phone)}
+              {toPersianDigits(currentUser.phone)}
             </span>
           </div>
         </div>

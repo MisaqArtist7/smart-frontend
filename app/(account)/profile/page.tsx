@@ -14,14 +14,12 @@ import {
   ShieldCheck,
   Phone,
   LogOut,
+  Loader2,
+  ShoppingBag,
 } from "lucide-react";
-import { useAccountStore } from "@/lib/account-store";
 import { useAuth } from "@/components/providers/auth-provider";
-import {
-  formatPrice,
-  toPersianDigits,
-  type OrderStatus,
-} from "@/lib/account-data";
+import { useMyOrders, useAddresses, type OrderStatus } from "@/lib/api";
+import { formatPrice, toPersianDigits } from "@/lib/account-data";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -59,21 +57,28 @@ export const ORDER_STATUS_CONFIG: Record<
 };
 
 export default function ProfileDashboardPage() {
-  const { user: authUser, logout } = useAuth();
-  const storeUser = useAccountStore((s) => s.user);
-  const user = authUser || storeUser;
-  const orders = useAccountStore((s) => s.orders);
-  const addresses = useAccountStore((s) => s.addresses);
+  const { user, logout } = useAuth();
+  const { data: orders = [], isLoading: isOrdersLoading } = useMyOrders();
+  const { data: addresses = [], isLoading: isAddressesLoading } = useAddresses();
 
-  // محاسبه آمارها
+  // محاسبه آمارها از داده‌های واقعی سرور
   const inProgressOrders = orders.filter((o) =>
     ["PENDING", "CONFIRMED", "SHIPPED"].includes(o.status)
   );
   const deliveredOrders = orders.filter((o) => o.status === "DELIVERED");
-  const defaultAddress =
-    addresses.find((a) => a.isDefault) || addresses[0];
+  const defaultAddress = addresses.find((a) => a.isDefault) || addresses[0];
 
   const recentOrders = orders.slice(0, 2);
+
+  const formatDate = (dateStr: string) => {
+    try {
+      return new Intl.DateTimeFormat("fa-IR", {
+        dateStyle: "medium",
+      }).format(new Date(dateStr));
+    } catch {
+      return dateStr;
+    }
+  };
 
   return (
     <div className="space-y-6 sm:space-y-8 select-none">
@@ -87,21 +92,23 @@ export default function ProfileDashboardPage() {
                 <span>حساب کاربری</span>
               </span>
               <Badge variant="outline" className="text-xs font-mono">
-                {user.role === "ADMIN" ? "مدیر سیستم" : "مشتری"}
+                {user?.role === "ADMIN" ? "مدیر سیستم" : "مشتری"}
               </Badge>
             </div>
 
             <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
-              سلام، {user.name || "کاربر گرامی"} عزیز
+              سلام، {user?.name || "کاربر گرامی"} عزیز
             </h1>
 
             <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-              <div className="flex items-center gap-1.5">
-                <Phone className="size-3.5 text-primary" />
-                <span className="font-mono tracking-wider" dir="ltr">
-                  {toPersianDigits(user.phone || "")}
-                </span>
-              </div>
+              {user?.phone && (
+                <div className="flex items-center gap-1.5">
+                  <Phone className="size-3.5 text-primary" />
+                  <span className="font-mono tracking-wider" dir="ltr">
+                    {toPersianDigits(user.phone)}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -148,7 +155,14 @@ export default function ProfileDashboardPage() {
             </CardHeader>
             <CardContent className="p-5 pt-0">
               <div className="text-2xl font-black text-foreground tracking-tight">
-                {toPersianDigits(inProgressOrders.length)} <span className="text-xs font-normal text-muted-foreground">سفارش</span>
+                {isOrdersLoading ? (
+                  <Loader2 className="size-5 animate-spin text-muted-foreground" />
+                ) : (
+                  <>
+                    {toPersianDigits(inProgressOrders.length)}{" "}
+                    <span className="text-xs font-normal text-muted-foreground">سفارش</span>
+                  </>
+                )}
               </div>
               <p className="text-[11px] text-muted-foreground font-medium mt-1">
                 در انتظار پرداخت یا در حال ارسال
@@ -170,7 +184,14 @@ export default function ProfileDashboardPage() {
             </CardHeader>
             <CardContent className="p-5 pt-0">
               <div className="text-2xl font-black text-foreground tracking-tight">
-                {toPersianDigits(deliveredOrders.length)} <span className="text-xs font-normal text-muted-foreground">سفارش</span>
+                {isOrdersLoading ? (
+                  <Loader2 className="size-5 animate-spin text-muted-foreground" />
+                ) : (
+                  <>
+                    {toPersianDigits(deliveredOrders.length)}{" "}
+                    <span className="text-xs font-normal text-muted-foreground">سفارش</span>
+                  </>
+                )}
               </div>
               <p className="text-[11px] text-muted-foreground font-medium mt-1">
                 با موفقیت به دست شما رسیده‌اند
@@ -192,7 +213,14 @@ export default function ProfileDashboardPage() {
             </CardHeader>
             <CardContent className="p-5 pt-0">
               <div className="text-2xl font-black text-foreground tracking-tight">
-                {toPersianDigits(addresses.length)} <span className="text-xs font-normal text-muted-foreground">نشانی</span>
+                {isAddressesLoading ? (
+                  <Loader2 className="size-5 animate-spin text-muted-foreground" />
+                ) : (
+                  <>
+                    {toPersianDigits(addresses.length)}{" "}
+                    <span className="text-xs font-normal text-muted-foreground">نشانی</span>
+                  </>
+                )}
               </div>
               <p className="text-[11px] text-muted-foreground font-medium mt-1">
                 محل کار و نشانی‌های ارسال کالا
@@ -211,27 +239,51 @@ export default function ProfileDashboardPage() {
               <span>آخرین سفارش‌های من</span>
             </CardTitle>
             <CardDescription className="text-xs text-muted-foreground mt-0.5">
-              ۲ سفارش آخر ثبت‌شده در سامانه فروشگاه اسمارت الکتریک
+              سفارش‌های ثبت‌شده در سامانه فروشگاه اسمارت الکتریک
             </CardDescription>
           </div>
 
-          <Link
-            href="/profile/orders"
-            className="flex items-center gap-1 text-xs font-bold text-primary hover:text-primary/80 transition-colors mt-2 sm:mt-0"
-          >
-            <span>مشاهده همه سفارش‌ها</span>
-            <ArrowUpLeft className="size-3.5" />
-          </Link>
+          {orders.length > 0 && (
+            <Link
+              href="/profile/orders"
+              className="flex items-center gap-1 text-xs font-bold text-primary hover:text-primary/80 transition-colors mt-2 sm:mt-0"
+            >
+              <span>مشاهده همه سفارش‌ها</span>
+              <ArrowUpLeft className="size-3.5" />
+            </Link>
+          )}
         </CardHeader>
 
         <CardContent className="p-4 sm:p-6 space-y-4">
-          {recentOrders.length === 0 ? (
-            <div className="py-8 text-center text-xs text-muted-foreground">
-              شما تا کنون هیچ سفارشی ثبت نکرده‌اید.
+          {isOrdersLoading ? (
+            <div className="py-10 text-center text-xs text-muted-foreground flex items-center justify-center gap-2">
+              <Loader2 className="size-4 animate-spin text-primary" />
+              <span>در حال بارگذاری سفارش‌های شما از سرور...</span>
+            </div>
+          ) : recentOrders.length === 0 ? (
+            <div className="py-10 text-center space-y-3">
+              <ShoppingBag className="size-12 text-muted-foreground mx-auto opacity-30 stroke-1" />
+              <div className="text-sm font-bold text-foreground">
+                شما تا کنون هیچ سفارشی ثبت نکرده‌اید.
+              </div>
+              <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                برای مشاهده و خرید انواع تجهیزات برق و شبکه، می‌توانید به فروشگاه مراجعه فرمایید.
+              </p>
+              <Link
+                href="/products"
+                className="inline-flex items-center gap-2 bg-primary text-primary-foreground text-xs font-bold px-4 py-2 rounded-xl shadow-xs hover:bg-primary/90 mt-2"
+              >
+                <span>مشاهده محصولات فروشگاه</span>
+                <ChevronLeft className="size-3.5" />
+              </Link>
             </div>
           ) : (
             recentOrders.map((order) => {
-              const statusCfg = ORDER_STATUS_CONFIG[order.status];
+              const statusCfg = ORDER_STATUS_CONFIG[order.status] || {
+                label: order.status,
+                badgeClass: "bg-muted text-muted-foreground",
+                icon: Clock,
+              };
               const StatusIcon = statusCfg.icon;
 
               return (
@@ -250,7 +302,7 @@ export default function ProfileDashboardPage() {
 
                     <div className="flex items-center gap-3">
                       <span className="text-xs text-muted-foreground font-mono">
-                        {order.createdAt}
+                        {formatDate(order.createdAt)}
                       </span>
                       <Badge
                         variant="outline"
@@ -264,7 +316,7 @@ export default function ProfileDashboardPage() {
 
                   {/* پیش‌نمایش اقلام سفارش */}
                   <div className="flex flex-wrap items-center gap-3">
-                    {order.items.map((item) => (
+                    {order.items?.map((item) => (
                       <div
                         key={item.id}
                         className="flex items-center gap-2.5 p-2 rounded-xl bg-card border border-border/70"
@@ -300,7 +352,7 @@ export default function ProfileDashboardPage() {
                     </div>
 
                     <Link
-                      href={`/profile/orders`}
+                      href={`/orders/${order.id}`}
                       className="text-primary hover:text-primary/90 text-xs font-bold flex items-center gap-1"
                     >
                       <span>مشاهده فاکتور و جزئیات</span>
@@ -339,14 +391,21 @@ export default function ProfileDashboardPage() {
         </CardHeader>
 
         <CardContent className="p-5 sm:p-6 pt-2">
-          {defaultAddress ? (
+          {isAddressesLoading ? (
+            <div className="py-6 text-center text-xs text-muted-foreground flex items-center justify-center gap-2">
+              <Loader2 className="size-4 animate-spin text-primary" />
+              <span>در حال بارگذاری آدرس‌های ثبت‌شده...</span>
+            </div>
+          ) : defaultAddress ? (
             <div className="rounded-xl border border-border/80 bg-background p-4 sm:p-5 space-y-2.5">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-sm text-foreground flex items-center gap-2">
                   <span>{defaultAddress.title}</span>
-                  <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px]">
-                    پیش‌فرض
-                  </Badge>
+                  {defaultAddress.isDefault && (
+                    <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px]">
+                      پیش‌فرض
+                    </Badge>
+                  )}
                 </span>
                 <span className="text-xs text-muted-foreground font-mono">
                   تحویل‌گیرنده: {defaultAddress.receiverName} ({toPersianDigits(defaultAddress.receiverPhone)})

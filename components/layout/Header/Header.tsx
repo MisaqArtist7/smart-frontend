@@ -15,7 +15,6 @@ import {
   GraduationCap,
 } from "lucide-react";
 import { useCartStore } from "@/lib/cart-store";
-import { useAccountStore } from "@/lib/account-store";
 import { useAuth } from "@/components/providers/auth-provider";
 
 import { TopBar } from "./TopBar";
@@ -295,13 +294,10 @@ export function Header({
   );
   const liveCount = useCartStore((s) => s.items.reduce((acc, i) => acc + i.quantity, 0));
   const { user: authUser, isAuthenticated: isAuth, role } = useAuth();
-  const storeUser = useAccountStore((s) => s.user);
-  const storeAuth = useAccountStore((s) => s.isAuthenticated);
 
-  const isLoggedIn = mounted && (isAuth || storeAuth);
-  const currentUser = authUser || storeUser;
-  const displayName = currentUser?.name || "حساب کاربری";
-  const userTargetHref = (role === "ADMIN" || currentUser?.role === "ADMIN") ? "/admin" : "/profile";
+  const isLoggedIn = mounted && Boolean(isAuth && authUser);
+  const displayName = authUser?.name || authUser?.phone || "حساب کاربری";
+  const userTargetHref = (role === "ADMIN" || authUser?.role === "ADMIN") ? "/admin" : "/profile";
 
   const effectiveCartCount = mounted ? liveCount : (cartCount ?? 0);
 

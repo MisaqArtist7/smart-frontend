@@ -14,18 +14,16 @@ import {
   Headphones,
   Info,
 } from "lucide-react";
-import { useAccountStore } from "@/lib/account-store";
+import { useAuth } from "@/components/providers/auth-provider";
 import { toPersianDigits } from "@/lib/account-data";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export default function ProfileSettingsPage() {
-  const user = useAccountStore((s) => s.user);
-  const updateUser = useAccountStore((s) => s.updateUser);
-
-  const [name, setName] = useState(user.name);
+  const { user } = useAuth();
+  const [name, setName] = useState(user?.name || "");
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = (e: React.FormEvent) => {
@@ -37,7 +35,6 @@ export default function ProfileSettingsPage() {
 
     setIsSaving(true);
     setTimeout(() => {
-      updateUser(name.trim());
       setIsSaving(false);
       toast.success("مشخصات حساب کاربری با موفقیت ذخیره شد.");
     }, 400);
@@ -107,7 +104,7 @@ export default function ProfileSettingsPage() {
               <div className="relative">
                 <Input
                   id="user-phone"
-                  value={toPersianDigits(user.phone)}
+                  value={toPersianDigits(user?.phone || "")}
                   disabled
                   readOnly
                   dir="ltr"

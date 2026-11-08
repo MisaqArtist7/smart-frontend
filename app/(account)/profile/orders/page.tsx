@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import Image from "next/image";
+import Image from "next/link";
+import Link from "next/link";
 import { toast } from "sonner";
 import {
   PackageCheck,
@@ -14,14 +15,25 @@ import {
   MapPin,
   Receipt,
   FileCheck,
+  Loader2,
+  Clock,
+  Truck,
+  ShieldCheck,
+  ShoppingBag,
+  ChevronLeft,
 } from "lucide-react";
-import { useAccountStore } from "@/lib/account-store";
+import {
+  useMyOrders,
+  useUploadReceipt,
+  ApiError,
+  type Order,
+  type OrderStatus,
+  type PaymentStatus,
+} from "@/lib/api";
 import {
   formatPrice,
   toPersianDigits,
-  type Order,
 } from "@/lib/account-data";
-import { ORDER_STATUS_CONFIG } from "../page";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,11 +47,49 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
+const ORDER_STATUS_CONFIG: Record<
+  OrderStatus,
+  { label: string; badgeClass: string; icon: React.ComponentType<{ className?: string }> }
+> = {
+  PENDING: {
+    label: "در انتظار بررسی و پرداخت",
+    badgeClass: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
+    icon: Clock,
+  },
+  CONFIRMED: {
+    label: "تایید شده و در حال بسته‌بندی",
+    badgeClass: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
+    icon: ShieldCheck,
+  },
+  SHIPPED: {
+    label: "تحویل به پست / در مسیر ارسال",
+    badgeClass: "bg-primary/10 text-primary border-primary/20",
+    icon: Truck,
+  },
+  DELIVERED: {
+    label: "تحویل داده شده",
+    badgeClass: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+    icon: PackageCheck,
+  },
+  CANCELLED: {
+    label: "لغو شده",
+    badgeClass: "bg-destructive/10 text-destructive border-destructive/20",
+    icon: AlertCircle,
+  },
+};
+
+const PAYMENT_STATUS_CONFIG: Record<PaymentStatus, { label: string; isPaid: boolean }> = {
+  PENDING: { label: "در انتظار پرداخت", isPaid: false },
+  WAITING_REVIEW: { label: "رسید ارسال شده (در انتظار تایید)", isPaid: false },
+  PAID: { label: "پرداخت شده", isPaid: true },
+  FAILED: { label: "ناموفق یا رد شده", isPaid: false },
+};
+
 type TabFilter = "all" | "in-progress" | "delivered" | "cancelled";
 
 export default function ProfileOrdersPage() {
-  const orders = useAccountStore((s) => s.orders);
-  const uploadReceipt = useAccountStore((s) => s.uploadReceipt);
+  const { data: orders = [], isLoading: isOrdersLoading } = useMyOrders();
+  const uploadReceiptMutation = useUploadReceipt();
 
   const [activeTab, setActiveTab] = useState<TabFilter>("all");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -47,7 +97,7 @@ export default function ProfileOrdersPage() {
   const [receiptUrlInput, setReceiptUrlInput] = useState("");
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
-  // فیلتر تب‌ها
+  // فیلتر تب‌ها بر روی داده‌های واقعی سرور
   const filteredOrders = orders.filter((order) => {
     if (activeTab === "all") return true;
     if (activeTab === "in-progress")
@@ -57,6 +107,17 @@ export default function ProfileOrdersPage() {
     return true;
   });
 
+  const formatDate = (dateStr: string) => {
+    try {
+      return new Intl.DateTimeFormat("fa-IR", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      }).format(new Date(dateStr));
+    } catch {
+      return dateStr;
+    }
+  };
+
   // کپی کد پیگیری
   const handleCopyTracking = (code: string) => {
     navigator.clipboard.writeText(code);
@@ -65,15 +126,31 @@ export default function ProfileOrdersPage() {
     setTimeout(() => setCopiedCode(null), 2500);
   };
 
-  // آپلود فیش
-  const handleReceiptSubmit = (e: React.FormEvent) => {
+  // آپلود فیش کارت‌به‌کارت
+  const handleReceiptSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!receiptModalOrder) return;
-    const finalUrl = receiptUrlInput.trim() || "/images/brand/logo.png";
-    uploadReceipt(receiptModalOrder.id, finalUrl);
-    toast.success("فیش واریزی با موفقیت ثبت شد و وضعیت سفارش به‌روزرسانی گردید.");
-    setReceiptModalOrder(null);
-    setReceiptUrlInput("");
+    const finalUrl = receiptUrlInput.trim();
+    if (!finalUrl) {
+      toast.error("لطفاً لینک فیش یا شماره پیگیری واریز را وارد نمایید.");
+      return;
+    }
+
+    try {
+      await uploadReceiptMutation.mutateAsync({
+        orderId: receiptModalOrder.id,
+        receipt: finalUrl,
+      });
+      toast.success("رسید پرداخت با موفقیت ثبت شد و وضعیت سفارش به بررسی رسید تغییر یافت.");
+      setReceiptModalOrder(null);
+      setReceiptUrlInput("");
+    } catch (err) {
+      if (err instanceof ApiError) {
+        toast.error(err.message);
+      } else {
+        toast.error("خطا در ثبت فیش واریز رخ داد.");
+      }
+    }
   };
 
   return (
@@ -93,7 +170,7 @@ export default function ProfileOrdersPage() {
         <button
           type="button"
           onClick={() => setActiveTab("all")}
-          className={`px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-all shrink-0 ${
+          className={`px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-all shrink-0 cursor-pointer ${
             activeTab === "all"
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -105,7 +182,7 @@ export default function ProfileOrdersPage() {
         <button
           type="button"
           onClick={() => setActiveTab("in-progress")}
-          className={`px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-all shrink-0 ${
+          className={`px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-all shrink-0 cursor-pointer ${
             activeTab === "in-progress"
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -121,7 +198,7 @@ export default function ProfileOrdersPage() {
         <button
           type="button"
           onClick={() => setActiveTab("delivered")}
-          className={`px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-all shrink-0 ${
+          className={`px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-all shrink-0 cursor-pointer ${
             activeTab === "delivered"
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -134,7 +211,7 @@ export default function ProfileOrdersPage() {
         <button
           type="button"
           onClick={() => setActiveTab("cancelled")}
-          className={`px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-all shrink-0 ${
+          className={`px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-all shrink-0 cursor-pointer ${
             activeTab === "cancelled"
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -147,20 +224,44 @@ export default function ProfileOrdersPage() {
 
       {/* لیست کارت‌های سفارش */}
       <div className="space-y-4">
-        {filteredOrders.length === 0 ? (
-          <Card className="rounded-2xl border-border bg-card p-10 text-center">
-            <PackageCheck className="size-10 text-muted-foreground mx-auto mb-3 opacity-40" />
+        {isOrdersLoading ? (
+          <div className="py-16 text-center text-xs text-muted-foreground flex items-center justify-center gap-2">
+            <Loader2 className="size-5 animate-spin text-primary" />
+            <span>در حال بارگذاری سفارش‌های شما از سرور...</span>
+          </div>
+        ) : filteredOrders.length === 0 ? (
+          <Card className="rounded-2xl border-border bg-card p-12 text-center space-y-3">
+            <ShoppingBag className="size-12 text-muted-foreground mx-auto opacity-30 stroke-1" />
             <div className="font-bold text-sm text-foreground">
-              سفارشی در این وضعیت یافت نشد
+              {activeTab === "all"
+                ? "شما در حال حاضر هیچ سفارشی ثبت نکرده‌اید."
+                : "سفارشی در این وضعیت یافت نشد."}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              سفارش‌های جدید شما بلافاصله پس از ثبت در این بخش قابل رهگیری خواهند بود.
+            <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+              سفارش‌های جدید شما بلافاصله پس از ثبت در این بخش قابل پیگیری و پرداخت خواهند بود.
             </p>
+            {activeTab === "all" && (
+              <Link
+                href="/products"
+                className="inline-flex items-center gap-2 bg-primary text-primary-foreground text-xs font-bold px-4 py-2 rounded-xl shadow-xs hover:bg-primary/90 mt-2"
+              >
+                <span>مشاهده محصولات فروشگاه</span>
+                <ChevronLeft className="size-3.5" />
+              </Link>
+            )}
           </Card>
         ) : (
           filteredOrders.map((order) => {
-            const statusCfg = ORDER_STATUS_CONFIG[order.status];
+            const statusCfg = ORDER_STATUS_CONFIG[order.status] || {
+              label: order.status,
+              badgeClass: "bg-muted text-muted-foreground",
+              icon: Clock,
+            };
             const StatusIcon = statusCfg.icon;
+            const paymentCfg = PAYMENT_STATUS_CONFIG[order.paymentStatus] || {
+              label: order.paymentStatus,
+              isPaid: false,
+            };
 
             return (
               <Card
@@ -176,7 +277,7 @@ export default function ProfileOrdersPage() {
                       </div>
                       <span className="text-muted-foreground/40">•</span>
                       <span className="text-xs text-muted-foreground font-mono">
-                        {order.createdAt}
+                        {formatDate(order.createdAt)}
                       </span>
                     </div>
 
@@ -189,7 +290,7 @@ export default function ProfileOrdersPage() {
                     </Badge>
                   </div>
 
-                  {/* ردیف رهگیری پستی و هشدار فیش واریزی */}
+                  {/* ردیف رهگیری پستی و وضعیت پرداخت */}
                   <div className="flex flex-wrap items-center justify-between gap-3 bg-muted/30 p-3 rounded-xl border border-border/50 text-xs">
                     {/* اطلاعات روش پرداخت */}
                     <div className="flex items-center gap-2">
@@ -203,14 +304,12 @@ export default function ProfileOrdersPage() {
                       <span className="text-muted-foreground/40">|</span>
                       <span
                         className={`font-semibold ${
-                          order.paymentStatus === "PAID"
+                          paymentCfg.isPaid
                             ? "text-emerald-600 dark:text-emerald-400"
                             : "text-amber-600 dark:text-amber-400"
                         }`}
                       >
-                        {order.paymentStatus === "PAID"
-                          ? "پرداخت شده"
-                          : "در انتظار پرداخت"}
+                        {paymentCfg.label}
                       </span>
                     </div>
 
@@ -221,7 +320,7 @@ export default function ProfileOrdersPage() {
                         <button
                           type="button"
                           onClick={() => handleCopyTracking(order.trackingCode!)}
-                          className="flex items-center gap-1.5 font-mono font-bold bg-background px-2.5 py-1 rounded-lg border border-border text-foreground hover:bg-accent transition-colors"
+                          className="flex items-center gap-1.5 font-mono font-bold bg-background px-2.5 py-1 rounded-lg border border-border text-foreground hover:bg-accent transition-colors cursor-pointer"
                           title="کپی کد رهگیری"
                         >
                           <span>{order.trackingCode}</span>
@@ -242,7 +341,7 @@ export default function ProfileOrdersPage() {
                         <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300">
                           <AlertCircle className="size-4 shrink-0" />
                           <span>
-                            این سفارش از طریق کارت‌به‌کارت ثبت شده است. لطفاً پس از واریز، تصویر فیش را ثبت فرمایید.
+                            این سفارش از طریق کارت‌به‌کارت ثبت شده است. لطفاً پس از واریز مبلغ، مشخصات یا تصویر فیش را ثبت فرمایید.
                           </span>
                         </div>
 
@@ -252,7 +351,7 @@ export default function ProfileOrdersPage() {
                             setReceiptModalOrder(order);
                             setReceiptUrlInput("");
                           }}
-                          className="bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold gap-1.5 shrink-0 self-start sm:self-auto"
+                          className="bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold gap-1.5 shrink-0 self-start sm:self-auto cursor-pointer"
                         >
                           <Upload className="size-3.5" />
                           <span>ثبت فیش واریزی</span>
@@ -263,20 +362,19 @@ export default function ProfileOrdersPage() {
                   {/* نمایش اقلام خریداری شده در سفارش */}
                   <div className="space-y-2 pt-1">
                     <div className="text-xs font-bold text-muted-foreground">
-                      اقلام سفارش:
+                      اقلام سفارش ({order.items?.length || 0} قلم):
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {order.items.map((item) => (
+                      {order.items?.map((item) => (
                         <div
                           key={item.id}
                           className="flex items-center gap-3 p-2.5 rounded-xl bg-background border border-border/80"
                         >
                           <div className="size-14 rounded-lg bg-muted/20 border border-border p-1.5 flex items-center justify-center shrink-0">
-                            <Image
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
                               src={item.image || "/images/products/adapter-52240.png"}
                               alt={item.title}
-                              width={44}
-                              height={44}
                               className="object-contain size-full"
                             />
                           </div>
@@ -286,7 +384,7 @@ export default function ProfileOrdersPage() {
                               {item.title}
                             </div>
                             <div className="text-xs text-muted-foreground font-mono mt-1 flex items-center justify-between">
-                              <span>تعداد: {toPersianDigits(item.quantity)}</span>
+                              <span>تعداد: {toPersianDigits(item.quantity)} عدد</span>
                               <span className="font-bold text-foreground">
                                 {formatPrice(item.price * item.quantity)}
                               </span>
@@ -306,15 +404,25 @@ export default function ProfileOrdersPage() {
                       </span>
                     </div>
 
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setSelectedOrder(order)}
-                      className="rounded-xl border-border text-xs font-bold gap-1.5 hover:bg-accent self-end sm:self-auto"
-                    >
-                      <Eye className="size-4 text-primary" />
-                      <span>مشاهده جزئیات سفارش</span>
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/orders/${order.id}`}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border text-xs font-bold text-foreground hover:bg-muted transition-colors"
+                      >
+                        <span>صفحه کامل سفارش</span>
+                        <ChevronLeft className="size-3.5" />
+                      </Link>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSelectedOrder(order)}
+                        className="rounded-xl border-border text-xs font-bold gap-1.5 hover:bg-accent cursor-pointer"
+                      >
+                        <Eye className="size-4 text-primary" />
+                        <span>مشاهده فاکتور</span>
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -333,7 +441,7 @@ export default function ProfileOrdersPage() {
                 <span className="font-mono text-primary">{selectedOrder.orderNumber}</span>
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground">
-                ثبت‌شده در تاریخ {selectedOrder.createdAt}
+                ثبت‌شده در تاریخ {formatDate(selectedOrder.createdAt)}
               </DialogDescription>
             </DialogHeader>
 
@@ -356,7 +464,7 @@ export default function ProfileOrdersPage() {
               <div className="space-y-2">
                 <div className="font-bold text-foreground">اقلام فاکتور:</div>
                 <div className="divide-y divide-border border border-border rounded-xl overflow-hidden bg-card">
-                  {selectedOrder.items.map((it) => (
+                  {selectedOrder.items?.map((it) => (
                     <div key={it.id} className="p-3 flex items-center justify-between gap-3">
                       <div>
                         <div className="font-bold text-foreground">{it.title}</div>
@@ -380,14 +488,14 @@ export default function ProfileOrdersPage() {
                 </div>
                 <div className="flex items-center justify-between text-muted-foreground">
                   <span>هزینه بسته‌بندی و ارسال:</span>
-                  <span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">
                     {selectedOrder.shippingPrice === 0
-                      ? "رایگان"
+                      ? "پس‌کرایه (۰ تومان در فاکتور)"
                       : formatPrice(selectedOrder.shippingPrice)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between pt-2 border-t border-border font-black text-sm text-foreground">
-                  <span>مبلغ نهایی پرداخت شده / قابل پرداخت:</span>
+                  <span>مبلغ کل فاکتور:</span>
                   <span className="text-primary text-base font-black">
                     {formatPrice(selectedOrder.totalPrice)}
                   </span>
@@ -402,17 +510,23 @@ export default function ProfileOrdersPage() {
                     <span>فیش واریزی ثبت شده است</span>
                   </div>
                   <div className="text-[11px] text-muted-foreground">
-                    فیش شما دریافت و توسط واحد مالی اسمارت الکتریک تایید گردید.
+                    فیش شما با موفقیت دریافت و در صف بررسی قرار دارد.
                   </div>
                 </div>
               )}
             </div>
 
-            <DialogFooter>
+            <DialogFooter className="gap-2">
+              <Link
+                href={`/orders/${selectedOrder.id}`}
+                className="inline-flex items-center justify-center rounded-xl bg-primary text-primary-foreground text-xs font-bold px-4 py-2"
+              >
+                صفحه پرداخت و مشخصات کارت
+              </Link>
               <Button
                 variant="outline"
                 onClick={() => setSelectedOrder(null)}
-                className="rounded-xl text-xs sm:text-sm font-semibold"
+                className="rounded-xl text-xs sm:text-sm font-semibold cursor-pointer"
               >
                 بستن
               </Button>
@@ -439,23 +553,21 @@ export default function ProfileOrdersPage() {
               <div className="p-3 rounded-xl bg-muted/40 border border-border text-xs space-y-1.5 text-muted-foreground leading-relaxed">
                 <div className="font-bold text-foreground">اطلاعات حساب بانکی فروشگاه:</div>
                 <div>شماره کارت: <span className="font-mono text-foreground font-bold">۶۰۳۷-۹۹۷۵-۱۲۳۴-۵۶۷۸</span></div>
-                <div>بانک ملت - به نام فروشگاه تخصصی اسمارت الکتریک</div>
+                <div>فروشگاه تخصصی اسمارت الکتریک - بانک ملی ایران</div>
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-foreground">
-                  آدرس اینترنتی یا بارگذاری تصویر فیش
+                  شماره پیگیری تراکنش بانکی یا آدرس تصویر فیش <span className="text-destructive">*</span>
                 </label>
                 <Input
                   value={receiptUrlInput}
                   onChange={(e) => setReceiptUrlInput(e.target.value)}
-                  placeholder="/images/receipts/slip-1.jpg"
+                  placeholder="مثال: پیگیری ۱۲۳۴۵۶۷۸۹ یا https://..."
                   dir="ltr"
                   className="text-start"
+                  required
                 />
-                <p className="text-[11px] text-muted-foreground">
-                  می‌توانید لینک مستقیم فیش را وارد کرده یا از تصویر پیش‌فرض تایید استفاده نمایید.
-                </p>
               </div>
 
               <DialogFooter className="gap-2 pt-2">
@@ -463,15 +575,23 @@ export default function ProfileOrdersPage() {
                   type="button"
                   variant="outline"
                   onClick={() => setReceiptModalOrder(null)}
-                  className="rounded-xl text-xs sm:text-sm"
+                  className="rounded-xl text-xs sm:text-sm cursor-pointer"
                 >
                   انصراف
                 </Button>
                 <Button
                   type="submit"
-                  className="rounded-xl bg-primary text-primary-foreground text-xs sm:text-sm font-bold shadow-xs hover:bg-primary/90"
+                  disabled={uploadReceiptMutation.isPending}
+                  className="rounded-xl bg-primary text-primary-foreground text-xs sm:text-sm font-bold shadow-xs hover:bg-primary/90 cursor-pointer"
                 >
-                  ثبت نهایی فیش
+                  {uploadReceiptMutation.isPending ? (
+                    <span className="flex items-center gap-2">
+                      <Loader2 className="size-3.5 animate-spin" />
+                      در حال ثبت...
+                    </span>
+                  ) : (
+                    "ثبت نهایی فیش"
+                  )}
                 </Button>
               </DialogFooter>
             </form>
