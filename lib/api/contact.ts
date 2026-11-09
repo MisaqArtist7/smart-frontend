@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch, ApiError } from "../api";
+import { normalizePhone } from "../contact-utils";
 import type {
   SubmitContactInput,
   SubmitContactResponse,
@@ -14,24 +15,34 @@ export * from "../contact-utils";
 export { ApiError };
 
 /**
- * ارسال پیام تماس با ما توسط کاربر عمومی یا ثبت‌نام شده
+ * ارسال مستقیم فرم تماس به اندپوینت POST /contact
+ */
+export async function submitContactForm(
+  data: SubmitContactInput
+): Promise<SubmitContactResponse> {
+  const normalizedPhone = normalizePhone(data.phone);
+  const payload = {
+    fullName: data.fullName.trim(),
+    phone: normalizedPhone,
+    subject: data.subject,
+    message: data.message.trim(),
+    website: data.website || "",
+  };
+
+  return await apiFetch<SubmitContactResponse>("/contact", {
+    method: "POST",
+    body: payload,
+  });
+}
+
+/**
+ * هوک ارسال پیام تماس با ما توسط کاربر عمومی یا لاگین شده
  * POST /contact
  */
 export function useSubmitContact() {
   return useMutation({
     mutationFn: async (input: SubmitContactInput): Promise<SubmitContactResponse> => {
-      const payload: Record<string, unknown> = {
-        fullName: input.fullName.trim(),
-        phone: input.phone.trim(),
-        subject: input.subject,
-        message: input.message.trim(),
-        website: input.website ?? "",
-      };
-
-      return await apiFetch<SubmitContactResponse>("/contact", {
-        method: "POST",
-        body: payload,
-      });
+      return await submitContactForm(input);
     },
   });
 }
@@ -55,41 +66,38 @@ export function useAdminContactList(options: AdminContactQueryOptions = {}) {
       { page, limit, status, subject, search, dateFrom, dateTo },
     ],
     queryFn: async () => {
-      const q = new URLSearchParams();
-      if (page) q.set("page", String(page));
-      if (limit) q.set("limit", String(limit));
-      if (status) q.set("status", status);
-      if (subject) q.set("subject", subject);
-      if (search) q.set("search", search);
-      if (dateFrom) q.set("dateFrom", dateFrom);
-      if (dateTo) q.set("dateTo", dateTo);
+      const params = new URLSearchParams();
+      params.set("page", String(page));
+      params.set("limit", String(limit));
+      if (status) params.set("status", status);
+      if (subject) params.set("subject", subject);
+      if (search) params.set("search", search);
+      if (dateFrom) params.set("dateFrom", dateFrom);
+      if (dateTo) params.set("dateTo", dateTo);
 
-      const qs = q.toString();
-      const endpoint = `/admin/contact${qs ? `?${qs}` : ""}`;
-
-      return await apiFetch<AdminContactListResponse>(endpoint);
+      return await apiFetch<AdminContactListResponse>(
+        `/admin/contact?${params.toString()}`
+      );
     },
-    refetchOnWindowFocus: true,
   });
 }
 
 /**
- * دریافت جزئیات یک پیام تماس با ما در پنل ادمین
+ * دریافت جزئیات یک پیام در پنل ادمین
  * GET /admin/contact/:id
  */
-export function useAdminContactMessage(id: number | string | undefined | null) {
-  return useQuery<ContactMessage | null>({
-    queryKey: ["admin-contact-message", id],
+export function useAdminContactMessage(id: number | null | undefined) {
+  return useQuery<ContactMessage>({
+    queryKey: ["admin-contact", id],
+    enabled: typeof id === "number" && id > 0,
     queryFn: async () => {
-      if (!id) return null;
       return await apiFetch<ContactMessage>(`/admin/contact/${id}`);
     },
-    enabled: Boolean(id),
   });
 }
 
 /**
- * به‌روزرسانی وضعیت یا یادداشت ادمین پیام تماس
+ * به‌روزرسانی وضعیت یا یادداشت ادمین برای یک پیام
  * PATCH /admin/contact/:id
  */
 export function useUpdateAdminContact() {
@@ -98,13 +106,15 @@ export function useUpdateAdminContact() {
   return useMutation({
     mutationFn: async ({
       id,
-      status,
-      adminNote,
-    }: UpdateAdminContactInput): Promise<ContactMessage> => {
+      input,
+    }: {
+      id: number;
+      input: UpdateAdminContactInput;
+    }): Promise<ContactMessage> => {
       const payload: Record<string, unknown> = {};
-      if (status) payload.status = status;
-      if (adminNote !== undefined) {
-        payload.adminNote = adminNote.trim() ? adminNote.trim().slice(0, 1000) : null;
+      if (input.status !== undefined) payload.status = input.status;
+      if (input.adminNote !== undefined) {
+        payload.adminNote = input.adminNote ? input.adminNote.trim() : null;
       }
 
       return await apiFetch<ContactMessage>(`/admin/contact/${id}`, {
@@ -112,25 +122,25 @@ export function useUpdateAdminContact() {
         body: payload,
       });
     },
-    onSuccess: (_data, variables) => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["admin-contact"] });
       queryClient.invalidateQueries({
-        queryKey: ["admin-contact-message", variables.id],
+        queryKey: ["admin-contact", variables.id],
       });
     },
   });
 }
 
 /**
- * حذف یک پیام تماس با ما توسط ادمین
+ * حذف یک پیام از صندوق پنل ادمین
  * DELETE /admin/contact/:id
  */
 export function useDeleteAdminContact() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: number | string): Promise<{ success?: boolean; message?: string }> => {
-      return await apiFetch<{ success?: boolean; message?: string }>(
+    mutationFn: async (id: number): Promise<{ success: boolean; message?: string }> => {
+      return await apiFetch<{ success: boolean; message?: string }>(
         `/admin/contact/${id}`,
         {
           method: "DELETE",

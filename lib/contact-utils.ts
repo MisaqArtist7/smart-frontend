@@ -15,17 +15,17 @@ export const CONTACT_SUBJECT_CONFIG: Record<ContactSubject, ContactSubjectConfig
   },
   PAYMENT_ISSUE: {
     value: "PAYMENT_ISSUE",
-    label: "مشکل در پرداخت / واریز کارت به کارت",
+    label: "مشکل در پرداخت یا واریز کارت به کارت",
     icon: CreditCard,
   },
   PRODUCT_QUESTION: {
     value: "PRODUCT_QUESTION",
-    label: "سوال درباره مشخصات یا موجودی کالا",
+    label: "سوال درباره موجودی یا مشخصات کالا",
     icon: HelpCircle,
   },
   DELIVERY_ISSUE: {
     value: "DELIVERY_ISSUE",
-    label: "مشکل یا تاخیر در تحویل بسته پستی",
+    label: "تاخیر یا مشکل در ارسال مرسوله پستی",
     icon: Truck,
   },
   OTHER: {
@@ -72,21 +72,20 @@ export const CONTACT_STATUS_CONFIG: Record<ContactStatus, ContactStatusConfig> =
 };
 
 /**
- * تبدیل ارقام فارسی و عربی به انگلیسی، حذف فاصله‌ها و خط تیره‌ها
+ * تبدیل ارقام فارسی و عربی به ارقام انگلیسی
+ */
+export const toEnglishDigits = (str: string): string => {
+  if (!str) return "";
+  return str
+    .replace(/[۰-۹]/g, (d) => "۰۱۲۳۴۵۶۷۸۹".indexOf(d).toString())
+    .replace(/[٠-٩]/g, (d) => "٠١٢٣٤٥٦٧٨٩".indexOf(d).toString());
+};
+
+/**
+ * تبدیل ارقام فارسی و عربی به انگلیسی، حذف فاصله‌ها و کاراکترهای غیرعددی
  */
 export function normalizePhone(raw: string): string {
   if (!raw) return "";
-  const persianDigits = ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"];
-  const arabicDigits = ["٠", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"];
-
-  let normalized = raw;
-  for (let i = 0; i < 10; i++) {
-    normalized = normalized
-      .replaceAll(persianDigits[i], String(i))
-      .replaceAll(arabicDigits[i], String(i));
-  }
-
-  // حذف هرگونه فاصله، خط تیره، پرانتز یا کاراکتر غیرعددی
-  return normalized.replace(/\D/g, "");
+  return toEnglishDigits(raw.trim()).replace(/\D/g, "");
 }
 
