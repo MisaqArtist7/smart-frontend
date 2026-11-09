@@ -221,6 +221,7 @@ export interface CreateProductInput {
   title: string;
   slug: string;
   categoryId: number;
+  brandId?: number | null;
   price: number;
   discountPrice?: number | null;
   stock: number;
@@ -1360,3 +1361,4 @@ export function useAdminMetrics() {
 export * from "./api/contact";
 export * from "./api/reviews";
 export * from "./api/coupons";
+export * from "./api/brands";

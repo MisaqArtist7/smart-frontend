@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   MessageSquare,
   Tag,
+  Award,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -46,6 +47,11 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
     title: "دسته‌بندی‌ها",
     href: "/admin/categories",
     icon: Layers,
+  },
+  {
+    title: "برندها",
+    href: "/admin/brands",
+    icon: Award,
   },
   {
     title: "دیدگاه‌ها و نظرات",

@@ -1,18 +1,23 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import Image from "next/image";
+import { ArrowLeft, Award, Sparkles } from "lucide-react";
+import { useBrands } from "@/lib/api/brands";
 import { cn } from "@/lib/utils";
 
 interface BrandItem {
-  id: string;
+  id: string | number;
   name: string;
-  latinName: string;
-  category: string;
-  badge: string;
+  latinName?: string;
+  category?: string;
+  badge?: string;
+  logo?: string | null;
   href: string;
 }
 
-const TOP_BRANDS: BrandItem[] = [
+const FALLBACK_BRANDS: BrandItem[] = [
   {
     id: "hrui",
     name: "اچ‌آر‌یو‌آی",
@@ -68,9 +73,25 @@ export interface BrandShowcaseProps {
 }
 
 /**
- * بخش برندهای برتر و معتبر فروشگاه اسمارت الکتریک
+ * بخش برندهای معتبر و همکاران تجاری در صفحه اصلی
  */
 export function BrandShowcase({ className }: BrandShowcaseProps) {
+  const { data: dbBrands = [] } = useBrands();
+
+  // در صورت وجود برندهای دیتابیس از آن‌ها استفاده می‌کنیم؛ در غیر اینصورت از فال‌بک
+  const displayBrands: BrandItem[] =
+    dbBrands && dbBrands.length > 0
+      ? dbBrands.map((b) => ({
+          id: b.id,
+          name: b.name,
+          latinName: b.slug.toUpperCase(),
+          category: b.description || "تجهیزات برق و شبکه",
+          badge: "برند معتبر",
+          logo: b.logo,
+          href: `/products?brandId=${b.id}`,
+        }))
+      : FALLBACK_BRANDS;
+
   return (
     <section
       dir="rtl"
@@ -99,22 +120,34 @@ export function BrandShowcase({ className }: BrandShowcaseProps) {
 
       {/* گرید برندها */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-        {TOP_BRANDS.map((brand) => (
+        {displayBrands.map((brand) => (
           <Link
             key={brand.id}
             href={brand.href}
             className="group relative flex flex-col justify-between items-center text-center p-4 rounded-2xl border border-border/80 bg-card hover:bg-card/90 shadow-xs hover:border-primary/40 hover:shadow-md transition-all duration-300 hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-primary"
           >
-            {/* بج کیفیت بالای کارت */}
-            <span className="text-[10px] font-semibold text-muted-foreground group-hover:text-primary transition-colors bg-muted/50 px-2 py-0.5 rounded-full mb-3">
-              {brand.badge}
+            {/* بج بالای کارت */}
+            <span className="text-[10px] font-semibold text-muted-foreground group-hover:text-primary transition-colors bg-muted/50 px-2 py-0.5 rounded-full mb-3 inline-flex items-center gap-1">
+              <Sparkles className="size-2.5" />
+              <span>{brand.badge}</span>
             </span>
 
-            {/* لوگوتایپ لاتین برجسته */}
-            <div className="size-14 rounded-2xl bg-muted/30 border border-border/60 flex items-center justify-center mb-3 group-hover:bg-primary/5 transition-colors">
-              <span className="font-black text-sm sm:text-base tracking-tighter text-foreground group-hover:text-primary transition-colors">
-                {brand.latinName}
-              </span>
+            {/* نشان یا لوگوی برند */}
+            <div className="size-16 rounded-2xl bg-muted/30 border border-border/60 flex items-center justify-center mb-3 group-hover:bg-primary/5 transition-colors overflow-hidden p-2 relative">
+              {brand.logo ? (
+                <div className="relative size-full">
+                  <Image
+                    src={brand.logo}
+                    alt={brand.name}
+                    fill
+                    className="object-contain transition-transform duration-300 group-hover:scale-110"
+                  />
+                </div>
+              ) : (
+                <span className="font-black text-xs sm:text-sm tracking-tighter text-foreground group-hover:text-primary transition-colors font-mono">
+                  {brand.latinName || <Award className="size-6 text-primary" />}
+                </span>
+              )}
             </div>
 
             {/* نام فارسی و دسته‌بندی */}
@@ -122,9 +155,11 @@ export function BrandShowcase({ className }: BrandShowcaseProps) {
               <h3 className="font-bold text-xs text-foreground group-hover:text-primary transition-colors line-clamp-1">
                 {brand.name}
               </h3>
-              <p className="text-[10px] text-muted-foreground line-clamp-1">
-                {brand.category}
-              </p>
+              {brand.category && (
+                <p className="text-[10px] text-muted-foreground line-clamp-1">
+                  {brand.category}
+                </p>
+              )}
             </div>
           </Link>
         ))}

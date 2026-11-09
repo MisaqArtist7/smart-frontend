@@ -46,9 +46,42 @@ export interface ProductImage {
   createdAt: string;
 }
 
+export interface Brand {
+  id: number;
+  name: string;
+  slug: string;
+  logo?: string | null;
+  description?: string | null;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt?: string;
+  productsCount?: number;
+  _count?: {
+    products?: number;
+  };
+}
+
+export interface CreateBrandInput {
+  name: string;
+  slug: string;
+  logo?: string | null;
+  description?: string | null;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+  isActive?: boolean;
+}
+
+export interface UpdateBrandInput extends Partial<CreateBrandInput> {
+  id: number;
+}
+
 export interface Product {
   id: number;
   categoryId: number;
+  brandId?: number | null;
+  brand?: Brand | null;
   title: string;
   slug: string;
   description: string | null;

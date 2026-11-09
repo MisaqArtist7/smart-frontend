@@ -20,6 +20,7 @@ import {
 import {
   useAdminProducts,
   useAdminCategories,
+  useAdminBrands,
   useCreateProduct,
   useUpdateProduct,
   useDeleteProduct,
@@ -75,6 +76,7 @@ const productFormSchema = z
       )
       .max(220, "شناسه نباید بیشتر از ۲۲۰ کاراکتر باشد"),
     categoryId: z.string().min(1, "انتخاب دسته‌بندی کالا الزامی است"),
+    brandId: z.string().optional().nullable(),
     price: z
       .number("قیمت را وارد کنید")
       .int("قیمت باید عدد صحیح باشد")
@@ -108,6 +110,7 @@ function toProductPayload(v: ProductFormValues) {
     title: v.title.trim(),
     slug: v.slug.trim(),
     categoryId: Number(v.categoryId),
+    brandId: v.brandId && v.brandId !== "" ? Number(v.brandId) : null,
     price: v.price,
     discountPrice: v.discountPrice || undefined,
     stock: v.stock,
@@ -130,6 +133,7 @@ export default function AdminProductsPage() {
 
   const { data: products = [], isLoading: isProductsLoading } = useAdminProducts();
   const { data: categories = [] } = useAdminCategories();
+  const { data: brands = [] } = useAdminBrands();
   const createProductMutation = useCreateProduct();
   const updateProductMutation = useUpdateProduct();
   const deleteProductMutation = useDeleteProduct();
@@ -146,6 +150,7 @@ export default function AdminProductsPage() {
       title: "",
       slug: "",
       categoryId: "",
+      brandId: "",
       price: undefined,
       discountPrice: undefined,
       stock: 10,
@@ -178,6 +183,7 @@ export default function AdminProductsPage() {
       title: "",
       slug: "",
       categoryId: categories[0]?.id ? String(categories[0].id) : "",
+      brandId: "",
       price: undefined,
       discountPrice: undefined,
       stock: 10,
@@ -198,6 +204,7 @@ export default function AdminProductsPage() {
       title: prod.title,
       slug: prod.slug,
       categoryId: String(prod.categoryId),
+      brandId: prod.brandId ? String(prod.brandId) : "",
       price: prod.price,
       discountPrice: prod.discountPrice ?? undefined,
       stock: prod.stock,
@@ -385,8 +392,18 @@ export default function AdminProductsPage() {
 
                       {/* عنوان و اسلاگ */}
                       <TableCell>
-                        <div className="font-bold text-xs sm:text-sm text-foreground line-clamp-1 max-w-xs">
-                          {prod.title}
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-bold text-xs sm:text-sm text-foreground line-clamp-1 max-w-xs">
+                            {prod.title}
+                          </span>
+                          {prod.brand && (
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] py-0 px-1.5 text-primary border-primary/20 bg-primary/5 font-semibold"
+                            >
+                              {prod.brand.name}
+                            </Badge>
+                          )}
                         </div>
                         <div className="text-[11px] text-muted-foreground line-clamp-1">
                           {prod.slug}
@@ -588,6 +605,24 @@ export default function AdminProductsPage() {
                 {errors.categoryId && (
                   <p className="text-[11px] text-destructive">{errors.categoryId.message}</p>
                 )}
+              </div>
+
+              {/* برند محصول (اختیاری) */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-foreground">
+                  برند سازنده محصول (اختیاری)
+                </label>
+                <Select {...register("brandId")}>
+                  <option value="">بدون برند / متفرقه</option>
+                  {brands.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.name}
+                    </option>
+                  ))}
+                </Select>
+                <p className="text-[10px] text-muted-foreground">
+                  اولین گزینه «متفرقه» است. در صورت نیاز برند کالا را مشخص کنید.
+                </p>
               </div>
 
               {/* موجودی */}

@@ -21,6 +21,7 @@ import {
   AlertCircle,
   Plus,
   Minus,
+  Award,
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/footer";
@@ -268,11 +269,33 @@ export default function SingleProductPage({ params }: PageProps) {
           {/* ستون وسط: اطلاعات، مشخصات اجمالی و امتیاز محصول */}
           <div className="lg:col-span-5 space-y-5">
             <div>
-              {/* دسته‌بندی و کد کالا */}
-              <div className="flex items-center gap-2 mb-2">
+              {/* دسته‌بندی، برند و کد کالا */}
+              <div className="flex flex-wrap items-center gap-2 mb-2">
                 <Badge variant="outline" className="text-xs font-semibold border-border">
                   {product.category?.name || product.categoryName || "تجهیزات صنعتی"}
                 </Badge>
+
+                {product.brand && (
+                  <Link
+                    href={`/products?brandId=${product.brand.id}`}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 transition-colors"
+                  >
+                    {product.brand.logo ? (
+                      <span className="relative size-4 rounded-full overflow-hidden bg-background shrink-0 inline-block">
+                        <Image
+                          src={product.brand.logo}
+                          alt={product.brand.name}
+                          fill
+                          className="object-contain"
+                        />
+                      </span>
+                    ) : (
+                      <Award className="size-3.5" />
+                    )}
+                    <span>برند: {product.brand.name}</span>
+                  </Link>
+                )}
+
                 {product.sku && (
                   <span className="font-mono text-xs text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-md">
                     SKU: {product.sku}
@@ -542,6 +565,21 @@ export default function SingleProductPage({ params }: PageProps) {
                       <td className="p-3.5 font-bold text-foreground">دسته‌بندی تخصصی</td>
                       <td className="p-3.5 text-muted-foreground">
                         {product.category?.name || product.categoryName || "عمومی"}
+                      </td>
+                    </tr>
+                    <tr className="border-b border-border/60 bg-muted/10">
+                      <td className="p-3.5 font-bold text-foreground">برند سازنده</td>
+                      <td className="p-3.5 text-muted-foreground">
+                        {product.brand ? (
+                          <Link
+                            href={`/products?brandId=${product.brand.id}`}
+                            className="inline-flex items-center gap-1.5 text-primary hover:underline font-bold"
+                          >
+                            <span>{product.brand.name}</span>
+                          </Link>
+                        ) : (
+                          "متفرقه / بدون برند"
+                        )}
                       </td>
                     </tr>
                     <tr className="border-b border-border/60 bg-muted/10">

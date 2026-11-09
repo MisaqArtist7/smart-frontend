@@ -14,6 +14,16 @@ const vazir = Vazirmatn({
 export const metadata: Metadata = {
   title: "فروشگاه اینترنتی اسمارت الکتریک",
   description: "خرید آنلاین انواع محصولات و تجهیزات برق و شبکه",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.png", type: "image/png", sizes: "512x512" },
+    ],
+    apple: [
+      { url: "/apple-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+    shortcut: ["/favicon.ico"],
+  },
 };
 
 export default function RootLayout({
