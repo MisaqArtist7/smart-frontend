@@ -39,10 +39,7 @@ export default function HomePage() {
         {/* ۷. بخش مشاوره فنی، خرید پروژه‌ای و استعلام پیش‌فاکتور رسمی B2B */}
         <B2BConsultation />
 
-        {/* ۸. مقالات آموزشی و راهنمای تخصصی خرید (Blog Section) */}
-        <BlogSection />
-
-        {/* ۹. سوالات متداول خریداران (FAQ Section) */}
+        {/* ۸. سوالات متداول خریداران (FAQ Section) */}
         <FaqSection />
       </main>
 
