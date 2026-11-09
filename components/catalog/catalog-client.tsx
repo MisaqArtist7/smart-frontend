@@ -130,7 +130,7 @@ export function CatalogClient() {
         // newest
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       });
-  }, [serverProducts, searchQuery, selectedCategory, selectedBrandIds, inStockOnly, sortBy]);
+  }, [serverProducts, searchQuery, selectedCategory, activeBrandIds, inStockOnly, sortBy]);
 
   // پاک کردن تمام فیلترها
   const handleClearAllFilters = () => {
@@ -189,9 +189,9 @@ export function CatalogClient() {
           >
             <Filter className="size-4 text-primary" />
             <span>فیلترها و برندها</span>
-            {selectedBrandIds.length > 0 && (
+            {activeBrandIds.length > 0 && (
               <Badge className="bg-primary text-primary-foreground text-[10px] h-4.5 px-1.5 rounded-full">
-                {selectedBrandIds.length}
+                {activeBrandIds.length}
               </Badge>
             )}
           </Button>
