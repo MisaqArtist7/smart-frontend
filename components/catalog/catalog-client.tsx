@@ -240,7 +240,7 @@ export function CatalogClient() {
 
           {/* ۲. باکس فیلتر برند کالا (کامپوننت اختصاصی فیچر برندها) */}
           <BrandFilterBox
-            selectedBrandIds={selectedBrandIds}
+            selectedBrandIds={activeBrandIds}
             onChange={setSelectedBrandIds}
             brandCounts={brandCounts}
           />
@@ -321,10 +321,10 @@ export function CatalogClient() {
           </div>
 
           {/* تگ‌های فیلترهای فعال (Brand Tags) */}
-          {selectedBrandIds.length > 0 && (
+          {activeBrandIds.length > 0 && (
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs text-muted-foreground">برندهای فیلترشده:</span>
-              {selectedBrandIds.map((bId) => {
+              {activeBrandIds.map((bId) => {
                 const brand = brands.find((b) => b.id === bId);
                 if (!brand) return null;
                 return (
@@ -337,7 +337,7 @@ export function CatalogClient() {
                     <button
                       type="button"
                       onClick={() =>
-                        setSelectedBrandIds(selectedBrandIds.filter((id) => id !== brand.id))
+                        setSelectedBrandIds(activeBrandIds.filter((id) => id !== brand.id))
                       }
                       className="hover:opacity-70 cursor-pointer"
                     >
