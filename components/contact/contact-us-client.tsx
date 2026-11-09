@@ -30,6 +30,7 @@ import {
   useSubmitContact,
   CONTACT_SUBJECT_OPTIONS,
   normalizePhone,
+  toEnglishDigits,
   type ContactSubject,
 } from "@/lib/api/contact";
 import { ApiError } from "@/lib/api";
@@ -171,7 +172,7 @@ export function ContactUsClient() {
           setFormError(msg);
           toast.error(msg);
         } else if (err.status === 429) {
-          const msg = "تعداد پیام‌های ارسالی شما بیش از حد مجاز است. لطفاً ساعتی دیگر مجدداً تلاش کنید.";
+          const msg = "تعداد پیام‌های ارسالی شما بیش از حد مجاز است. لطفاً ساعتی دیگر مجدداً تلاش فرمایید.";
           setFormError(msg);
           toast.error(msg);
         } else {
@@ -433,19 +434,14 @@ export function ContactUsClient() {
 
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
                 {/* فیلد هانی‌پات (مخفی برای کاربران عادی و آشکار برای ربات‌ها) */}
-                <div
-                  aria-hidden="true"
-                  className="absolute -left-[9999px] top-0 h-0 w-0 opacity-0 pointer-events-none overflow-hidden select-none"
+                <input
+                  type="text"
                   tabIndex={-1}
-                >
-                  <input
-                    type="text"
-                    tabIndex={-1}
-                    autoComplete="off"
-                    aria-hidden="true"
-                    {...register("website")}
-                  />
-                </div>
+                  autoComplete="off"
+                  aria-hidden="true"
+                  style={{ display: "none", position: "absolute", opacity: 0, zIndex: -1 }}
+                  {...register("website")}
+                />
 
                 {/* ردیف دوتایی: نام و نام خانوادگی + شماره موبایل */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -493,7 +489,13 @@ export function ContactUsClient() {
                         inputMode="tel"
                         dir="ltr"
                         placeholder="09123456789"
-                        {...register("phone")}
+                        {...register("phone", {
+                          onChange: (e) => {
+                            setValue("phone", toEnglishDigits(e.target.value), {
+                              shouldValidate: true,
+                            });
+                          },
+                        })}
                         className={`w-full rounded-xl border bg-muted/30 pr-11 pl-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-all text-start font-mono tracking-wider focus:bg-background focus:ring-2 ${
                           errors.phone
                             ? "border-destructive focus:border-destructive focus:ring-destructive/20"
