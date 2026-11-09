@@ -25,12 +25,8 @@ export function useSubmitContact() {
         phone: input.phone.trim(),
         subject: input.subject,
         message: input.message.trim(),
+        website: input.website ?? "",
       };
-
-      // فیلد هانی‌پات (Honeypot): تنها در صورت پر بودن توسط بات ارسال می‌شود
-      if (input.website && input.website.trim() !== "") {
-        payload.website = input.website.trim();
-      }
 
       return await apiFetch<SubmitContactResponse>("/contact", {
         method: "POST",

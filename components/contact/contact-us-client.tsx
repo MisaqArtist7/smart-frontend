@@ -156,10 +156,10 @@ export function ContactUsClient() {
       });
 
       setIsSuccess(true);
-      toast.success("پیام شما با موفقیت ثبت شد");
+      toast.success("پیام شما با موفقیت ثبت شد. کارشناسان ما به زودی با شما تماس خواهند گرفت.");
       reset({
-        fullName: user?.name || "",
-        phone: user?.phone || "",
+        fullName: "",
+        phone: "",
         subject: undefined,
         message: "",
         website: "",
@@ -171,7 +171,7 @@ export function ContactUsClient() {
           setFormError(msg);
           toast.error(msg);
         } else if (err.status === 429) {
-          const msg = "تعداد پیام‌های ارسالی شما زیاد است. لطفاً کمی بعد دوباره تلاش کنید.";
+          const msg = "تعداد پیام‌های ارسالی شما بیش از حد مجاز است. لطفاً ساعتی دیگر مجدداً تلاش کنید.";
           setFormError(msg);
           toast.error(msg);
         } else {
@@ -383,10 +383,10 @@ export function ContactUsClient() {
               </div>
               <div className="space-y-2 max-w-md mx-auto">
                 <h3 className="text-lg sm:text-xl font-black text-foreground">
-                  پیام شما ثبت شد
+                  پیام شما با موفقیت ثبت شد
                 </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  همکاران ما در اسرع وقت با شما تماس می‌گیرند. از توجه و اعتماد شما به اسمارت الکتریک متشکریم.
+                  کارشناسان ما به زودی با شما تماس خواهند گرفت. از توجه و اعتماد شما به اسمارت الکتریک متشکریم.
                 </p>
               </div>
               <div className="pt-2">

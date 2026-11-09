@@ -10,27 +10,27 @@ export interface ContactSubjectConfig {
 export const CONTACT_SUBJECT_CONFIG: Record<ContactSubject, ContactSubjectConfig> = {
   ORDER_ISSUE: {
     value: "ORDER_ISSUE",
-    label: "مشکل در سفارش",
+    label: "پیگیری یا مشکل سفارش",
     icon: ShoppingBag,
   },
   PAYMENT_ISSUE: {
     value: "PAYMENT_ISSUE",
-    label: "مشکل در پرداخت",
+    label: "مشکل در پرداخت / واریز کارت به کارت",
     icon: CreditCard,
   },
   PRODUCT_QUESTION: {
     value: "PRODUCT_QUESTION",
-    label: "سؤال درباره‌ی محصول",
+    label: "سوال درباره مشخصات یا موجودی کالا",
     icon: HelpCircle,
   },
   DELIVERY_ISSUE: {
     value: "DELIVERY_ISSUE",
-    label: "مشکل در ارسال",
+    label: "مشکل یا تاخیر در تحویل بسته پستی",
     icon: Truck,
   },
   OTHER: {
     value: "OTHER",
-    label: "سایر موضوعات",
+    label: "سایر موضوعات و پیشنهادات",
     icon: MessageSquare,
   },
 };
