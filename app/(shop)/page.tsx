@@ -8,7 +8,6 @@ import LatestProducts from "@/components/home/latest-products";
 import PromoBanners from "@/components/home/promo-banners";
 import BrandShowcase from "@/components/home/brand-showcase";
 import B2BConsultation from "@/components/home/b2b-consultation";
-import BlogSection from "@/components/home/blog-section";
 import FaqSection from "@/components/home/faq-section";
 
 export default function HomePage() {
