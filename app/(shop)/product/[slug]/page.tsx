@@ -25,11 +25,13 @@ import {
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/footer";
 import { useProduct } from "@/lib/api";
+import { useProductReviews } from "@/lib/api/reviews";
 import { useCartStore } from "@/lib/cart-store";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LatestProducts from "@/components/home/latest-products";
+import { ProductReviews } from "@/components/product/product-reviews";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -41,6 +43,8 @@ export default function SingleProductPage({ params }: PageProps) {
 
   // دریافت اطلاعات محصول از هوک
   const { data: product, isLoading, isError } = useProduct(slug);
+  const { data: reviewsData } = useProductReviews(product?.id);
+  const reviewsSummary = reviewsData?.summary;
   const addItemToCart = useCartStore((s) => s.addItem);
 
   // استیت‌های صفحه
@@ -291,13 +295,23 @@ export default function SingleProductPage({ params }: PageProps) {
             <div className="flex items-center gap-3 text-xs border-y border-border/50 py-3">
               <div className="flex items-center gap-1 text-amber-500 font-bold">
                 <Star className="size-4 fill-amber-500" />
-                <span>۴.۸</span>
+                <span>
+                  {reviewsSummary && reviewsSummary.totalReviews > 0
+                    ? reviewsSummary.averageRating.toLocaleString("fa-IR")
+                    : "۴.۸"}
+                </span>
               </div>
               <span className="text-muted-foreground/60">•</span>
-              <span className="text-muted-foreground">۱۸ دیدگاه ثبت‌شده</span>
+              <span className="text-muted-foreground">
+                {reviewsSummary && reviewsSummary.totalReviews > 0
+                  ? `${reviewsSummary.totalReviews.toLocaleString("fa-IR")} دیدگاه ثبت‌شده`
+                  : "دیدگاه‌های کاربران"}
+              </span>
               <span className="text-muted-foreground/60">•</span>
               <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
-                ۹۵٪ رضایت خریداران
+                {reviewsSummary && reviewsSummary.totalReviews > 0
+                  ? `${reviewsSummary.satisfactionRate.toLocaleString("fa-IR")}٪ رضایت خریداران`
+                  : "رضایت خریداران"}
               </span>
             </div>
 
@@ -487,7 +501,12 @@ export default function SingleProductPage({ params }: PageProps) {
                 className="rounded-none border-b-2 border-transparent data-active:border-primary data-active:text-primary data-active:bg-transparent pb-3 text-xs sm:text-sm font-bold gap-2 cursor-pointer"
               >
                 <MessageSquare className="size-4" />
-                <span>دیدگاه خریداران (۱۸)</span>
+                <span>
+                  دیدگاه خریداران
+                  {reviewsSummary && reviewsSummary.totalReviews > 0
+                    ? ` (${reviewsSummary.totalReviews.toLocaleString("fa-IR")})`
+                    : ""}
+                </span>
               </TabsTrigger>
             </TabsList>
 
@@ -562,58 +581,8 @@ export default function SingleProductPage({ params }: PageProps) {
             </TabsContent>
 
             {/* محتوای تب نظرات خریداران */}
-            <TabsContent value="reviews" className="pt-6 space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-base sm:text-lg font-black text-foreground">
-                    دیدگاه‌ها و تجربیات خریداران
-                  </h2>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    تجربه خرید و استفاده از این کالا را با سایر کاربران به اشتراک بگذارید.
-                  </p>
-                </div>
-
-                <Button
-                  onClick={() => toast.info("فرم ثبت نظر به زودی فعال خواهد شد.")}
-                  variant="outline"
-                  className="rounded-xl text-xs font-bold"
-                >
-                  ثبت دیدگاه جدید
-                </Button>
-              </div>
-
-              {/* نمونه دیدگاه‌های تاییدشده خریداران */}
-              <div className="space-y-3 pt-2">
-                <div className="rounded-2xl border border-border bg-card p-4 space-y-2">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-foreground">مهندس رضایی (پیمانکار شبکه)</span>
-                    <span className="text-muted-foreground">۱۲ آبان ۱۴۰۳</span>
-                  </div>
-                  <div className="flex items-center gap-1 text-amber-500">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star key={i} className="size-3.5 fill-amber-500" />
-                    ))}
-                  </div>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    کیفیت ساخت کالا بسیار بالا و مطابق مشخصات دیتاشیت است. ارسال سریع انجام شد و بسته‌بندی عالی بود.
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-border bg-card p-4 space-y-2">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-foreground">احسان محمدی</span>
-                    <span className="text-muted-foreground">۰۸ آبان ۱۴۰۳</span>
-                  </div>
-                  <div className="flex items-center gap-1 text-amber-500">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star key={i} className="size-3.5 fill-amber-500" />
-                    ))}
-                  </div>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    با تشکر از مشاوره تلفنی کارشناسان اسمارت الکتریک، برای پروژه کارخانه خریداری کردیم و عملکرد بدون نقصی دارد.
-                  </p>
-                </div>
-              </div>
+            <TabsContent value="reviews" className="pt-6">
+              <ProductReviews productId={product.id} productTitle={product.title} />
             </TabsContent>
           </Tabs>
         </div>

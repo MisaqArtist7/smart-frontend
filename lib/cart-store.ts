@@ -24,8 +24,10 @@ export interface StoredCartItem {
 
 export interface CouponData {
   code: string;
-  percent: number;
+  percent?: number;
   discountAmount: number;
+  type?: "PERCENTAGE" | "FIXED_AMOUNT";
+  value?: number;
 }
 
 interface CartStoreState {
@@ -49,6 +51,7 @@ interface CartStoreState {
 
   // کد تخفیف
   applyCoupon: (code: string) => { success: boolean; message: string };
+  setCoupon: (coupon: CouponData | null) => void;
   removeCoupon: () => void;
 
   // تنظیمات سفارش
@@ -277,6 +280,10 @@ export const useCartStore = create<CartStoreState>()(
         }
 
         return { success: false, message: "کد تخفیف وارد شده معتبر نمی‌باشد یا منقضی شده است." };
+      },
+
+      setCoupon: (coupon) => {
+        set({ coupon });
       },
 
       removeCoupon: () => {

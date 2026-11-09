@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useSyncExternalStore } from "react";
+import React, { useEffect, useSyncExternalStore } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -13,9 +13,7 @@ import {
   ArrowLeft,
   ShieldCheck,
   Truck,
-  Tag,
   CheckCircle2,
-  X,
   AlertTriangle,
   Loader2,
 } from "lucide-react";
@@ -24,11 +22,10 @@ import Footer from "@/components/layout/footer";
 import { useCartStore } from "@/lib/cart-store";
 import { useProducts } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { CouponSection } from "@/components/cart/coupon-section";
 
 export default function CartPage() {
   const router = useRouter();
-  const [couponInput, setCouponInput] = useState("");
 
   const mounted = useSyncExternalStore(
     () => () => {},
@@ -41,8 +38,6 @@ export default function CartPage() {
     updateQuantity,
     clearCart,
     coupon,
-    applyCoupon,
-    removeCoupon,
     syncWithProducts,
     warnings,
     dismissWarnings,
@@ -66,21 +61,6 @@ export default function CartPage() {
   const discountTotal = mounted ? getDiscountTotal() : 0;
   const finalTotal = mounted ? getFinalTotal() : 0;
 
-  // اعمال کد تخفیف
-  const handleApplyCoupon = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!couponInput.trim()) {
-      toast.error("لطفاً کد تخفیف را وارد نمایید.");
-      return;
-    }
-    const result = applyCoupon(couponInput);
-    if (result.success) {
-      toast.success(result.message);
-      setCouponInput("");
-    } else {
-      toast.error(result.message);
-    }
-  };
 
   // حذف همه اقلام با تایید
   const handleClearAll = () => {
@@ -315,43 +295,7 @@ export default function CartPage() {
             {/* ستون چپ: کارت خلاصه سفارش و فاکتور (چسبان) */}
             <div className="lg:col-span-4 space-y-4 lg:sticky lg:top-24">
               {/* فرم کد تخفیف */}
-              <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 shadow-xs space-y-3">
-                <div className="flex items-center gap-2 text-xs font-bold text-foreground">
-                  <Tag className="size-4 text-primary" />
-                  <span>کد تخفیف دارید؟</span>
-                </div>
-
-                {coupon ? (
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs font-bold">
-                    <span>کد فعال: {coupon.code} ({coupon.percent}٪ تخفیف)</span>
-                    <button
-                      type="button"
-                      onClick={removeCoupon}
-                      className="size-6 rounded-md hover:bg-emerald-500/20 flex items-center justify-center text-destructive cursor-pointer"
-                      title="حذف کد تخفیف"
-                    >
-                      <X className="size-4" />
-                    </button>
-                  </div>
-                ) : (
-                  <form onSubmit={handleApplyCoupon} className="flex gap-2">
-                    <Input
-                      value={couponInput}
-                      onChange={(e) => setCouponInput(e.target.value)}
-                      placeholder="مثال: SMART یا OFF10"
-                      dir="ltr"
-                      className="text-start h-10 rounded-xl text-xs uppercase font-mono"
-                    />
-                    <Button
-                      type="submit"
-                      variant="outline"
-                      className="rounded-xl h-10 text-xs font-bold shrink-0 cursor-pointer"
-                    >
-                      اعمال کد
-                    </Button>
-                  </form>
-                )}
-              </div>
+              <CouponSection />
 
               {/* کارت فاکتور و پرداخت نهایی */}
               <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-xs space-y-4">

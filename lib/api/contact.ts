@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { apiFetch, ApiError } from "../api";
+import { apiFetch } from "../api";
 import { normalizePhone } from "../contact-utils";
 import type {
   SubmitContactInput,
@@ -12,7 +12,6 @@ import type {
 
 export * from "../types";
 export * from "../contact-utils";
-export { ApiError };
 
 /**
  * ارسال مستقیم فرم تماس به اندپوینت POST /contact

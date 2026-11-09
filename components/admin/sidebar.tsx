@@ -14,6 +14,8 @@ import {
   Store,
   ChevronRight,
   ShieldCheck,
+  MessageSquare,
+  Tag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -44,6 +46,16 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
     title: "دسته‌بندی‌ها",
     href: "/admin/categories",
     icon: Layers,
+  },
+  {
+    title: "دیدگاه‌ها و نظرات",
+    href: "/admin/comments",
+    icon: MessageSquare,
+  },
+  {
+    title: "کدهای تخفیف",
+    href: "/admin/discounts",
+    icon: Tag,
   },
   {
     title: "آدرس‌ها و کاربران",

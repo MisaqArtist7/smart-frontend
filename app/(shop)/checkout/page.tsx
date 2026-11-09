@@ -30,6 +30,7 @@ import { useAuth } from "@/components/providers/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { CouponSection } from "@/components/cart/coupon-section";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -84,6 +85,7 @@ export default function CheckoutPage() {
     items,
     orderNote,
     setOrderNote,
+    coupon,
     getRawTotal,
     getDiscountTotal,
     getFinalTotal,
@@ -520,6 +522,9 @@ export default function CheckoutPage() {
 
             {/* ستون چپ: کارت صورتحساب و دکمه پرداخت نهایی (Sticky) */}
             <div className="lg:col-span-4 space-y-4 lg:sticky lg:top-24">
+              {/* بخش کد تخفیف */}
+              <CouponSection />
+
               <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-xs space-y-4">
                 <h3 className="font-black text-sm text-foreground pb-2 border-b border-border/60">
                   فاکتور و تسویه سفارش
@@ -538,6 +543,15 @@ export default function CheckoutPage() {
                       <span>تخفیف کالاها:</span>
                       <span className="font-mono font-bold">
                         - {discountTotal.toLocaleString("fa-IR")} تومان
+                      </span>
+                    </div>
+                  )}
+
+                  {coupon && (
+                    <div className="flex items-center justify-between text-emerald-600 dark:text-emerald-400">
+                      <span>تخفیف کد ({coupon.code}):</span>
+                      <span className="font-mono font-bold">
+                        - {coupon.discountAmount.toLocaleString("fa-IR")} تومان
                       </span>
                     </div>
                   )}

@@ -327,6 +327,142 @@ export interface UpdateAdminContactInput {
 }
 
 // ----------------------------------------------------
+// 6. دیدگاه‌ها و امتیازدهی محصولات (Product Reviews & Ratings)
+// ----------------------------------------------------
+
+export type ReviewRecommendation = "RECOMMENDED" | "NOT_RECOMMENDED" | "NO_OPINION";
+export type ReviewStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+export interface ProductReview {
+  id: number;
+  productId: number;
+  userId?: number | null;
+  userName: string;
+  userPhone?: string | null;
+  isBuyer: boolean;
+  rating: number; // 1 to 5
+  recommendation: ReviewRecommendation;
+  title?: string | null;
+  message: string;
+  status: ReviewStatus;
+  adminReply?: string | null;
+  adminReplyAt?: string | null;
+  createdAt: string;
+  updatedAt?: string;
+  product?: {
+    id: number;
+    title: string;
+    slug: string;
+    image?: string | null;
+  };
+}
+
+export interface ProductReviewsSummary {
+  averageRating: number;
+  totalReviews: number;
+  satisfactionRate: number; // percentage (0..100)
+  recommendationCounts: {
+    recommended: number;
+    notRecommended: number;
+    noOpinion: number;
+  };
+  ratingCounts: Record<number, number>;
+}
+
+export interface CreateReviewInput {
+  productId: number;
+  rating: number;
+  recommendation: ReviewRecommendation;
+  title?: string;
+  message: string;
+}
+
+export interface AdminReviewCounts {
+  PENDING: number;
+  APPROVED: number;
+  REJECTED: number;
+  TOTAL: number;
+}
+
+export interface AdminReviewListResponse {
+  items: ProductReview[];
+  total: number;
+  page: number;
+  limit: number;
+  counts: AdminReviewCounts;
+}
+
+export interface AdminReviewQueryOptions {
+  page?: number;
+  limit?: number;
+  status?: ReviewStatus | "ALL" | "";
+  productId?: number;
+  search?: string;
+}
+
+export interface AdminUpdateReviewInput {
+  id: number;
+  status?: ReviewStatus;
+  adminReply?: string | null;
+}
+
+// ----------------------------------------------------
+// 7. کدهای تخفیف و کوپن‌ها (Discount Codes & Coupons)
+// ----------------------------------------------------
+
+export type DiscountType = "PERCENTAGE" | "FIXED_AMOUNT";
+
+export interface Coupon {
+  id: number;
+  code: string;
+  type: DiscountType;
+  value: number; // درصد (1 تا 100) یا مبلغ به تومان
+  maxDiscountAmount?: number | null; // سقف تخفیف برای کدهای درصدی
+  minOrderAmount?: number | null; // حداقل مبلغ سبد خرید برای اعمال
+  totalUsageLimit?: number | null; // سقف کل استفاده (null = نامحدود)
+  usedCount: number; // تعداد دفعات استفاده شده
+  perUserLimit?: number | null; // سقف استفاده هر کاربر (پیش‌فرض ۱)
+  startDate?: string | null; // تاریخ شروع ISO
+  endDate?: string | null; // تاریخ انقضا ISO
+  description?: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface ValidateCouponInput {
+  code: string;
+  orderAmount: number;
+}
+
+export interface ValidateCouponResponse {
+  valid: boolean;
+  code: string;
+  type: DiscountType;
+  value: number;
+  discountAmount: number;
+  message?: string;
+}
+
+export interface CreateCouponInput {
+  code: string;
+  type: DiscountType;
+  value: number;
+  maxDiscountAmount?: number | null;
+  minOrderAmount?: number | null;
+  totalUsageLimit?: number | null;
+  perUserLimit?: number | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  description?: string | null;
+  isActive?: boolean;
+}
+
+export interface UpdateCouponInput extends Partial<CreateCouponInput> {
+  id: number;
+}
+
+// ----------------------------------------------------
 // API Error & Common Response Types
 // ----------------------------------------------------
 
