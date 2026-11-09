@@ -1,0 +1,12 @@
+export * as authFeature from "./auth";
+export * as productsFeature from "./products";
+export * as brandsFeature from "./brands";
+export * as categoriesFeature from "./categories";
+export * as cartFeature from "./cart";
+export * as discountsFeature from "./discounts";
+export * as reviewsFeature from "./reviews";
+export * as ordersFeature from "./orders";
+export * as contactFeature from "./contact";
+export * as accountFeature from "./account";
+export * as homeFeature from "./home";
+export * as adminFeature from "./admin";
