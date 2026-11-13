@@ -201,7 +201,7 @@ export function CatalogClient() {
       </div>
 
       {/* بخش اصلی: ستون سایدبار فیلترها + گرید محصولات */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6 items-start">
         {/* سایدبار فیلترها (دسکتاپ + منوی تاشو موبایل) */}
         <aside
           className={cn(
@@ -297,7 +297,7 @@ export function CatalogClient() {
         </aside>
 
         {/* ستون اصلی کاتالوگ و گرید کالاها */}
-        <div className="lg:col-span-3 space-y-5">
+        <div className="lg:col-span-3 xl:col-span-4 2xl:col-span-5 space-y-5">
           {/* نوار بالای گرید: تعداد کالاها، تگ‌های فیلتر فعال و مرتب‌سازی */}
           <div className="rounded-2xl border border-border/80 bg-card p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-xs">
@@ -380,7 +380,7 @@ export function CatalogClient() {
             </div>
           ) : (
             /* گرید محصولات */
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
               {filteredProducts.map((product) => {
                 const isDiscounted =
                   product.discountPrice != null && product.discountPrice < product.price;

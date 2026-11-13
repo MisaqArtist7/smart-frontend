@@ -271,7 +271,7 @@ export function SearchClient() {
       </div>
 
       {/* ساختار ستونی: سایدبار فیلترها + گرید نتایج */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6 items-start">
         {/* سایدبار فیلترها (دسکتاپ + دراور موبایل) */}
         <aside
           className={cn(
@@ -354,7 +354,7 @@ export function SearchClient() {
         </aside>
 
         {/* گرید و لیست محصولات نتایج جستجو */}
-        <div className="lg:col-span-3 space-y-5">
+        <div className="lg:col-span-3 xl:col-span-4 2xl:col-span-5 space-y-5">
           {/* نوار بالای گرید: مرتب‌سازی و آمار */}
           <div className="rounded-2xl border border-border/80 bg-card p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -492,7 +492,7 @@ export function SearchClient() {
             </div>
           ) : (
             /* گرید کارت‌های محصول */
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-5">
               {filteredProducts.map((product) => {
                 const hasDiscount =
                   product.discountPrice !== null &&
