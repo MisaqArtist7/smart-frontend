@@ -38,6 +38,11 @@ const STATIC_ROUTES: StaticRouteConfig[] = [
     priority: 0.9,
   },
   {
+    path: "/category",
+    changeFrequency: "daily",
+    priority: 0.9,
+  },
+  {
     path: "/contact-us",
     changeFrequency: "monthly",
     priority: 0.7,
