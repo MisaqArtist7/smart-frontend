@@ -52,7 +52,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     <div dir="rtl" className="min-h-screen bg-background text-foreground flex flex-col">
       <Header />
 
-      <main className="flex-1 mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <main className="flex-1 mx-auto max-w-8xl w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 select-none">
         <Suspense
           fallback={
             <div className="py-24 flex flex-col items-center justify-center gap-3 text-muted-foreground">
