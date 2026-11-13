@@ -339,7 +339,7 @@ export function CategoryClient({ slug }: CategoryClientProps) {
       </div>
 
       {/* بدنه دو ستونه: سایدبار فیلترها + گرید محصولات */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6 items-start">
         {/* سایدبار فیلترهای دسکتاپ */}
         <aside className="hidden lg:block lg:col-span-1 space-y-4 sticky top-24">
           <div className="rounded-2xl border border-border bg-card p-5 shadow-xs space-y-5">
@@ -385,9 +385,9 @@ export function CategoryClient({ slug }: CategoryClientProps) {
         </aside>
 
         {/* گرید نمایش محصولات */}
-        <section className="lg:col-span-3">
+        <section className="lg:col-span-3 xl:col-span-4 2xl:col-span-5">
           {isProductsLoading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-3 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div
                   key={i}
