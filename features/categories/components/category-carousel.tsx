@@ -11,7 +11,8 @@ import {
   CarouselNext,
 } from "@/components/ui/carousel";
 import { useCategories } from "@/lib/api";
-import { cn } from "@/lib/utils";
+import { cn, normalizeImageUrl } from "@/lib/utils";
+import { ArrowLeft } from "lucide-react";
 
 /**
  * تایپ آیتم دسته‌بندی
@@ -102,7 +103,7 @@ export function CategoryCarousel({
           id: cat.id,
           title: cat.name,
           href: `/category/${cat.slug}`,
-          image: cat.image || "/images/categories/cables.svg",
+          image: normalizeImageUrl(cat.image, "/images/categories/cables.svg"),
         }));
     }
     return initialCategories ?? CATEGORIES_DATA;
@@ -126,15 +127,12 @@ export function CategoryCarousel({
 
       {/* اسلایدر کارت‌های دسته‌بندی */}
       {isLoading && serverCategories.length === 0 ? (
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-3 sm:gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              className="flex flex-col items-center justify-between h-[180px] sm:h-[200px] w-full rounded-2xl border border-border/70 bg-card p-4 shadow-xs animate-pulse"
-            >
-              <div className="size-20 rounded-xl bg-muted/60 my-auto" />
-              <div className="h-4 bg-muted/50 rounded w-3/4 mx-auto mt-2" />
-            </div>
+              className="h-[180px] sm:h-[200px] md:h-[220px] w-full rounded-2xl border border-border/70 bg-muted/40 shadow-xs animate-pulse"
+            />
           ))}
         </div>
       ) : (
@@ -155,25 +153,40 @@ export function CategoryCarousel({
               >
                 <Link
                   href={cat.href}
-                  className="group relative flex flex-col items-center justify-between h-[180px] sm:h-[200px] w-full rounded-2xl border border-border/80 bg-card p-4 sm:p-5 shadow-xs transition-all duration-300 hover:border-border hover:shadow-md hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="group relative block h-[180px] sm:h-[200px] md:h-[220px] w-full rounded-2xl border border-border/80 bg-card shadow-xs transition-all duration-300 hover:shadow-xl hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-border overflow-hidden select-none"
                 >
-                  {/* بخش تصویر محصول در مرکز */}
-                  <div className="relative flex-1 w-full flex items-center justify-center p-2">
-                    <div className="relative size-24 sm:size-28 flex items-center justify-center">
-                      <Image
-                        src={cat.image}
-                        alt={cat.title}
-                        width={112}
-                        height={112}
-                        className="size-full object-contain transition-transform duration-300 ease-out group-hover:scale-108 drop-shadow-xs"
-                      />
+                  {/* تصویر تمام‌صفحه که کل کارت را پر می‌کند */}
+                  <Image
+                    src={cat.image}
+                    alt={cat.title}
+                    fill
+                    sizes="(max-width: 640px) 45vw, (max-width: 1024px) 25vw, 16vw"
+                    className="size-full object-cover transition-all duration-500 ease-out group-hover:scale-110 group-hover:blur-[4px]"
+                  />
+
+                  {/* گرادیان تیره ملایم در پایین عکس در حالت عادی برای وضوح متن */}
+                  <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/80 via-black/40 to-transparent transition-opacity duration-300 group-hover:opacity-0 pointer-events-none" />
+
+                  {/* اورلی تاریک و بلار کل کارت در حالت هاور */}
+                  <div className="absolute inset-0 z-10 bg-black/45 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+
+                  {/* کانتینر متن: در حالت عادی پایین عکس است و در زمان هاور با انیمیشن روان به وسط کارت می‌آید */}
+                  <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-3 sm:p-4 pointer-events-none">
+                    <div className="flex flex-col items-center justify-center text-center w-full translate-y-[52px] sm:translate-y-[60px] md:translate-y-[66px] group-hover:translate-y-0 transition-transform duration-500 ease-out">
+                      {/* نام دسته‌بندی با بردر سفید در پایین عکس و حالت هاور */}
+                      <span className="text-white font-bold text-xs sm:text-sm md:text-base text-center tracking-tight drop-shadow-md px-3.5 py-1.5 rounded-xl border border-white bg-black/35 backdrop-blur-[2px] transition-all duration-500 group-hover:bg-primary/95 group-hover:shadow-lg group-hover:border-white group-hover:font-black max-w-[92%] line-clamp-1">
+                        {cat.title}
+                      </span>
+
+                      {/* دکمه / نشانگر مشاهده محصولات که در زمان هاور در مرکز ظاهر می‌شود */}
+                      <div className="opacity-0 max-h-0 overflow-hidden group-hover:opacity-100 group-hover:max-h-8 transition-all duration-500 ease-out mt-0 group-hover:mt-2">
+                        <span className="text-white/95 text-[10px] sm:text-xs font-semibold flex items-center gap-1 drop-shadow-sm">
+                          <span>مشاهده محصولات</span>
+                          <ArrowLeft className="size-3.5" />
+                        </span>
+                      </div>
                     </div>
                   </div>
-
-                  {/* عنوان دسته‌بندی در پایین کارت */}
-                  <span className="text-xs sm:text-sm font-bold text-foreground text-center tracking-tight transition-colors group-hover:text-primary line-clamp-1 mt-2">
-                    {cat.title}
-                  </span>
                 </Link>
               </CarouselItem>
             ))}

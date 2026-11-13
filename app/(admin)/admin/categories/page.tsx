@@ -57,6 +57,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { normalizeImageUrl } from "@/lib/utils";
 
 // ولیدیشن فرم دسته‌بندی مطابق با CreateCategoryDto بک‌اند
 const categoryFormSchema = z.object({
@@ -88,12 +89,14 @@ type CategoryFormValues = z.infer<typeof categoryFormSchema>;
 
 // تبدیل مقادیر فرم به پی‌لود سازگار با بک‌اند
 function toCategoryPayload(v: CategoryFormValues): CreateCategoryInput {
+  const rawImage = v.image?.trim();
+  const normalizedImage = rawImage ? normalizeImageUrl(rawImage, "") : undefined;
   return {
     name: v.name.trim(),
     slug: v.slug.trim(),
     parentId: v.parentId && v.parentId !== "" ? Number(v.parentId) : null,
     description: v.description?.trim() || undefined,
-    image: v.image?.trim() || undefined,
+    image: normalizedImage || undefined,
     imageAlt: v.imageAlt?.trim() || undefined,
     metaTitle: v.metaTitle?.trim() || undefined,
     metaDescription: v.metaDescription?.trim() || undefined,
@@ -362,7 +365,7 @@ export default function AdminCategoriesPage() {
                         <div className="size-10 rounded-xl border border-border bg-muted/20 p-1 mx-auto flex items-center justify-center overflow-hidden">
                           {cat.image ? (
                             <Image
-                              src={cat.image}
+                              src={normalizeImageUrl(cat.image)}
                               alt={cat.imageAlt || cat.name}
                               width={32}
                               height={32}

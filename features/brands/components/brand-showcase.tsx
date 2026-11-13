@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Award, Sparkles } from "lucide-react";
 import { useBrands } from "@/lib/api/brands";
-import { cn } from "@/lib/utils";
+import { cn, normalizeImageUrl } from "@/lib/utils";
 
 interface BrandItem {
   id: string | number;
@@ -137,7 +137,7 @@ export function BrandShowcase({ className }: BrandShowcaseProps) {
               {brand.logo ? (
                 <div className="relative size-full">
                   <Image
-                    src={brand.logo}
+                    src={normalizeImageUrl(brand.logo)}
                     alt={brand.name}
                     fill
                     className="object-contain transition-transform duration-300 group-hover:scale-110"

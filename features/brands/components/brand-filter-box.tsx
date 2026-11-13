@@ -6,7 +6,7 @@ import { Search, X, Award, Check } from "lucide-react";
 import { useBrands } from "@/lib/api/brands";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { cn, normalizeImageUrl } from "@/lib/utils";
 
 export interface BrandFilterBoxProps {
   selectedBrandIds: number[];
@@ -160,7 +160,7 @@ export function BrandFilterBox({
                   <div className="size-5 rounded-md bg-muted/50 border border-border/50 flex items-center justify-center overflow-hidden shrink-0 relative">
                     {brand.logo ? (
                       <Image
-                        src={brand.logo}
+                        src={normalizeImageUrl(brand.logo)}
                         alt={brand.name}
                         fill
                         className="object-contain p-0.5"

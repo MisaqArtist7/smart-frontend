@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { cacheLife } from "next/cache";
 import { API_BASE_URL } from "@/lib/api";
-import type { Product } from "@/lib/types";
+import type { Product, Category } from "@/lib/types";
 
 const SITE_URL = (
   process.env.NEXT_PUBLIC_SITE_URL || "https://smart-electric.ir"
@@ -57,6 +57,23 @@ async function fetchPublicProducts(): Promise<Product[]> {
   }
 }
 
+async function fetchPublicCategories(): Promise<Category[]> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/categories`, {
+      headers: { Accept: "application/json" },
+    });
+    if (!res.ok) return [];
+    const data: unknown = await res.json();
+    if (Array.isArray(data)) return data as Category[];
+    if (data && typeof data === "object" && "items" in data && Array.isArray((data as { items: unknown }).items)) {
+      return (data as { items: Category[] }).items;
+    }
+    return [];
+  } catch {
+    return [];
+  }
+}
+
 async function getCachedSitemap(): Promise<MetadataRoute.Sitemap> {
   "use cache";
   cacheLife("hours");
@@ -70,7 +87,20 @@ async function getCachedSitemap(): Promise<MetadataRoute.Sitemap> {
     priority: route.priority,
   }));
 
-  const products = await fetchPublicProducts();
+  const [products, categories] = await Promise.all([
+    fetchPublicProducts(),
+    fetchPublicCategories(),
+  ]);
+
+  const categoryEntries: MetadataRoute.Sitemap = categories
+    .filter((cat) => cat.isActive !== false && cat.slug)
+    .map((cat) => ({
+      url: `${SITE_URL}/category/${encodeURIComponent(cat.slug)}`,
+      lastModified: cat.updatedAt ? new Date(cat.updatedAt) : now,
+      changeFrequency: "weekly",
+      priority: 0.85,
+    }));
+
   const productEntries: MetadataRoute.Sitemap = products
     .filter((product) => product.isActive !== false && (product.slug || product.id))
     .map((product) => ({
@@ -80,7 +110,7 @@ async function getCachedSitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     }));
 
-  return [...staticEntries, ...productEntries];
+  return [...staticEntries, ...categoryEntries, ...productEntries];
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

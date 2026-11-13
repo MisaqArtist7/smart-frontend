@@ -481,23 +481,47 @@ export function useCategories() {
 }
 
 /**
- * دریافت یک دسته‌بندی با شناسه
+ * دریافت یک دسته‌بندی با شناسه عددی یا اسلاگ متنی
  */
-export function useCategory(id: number | string) {
+export function useCategory(idOrSlug: number | string | undefined | null) {
   return useQuery<Category | null>({
-    queryKey: ["category", id],
+    queryKey: ["category", idOrSlug],
     queryFn: async () => {
-      if (!id) return null;
-      try {
-        return await apiFetch<Category>(`/categories/${id}`);
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          return await apiFetch<Category>(`/category/${id}`);
+      if (!idOrSlug) return null;
+      const numId = Number(idOrSlug);
+      const isNumeric = !isNaN(numId) && String(numId) === String(idOrSlug).trim();
+
+      if (isNumeric) {
+        try {
+          return await apiFetch<Category>(`/categories/${numId}`);
+        } catch (err) {
+          if (err instanceof ApiError && err.status === 404) {
+            return await apiFetch<Category>(`/category/${numId}`);
+          }
+          throw err;
         }
-        throw err;
+      }
+
+      // جستجو با اسلاگ متنی
+      const slug = String(idOrSlug).trim();
+      try {
+        return await apiFetch<Category>(`/categories/slug/${slug}`);
+      } catch {
+        // فال‌بک: جستجو در میان تمام دسته‌بندی‌ها
+        try {
+          const list = await apiFetch<unknown>("/categories");
+          let items: Category[] = [];
+          if (Array.isArray(list)) items = list as Category[];
+          else if (list && typeof list === "object" && "items" in list && Array.isArray((list as { items: unknown }).items)) {
+            items = (list as { items: Category[] }).items;
+          }
+          return items.find((c) => c.slug === slug) || null;
+        } catch {
+          return null;
+        }
       }
     },
-    enabled: Boolean(id),
+    enabled: Boolean(idOrSlug),
   });
 }
 

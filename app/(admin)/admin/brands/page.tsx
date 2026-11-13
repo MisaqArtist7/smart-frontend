@@ -42,6 +42,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { normalizeImageUrl } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -150,10 +151,11 @@ export default function AdminBrandsPage() {
 
   // ارسال فرم ایجاد یا ویرایش
   const onSubmitForm = async (values: BrandFormValues) => {
+    const rawLogo = values.logo?.trim();
     const payload = {
       name: values.name.trim(),
       slug: values.slug.trim().toLowerCase(),
-      logo: values.logo?.trim() || null,
+      logo: rawLogo ? normalizeImageUrl(rawLogo, "") : null,
       description: values.description?.trim() || null,
       metaTitle: values.metaTitle?.trim() || null,
       metaDescription: values.metaDescription?.trim() || null,
@@ -373,7 +375,7 @@ export default function AdminBrandsPage() {
                         <div className="size-10 rounded-xl border border-border bg-muted/20 p-1 mx-auto flex items-center justify-center overflow-hidden relative">
                           {brand.logo ? (
                             <Image
-                              src={brand.logo}
+                              src={normalizeImageUrl(brand.logo)}
                               alt={brand.name}
                               fill
                               className="object-contain p-1"
