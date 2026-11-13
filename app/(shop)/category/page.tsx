@@ -2,7 +2,7 @@ import React from "react";
 import type { Metadata } from "next";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/footer";
-import { AllCategoriesClient } from "@/features/categories";
+import { AllCategoriesClient } from "@/features/categories/components/all-categories-client";
 
 export const metadata: Metadata = {
   title: "دسته‌بندی‌های محصولات | فروشگاه اینترنتی اسمارت الکتریک",
