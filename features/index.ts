@@ -10,3 +10,4 @@ export * as contactFeature from "./contact";
 export * as accountFeature from "./account";
 export * as homeFeature from "./home";
 export * as adminFeature from "./admin";
+export * as searchFeature from "./search";

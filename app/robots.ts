@@ -23,6 +23,7 @@ const DISALLOWED_PATHS: string[] = [
   "/request-otp",
   "/verify-otp",
   "/test-api",
+  "/search",
   "/api/",
 ];
 

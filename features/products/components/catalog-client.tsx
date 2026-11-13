@@ -42,7 +42,9 @@ export function CatalogClient() {
   const addItemToCart = useCartStore((s) => s.addItem);
 
   // استیت‌های فیلتر، مقداردهی اولیه هوشمند از روی URL
-  const [searchQuery, setSearchQuery] = useState(() => searchParams.get("search") || "");
+  const [searchQuery, setSearchQuery] = useState(
+    () => searchParams.get("q") || searchParams.get("search") || ""
+  );
   const [selectedCategory, setSelectedCategory] = useState(
     () => searchParams.get("category") || "all"
   );
