@@ -30,7 +30,7 @@ export default function OffersPage() {
       {/* هدر فروشگاه */}
       <Header />
 
-      <main className="flex-1 mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+      <main className="flex-1 mx-auto max-w-8xl w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 select-none">
         {/* نوار مسیر صفحه (Breadcrumb) */}
         <nav aria-label="مسیر صفحه" className="flex items-center gap-1.5 text-xs text-muted-foreground mb-6">
           <Link href="/" className="hover:text-primary transition-colors">
