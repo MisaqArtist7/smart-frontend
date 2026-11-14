@@ -40,7 +40,7 @@ export function TopBar({ config, className = "" }: TopBarProps) {
           </span>
         </div>
 
-        {/* سمت چپ: کادر کد تخفیف با خط‌چین تمیز */}
+        {/* سمت چپ: کادر کد تخفیف با خط‌چین تمیز
         <div className="flex items-center gap-2 shrink-0">
           <span className="hidden sm:inline text-muted-foreground">
             {discount.label}
@@ -63,6 +63,14 @@ export function TopBar({ config, className = "" }: TopBarProps) {
               </span>
             )}
           </button>
+        </div> */}
+          
+        <div className="flex items-center gap-2 shrink-0">
+          <span
+            className="group flex items-center gap-1.5 rounded border border-dashed border-primary px-2 py-0.5 font-mono text-xs font-bold text-primary transition-colors hover:bg-accent focus:outline-none focus:ring-1 focus:ring-primary"
+          >
+            اولین سفارش رایگان میباشد.
+          </span>
         </div>
       </div>
     </div>

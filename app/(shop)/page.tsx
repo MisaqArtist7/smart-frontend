@@ -14,7 +14,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       {/* کامپوننت هدر ۳ طبقه */}
-      <Header cartCount={3} />
+      <Header />
 
       {/* محتوای اصلی و کامل صفحه نخست */}
       <main className="flex-1 mx-auto max-w-8xl w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8 sm:space-y-10">

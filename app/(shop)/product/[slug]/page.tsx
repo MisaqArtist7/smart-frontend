@@ -67,6 +67,25 @@ export default function SingleProductPage({ params }: PageProps) {
 
   const activeImage = images[selectedImageIndex] || images[0];
 
+  // مشخصات فنی پارس شده کالا
+  const parsedSpecs = useMemo<Record<string, unknown>>(() => {
+    if (!product?.specs) return {};
+    if (typeof product.specs === "object" && !Array.isArray(product.specs)) {
+      return product.specs as Record<string, unknown>;
+    }
+    if (typeof product.specs === "string") {
+      try {
+        const parsed = JSON.parse(product.specs);
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+          return parsed as Record<string, unknown>;
+        }
+      } catch {
+        return {};
+      }
+    }
+    return {};
+  }, [product?.specs]);
+
   // محاسبه قیمت‌ها و درصد تخفیف
   const finalPrice = product ? product.discountPrice ?? product.price : 0;
   const hasDiscount = Boolean(product && product.discountPrice && product.discountPrice < product.price);
@@ -344,22 +363,33 @@ export default function SingleProductPage({ params }: PageProps) {
             <div className="space-y-2">
               <h3 className="text-xs font-bold text-foreground">ویژگی‌های اصلی محصول:</h3>
               <ul className="space-y-1.5 text-xs text-muted-foreground leading-relaxed">
-                <li className="flex items-center gap-2">
-                  <span className="size-1.5 rounded-full bg-primary shrink-0" />
-                  <span>طراحی صنعتی مقاوم و سازگار با شرایط آب و هوایی سخت</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="size-1.5 rounded-full bg-primary shrink-0" />
-                  <span>تضمین اصالت ۱۰۰٪ فیزیکی و قطعات استاندارد با بازدهی بالا</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="size-1.5 rounded-full bg-primary shrink-0" />
-                  <span>دارای گواهی استاندارد بین‌المللی CE و استانداردهای برق صنعتی</span>
-                </li>
+                {product.specs &&
+                typeof product.specs === "object" &&
+                !Array.isArray(product.specs) &&
+                Object.keys(product.specs).length > 0 ? (
+                  Object.entries(product.specs).slice(0, 4).map(([key, val]) => (
+                    <li key={key} className="flex items-center gap-2">
+                      <span className="size-1.5 rounded-full bg-primary shrink-0" />
+                      <span className="font-semibold text-foreground/80">{key}:</span>
+                      <span className="text-foreground">{String(val)}</span>
+                    </li>
+                  ))
+                ) : (
+                  <>
+                    <li className="flex items-center gap-2">
+                      <span className="size-1.5 rounded-full bg-primary shrink-0" />
+                      <span>طراحی صنعتی مقاوم و استاندارد</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="size-1.5 rounded-full bg-primary shrink-0" />
+                      <span>تضمین اصالت ۱۰۰٪ فیزیکی و قطعات باکیفیت</span>
+                    </li>
+                  </>
+                )}
                 {product.description && (
                   <li className="flex items-start gap-2 pt-1 text-justify">
                     <span className="size-1.5 rounded-full bg-primary shrink-0 mt-1.5" />
-                    <span className="line-clamp-3">{product.description}</span>
+                    <span className="line-clamp-2 text-foreground/70">{product.description}</span>
                   </li>
                 )}
               </ul>

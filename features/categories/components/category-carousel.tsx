@@ -161,18 +161,18 @@ export function CategoryCarousel({
                     alt={cat.title}
                     fill
                     sizes="(max-width: 640px) 45vw, (max-width: 1024px) 25vw, 16vw"
-                    className="size-full object-cover transition-all duration-500 ease-out group-hover:scale-110 group-hover:blur-[4px]"
+                    className="size-full object-cover transition-all duration-500 ease-out group-hover:scale-110 group-hover:blur-xs"
                   />
 
                   {/* گرادیان تیره ملایم در پایین عکس در حالت عادی برای وضوح متن */}
-                  <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/80 via-black/40 to-transparent transition-opacity duration-300 group-hover:opacity-0 pointer-events-none" />
+                  <div className="absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-black/80 via-black/40 to-transparent transition-opacity duration-300 group-hover:opacity-0 pointer-events-none" />
 
                   {/* اورلی تاریک و بلار کل کارت در حالت هاور */}
                   <div className="absolute inset-0 z-10 bg-black/45 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
                   {/* کانتینر متن: در حالت عادی پایین عکس است و در زمان هاور با انیمیشن روان به وسط کارت می‌آید */}
                   <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-3 sm:p-4 pointer-events-none">
-                    <div className="flex flex-col items-center justify-center text-center w-full translate-y-[52px] sm:translate-y-[60px] md:translate-y-[66px] group-hover:translate-y-0 transition-transform duration-500 ease-out">
+                    <div className="flex flex-col items-center justify-center text-center w-full translate-y-13 sm:translate-y-15 md:translate-y-16.5 group-hover:translate-y-0 transition-transform duration-500 ease-out">
                       {/* نام دسته‌بندی با بردر سفید در پایین عکس و حالت هاور */}
                       <span className="text-white font-bold text-xs sm:text-sm md:text-base text-center tracking-tight drop-shadow-md px-3.5 py-1.5 rounded-xl border border-white bg-black/35 backdrop-blur-[2px] transition-all duration-500 group-hover:bg-primary/95 group-hover:shadow-lg group-hover:border-white group-hover:font-black max-w-[92%] line-clamp-1">
                         {cat.title}
@@ -195,11 +195,11 @@ export function CategoryCarousel({
           {/* دکمه‌های ناوبری چپ و راست با هاور نرم */}
           <CarouselPrevious
             aria-label="دسته‌بندی قبلی"
-            className="hidden md:flex opacity-0 group-hover/carousel:opacity-100 transition-opacity start-2 end-auto top-1/2 -translate-y-1/2 z-20 size-9 rounded-full bg-background/90 hover:bg-background text-foreground border border-border shadow-md"
+            className="hidden md:flex opacity-0 group-hover/carousel:opacity-100 transition-opacity inset-s-2 inset-e-auto top-1/2 -translate-y-1/2 z-20 size-9 rounded-full bg-background/90 hover:bg-background text-foreground border border-border shadow-md"
           />
           <CarouselNext
             aria-label="دسته‌بندی بعدی"
-            className="hidden md:flex opacity-0 group-hover/carousel:opacity-100 transition-opacity end-2 start-auto top-1/2 -translate-y-1/2 z-20 size-9 rounded-full bg-background/90 hover:bg-background text-foreground border border-border shadow-md"
+            className="hidden md:flex opacity-0 group-hover/carousel:opacity-100 transition-opacity inset-e-2 inset-s-auto top-1/2 -translate-y-1/2 z-20 size-9 rounded-full bg-background/90 hover:bg-background text-foreground border border-border shadow-md"
           />
         </Carousel>
       )}
