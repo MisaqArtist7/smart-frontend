@@ -21,11 +21,11 @@ export function useValidateCoupon() {
       const code = normalizeCouponCode(input.code);
       const payload = {
         code,
-        orderAmount: input.orderAmount,
+        cartAmount: Math.round(input.orderAmount),
       };
 
       try {
-        return await apiFetch<ValidateCouponResponse>("/coupons/validate", {
+        return await apiFetch<ValidateCouponResponse>("/discounts/validate", {
           method: "POST",
           body: payload,
         });
@@ -33,10 +33,10 @@ export function useValidateCoupon() {
         if (err instanceof ApiError && err.status === 404) {
           try {
             return await apiFetch<ValidateCouponResponse>(
-              "/discounts/validate",
+              "/coupons/validate",
               {
                 method: "POST",
-                body: payload,
+                body: { code, orderAmount: input.orderAmount },
               }
             );
           } catch {

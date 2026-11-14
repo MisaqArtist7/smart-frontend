@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import Image from "next/image";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
@@ -17,12 +17,15 @@ import {
   CheckCircle2,
   XCircle,
   ImageIcon,
+  UploadCloud,
+  Loader2,
 } from "lucide-react";
 import {
   useAdminCategories,
   useCreateCategory,
   useUpdateCategory,
   useDeleteCategory,
+  useUploadImage,
   ApiError,
   type Category,
   type CreateCategoryInput,
@@ -52,12 +55,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { normalizeImageUrl } from "@/lib/utils";
+import { cn, normalizeImageUrl } from "@/lib/utils";
 
 // ولیدیشن فرم دسته‌بندی مطابق با CreateCategoryDto بک‌اند
 const categoryFormSchema = z.object({
@@ -119,11 +122,14 @@ export default function AdminCategoriesPage() {
   const updateCategoryMutation = useUpdateCategory();
   const deleteCategoryMutation = useDeleteCategory();
 
+  const uploadMutation = useUploadImage();
+
   const {
     register,
     handleSubmit,
     reset,
     setValue,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<CategoryFormValues>({
     resolver: zodResolver(categoryFormSchema),
@@ -140,6 +146,21 @@ export default function AdminCategoriesPage() {
       isActive: true,
     },
   });
+
+  const currentImage = useWatch({ control, name: "image" });
+
+  const handleUploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const res = await uploadMutation.mutateAsync({ file, type: "category" });
+      setValue("image", res.path, { shouldValidate: true, shouldDirty: true });
+      toast.success("تصویر دسته‌بندی با موفقیت آپلود شد.");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "خطا در آپلود تصویر";
+      toast.error(msg);
+    }
+  };
 
   // فیلتر و جستجوی دسته‌بندی‌ها
   const filteredCategories = useMemo(() => {
@@ -571,19 +592,70 @@ export default function AdminCategoriesPage() {
               </div>
 
               {/* تصویر دسته‌بندی */}
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 sm:col-span-2">
                 <label className="text-xs font-bold text-foreground flex items-center justify-between">
-                  <span>آدرس تصویر دسته‌بندی</span>
+                  <span>تصویر دسته‌بندی</span>
                   <span className="text-[11px] text-muted-foreground font-normal">اختیاری</span>
                 </label>
-                <div className="relative">
-                  <Input
-                    {...register("image")}
-                    placeholder="/images/categories/switches.svg"
-                    dir="ltr"
-                    className="text-start pe-8"
-                  />
-                  <ImageIcon className="absolute end-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                  {currentImage ? (
+                    <div className="relative size-14 rounded-xl border border-border bg-muted/20 p-1 flex items-center justify-center overflow-hidden shrink-0">
+                      <Image
+                        src={normalizeImageUrl(currentImage)}
+                        alt="پیش‌نمایش تصویر"
+                        fill
+                        className="object-contain p-1"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setValue("image", "", { shouldValidate: true, shouldDirty: true })}
+                        className="absolute top-0.5 end-0.5 size-4 rounded-full bg-destructive text-white flex items-center justify-center text-[10px] leading-none"
+                        title="حذف تصویر"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ) : null}
+
+                  <div className="flex-1 w-full space-y-1">
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <Input
+                          {...register("image")}
+                          placeholder="مثلاً: /images/categories/lamp.webp یا مسیر آپلود شده"
+                          dir="ltr"
+                          className="text-start pe-8 font-mono text-xs"
+                        />
+                        <ImageIcon className="absolute end-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                      </div>
+                      <label className="cursor-pointer">
+                        <input
+                          type="file"
+                          accept="image/png,image/jpeg,image/webp"
+                          className="hidden"
+                          onChange={handleUploadImage}
+                          disabled={uploadMutation.isPending}
+                        />
+                        <span
+                          className={cn(
+                            buttonVariants({ variant: "outline", size: "sm" }),
+                            "h-9 gap-1.5 text-xs shrink-0 cursor-pointer",
+                            uploadMutation.isPending && "opacity-50 pointer-events-none"
+                          )}
+                        >
+                          {uploadMutation.isPending ? (
+                            <Loader2 className="size-3.5 animate-spin" />
+                          ) : (
+                            <UploadCloud className="size-3.5" />
+                          )}
+                          {uploadMutation.isPending ? "در حال آپلود..." : "آپلود عکس"}
+                        </span>
+                      </label>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">
+                      فرمت‌های مجاز: WebP, PNG, JPEG (حداکثر ۵ مگابایت)
+                    </p>
+                  </div>
                 </div>
                 {errors.image && (
                   <p className="text-[11px] text-destructive">{errors.image.message}</p>

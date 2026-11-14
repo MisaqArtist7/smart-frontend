@@ -565,12 +565,6 @@ export function useCreateCategory() {
       if (input.metaDescription && input.metaDescription.trim()) {
         payload.metaDescription = input.metaDescription.trim();
       }
-      if (input.brandId !== undefined) {
-        payload.brandId = input.brandId ? Number(input.brandId) : null;
-      }
-      if (Array.isArray(input.images)) {
-        payload.images = input.images;
-      }
       if (input.sortOrder !== undefined) {
         payload.sortOrder = Number(input.sortOrder);
       }
@@ -619,8 +613,6 @@ export function useUpdateCategory() {
       if (input.imageAlt !== undefined) payload.imageAlt = input.imageAlt ? input.imageAlt.trim() : null;
       if (input.metaTitle !== undefined) payload.metaTitle = input.metaTitle ? input.metaTitle.trim() : null;
       if (input.metaDescription !== undefined) payload.metaDescription = input.metaDescription ? input.metaDescription.trim() : null;
-      if (input.brandId !== undefined) payload.brandId = input.brandId ? Number(input.brandId) : null;
-      if (input.images !== undefined) payload.images = input.images;
       if (input.sortOrder !== undefined) payload.sortOrder = Number(input.sortOrder);
       if (input.isActive !== undefined) payload.isActive = Boolean(input.isActive);
 

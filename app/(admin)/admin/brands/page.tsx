@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
@@ -19,6 +19,8 @@ import {
   AlertCircle,
   Loader2,
   Package,
+  UploadCloud,
+  ImageIcon,
 } from "lucide-react";
 import {
   useAdminBrands,
@@ -27,7 +29,7 @@ import {
   useDeleteAdminBrand,
   type Brand,
 } from "@/lib/api/brands";
-import { useAdminProducts } from "@/lib/api";
+import { useAdminProducts, useUploadImage } from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -38,11 +40,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { normalizeImageUrl } from "@/lib/utils";
+import { cn, normalizeImageUrl } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -87,6 +89,7 @@ export default function AdminBrandsPage() {
   const createMutation = useCreateAdminBrand();
   const updateMutation = useUpdateAdminBrand();
   const deleteMutation = useDeleteAdminBrand();
+  const uploadMutation = useUploadImage();
 
   // فرم برند
   const {
@@ -94,6 +97,7 @@ export default function AdminBrandsPage() {
     handleSubmit,
     control,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<BrandFormValues>({
     resolver: zodResolver(brandFormSchema),
@@ -107,6 +111,21 @@ export default function AdminBrandsPage() {
       isActive: true,
     },
   });
+
+  const currentLogo = useWatch({ control, name: "logo" });
+
+  const handleUploadLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const res = await uploadMutation.mutateAsync({ file, type: "brand" });
+      setValue("logo", res.path, { shouldValidate: true, shouldDirty: true });
+      toast.success("لوگوی برند با موفقیت آپلود شد.");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "خطا در آپلود لوگو";
+      toast.error(msg);
+    }
+  };
 
   // محاسبه تعداد محصولات هر برند
   const brandProductCounts = useMemo(() => {
@@ -525,20 +544,71 @@ export default function AdminBrandsPage() {
               </div>
             </div>
 
-            {/* آدرس یا مسیر لوگو */}
+            {/* تصویر یا لوگو */}
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-foreground">
-                آدرس تصویر یا لوگو (اختیاری):
+                تصویر یا لوگوی برند (اختیاری):
               </label>
-              <Input
-                {...register("logo")}
-                placeholder="مثلاً: /images/brands/pars-shoa.png یا https://..."
-                className="font-mono text-xs rounded-xl"
-                dir="ltr"
-              />
-              <p className="text-[10px] text-muted-foreground">
-                تصویر لوگوی برند با فرمت PNG یا WebP و پس‌زمینه شفاف جهت نمایش در صفحه محصول و کاتالوگ
-              </p>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                {currentLogo ? (
+                  <div className="relative size-14 rounded-xl border border-border bg-muted/20 p-1 flex items-center justify-center overflow-hidden shrink-0">
+                    <Image
+                      src={normalizeImageUrl(currentLogo)}
+                      alt="پیش‌نمایش لوگو"
+                      fill
+                      className="object-contain p-1"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setValue("logo", "", { shouldValidate: true, shouldDirty: true })}
+                      className="absolute top-0.5 end-0.5 size-4 rounded-full bg-destructive text-white flex items-center justify-center text-[10px] leading-none"
+                      title="حذف لوگو"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ) : null}
+
+                <div className="flex-1 w-full space-y-1">
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <Input
+                        {...register("logo")}
+                        placeholder="مثلاً: /images/brands/pars-shoa.png یا مسیر آپلود"
+                        className="font-mono text-xs rounded-xl pe-8"
+                        dir="ltr"
+                      />
+                      <ImageIcon className="absolute end-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                    </div>
+                    <label className="cursor-pointer">
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp"
+                        className="hidden"
+                        onChange={handleUploadLogo}
+                        disabled={uploadMutation.isPending}
+                      />
+                      <span
+                        className={cn(
+                          buttonVariants({ variant: "outline", size: "sm" }),
+                          "h-9 gap-1.5 text-xs shrink-0 rounded-xl cursor-pointer",
+                          uploadMutation.isPending && "opacity-50 pointer-events-none"
+                        )}
+                      >
+                        {uploadMutation.isPending ? (
+                          <Loader2 className="size-3.5 animate-spin" />
+                        ) : (
+                          <UploadCloud className="size-3.5" />
+                        )}
+                        {uploadMutation.isPending ? "در حال آپلود..." : "آپلود لوگو"}
+                      </span>
+                    </label>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">
+                    فرمت‌های مجاز: WebP, PNG, JPEG (حداکثر ۵ مگابایت)
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* توضیحات برند */}

@@ -39,7 +39,11 @@ export function useBrand(idOrSlug: string | number | undefined | null) {
     enabled: Boolean(idOrSlug),
     queryFn: async () => {
       try {
-        return await apiFetch<Brand>(`/brands/${idOrSlug}`);
+        const numId = Number(idOrSlug);
+        if (!isNaN(numId) && numId > 0 && String(numId) === String(idOrSlug)) {
+          return await apiFetch<Brand>(`/brands/${numId}`);
+        }
+        return await apiFetch<Brand>(`/brands/slug/${idOrSlug}`);
       } catch (err) {
         if (err instanceof ApiError && err.status === 404) {
           return null;

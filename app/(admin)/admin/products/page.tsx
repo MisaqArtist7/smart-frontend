@@ -16,6 +16,7 @@ import {
   AlertCircle,
   X,
   Loader2,
+  UploadCloud,
 } from "lucide-react";
 import {
   useAdminProducts,
@@ -24,9 +25,11 @@ import {
   useCreateProduct,
   useUpdateProduct,
   useDeleteProduct,
+  useUploadImage,
   ApiError,
   type Product,
 } from "@/lib/api";
+import { cn, normalizeImageUrl } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -52,7 +55,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
@@ -103,9 +106,18 @@ const productFormSchema = z
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
 
+interface ProductImageItem {
+  url: string;
+  alt?: string | null;
+  sortOrder?: number;
+}
+
 // تبدیل مقادیر فرم به بدنه‌ای که بک‌اند می‌خواد
 // فیلدهای خالی undefined می‌شن تا اصلاً ارسال نشن
-function toProductPayload(v: ProductFormValues) {
+function toProductPayload(
+  v: ProductFormValues,
+  images?: ProductImageItem[]
+) {
   return {
     title: v.title.trim(),
     slug: v.slug.trim(),
@@ -119,6 +131,7 @@ function toProductPayload(v: ProductFormValues) {
     metaTitle: v.metaTitle?.trim() || undefined,
     metaDescription: v.metaDescription?.trim() || undefined,
     isActive: v.isActive,
+    images: images && images.length > 0 ? images : undefined,
   };
 }
 
@@ -130,6 +143,7 @@ export default function AdminProductsPage() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [conflictProduct, setConflictProduct] = useState<{ id: number; title: string } | null>(null);
   const [isActiveValue, setIsActiveValue] = useState(true);
+  const [productImages, setProductImages] = useState<ProductImageItem[]>([]);
 
   const { data: products = [], isLoading: isProductsLoading } = useAdminProducts();
   const { data: categories = [] } = useAdminCategories();
@@ -137,6 +151,7 @@ export default function AdminProductsPage() {
   const createProductMutation = useCreateProduct();
   const updateProductMutation = useUpdateProduct();
   const deleteProductMutation = useDeleteProduct();
+  const uploadMutation = useUploadImage();
 
   const {
     register,
@@ -179,6 +194,7 @@ export default function AdminProductsPage() {
   // باز کردن مدال برای ثبت محصول جدید
   const handleOpenCreate = () => {
     setEditingProduct(null);
+    setProductImages([]);
     reset({
       title: "",
       slug: "",
@@ -200,6 +216,13 @@ export default function AdminProductsPage() {
   // باز کردن مدال برای ویرایش محصول موجود
   const handleOpenEdit = (prod: Product) => {
     setEditingProduct(prod);
+    setProductImages(
+      (prod.images || []).map((img, i) => ({
+        url: img.url,
+        alt: img.alt || "",
+        sortOrder: img.sortOrder ?? i,
+      }))
+    );
     reset({
       title: prod.title,
       slug: prod.slug,
@@ -218,6 +241,33 @@ export default function AdminProductsPage() {
     setIsCreateOpen(true);
   };
 
+  // آپلود عکس جدید برای محصول
+  const handleUploadProductImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const res = await uploadMutation.mutateAsync({ file, type: "product" });
+      setProductImages((prev) => [
+        ...prev,
+        { url: res.path, alt: "", sortOrder: prev.length },
+      ]);
+      toast.success("تصویر با موفقیت آپلود شد.");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "خطا در آپلود تصویر";
+      toast.error(msg);
+    }
+  };
+
+  const handleRemoveProductImage = (indexToRemove: number) => {
+    setProductImages((prev) => prev.filter((_, idx) => idx !== indexToRemove));
+  };
+
+  const handleUpdateImageAlt = (index: number, alt: string) => {
+    setProductImages((prev) =>
+      prev.map((img, idx) => (idx === index ? { ...img, alt } : img))
+    );
+  };
+
   // ثبت یا ویرایش محصول
   const onSubmit = async (values: ProductFormValues) => {
     if (values.discountPrice !== undefined && values.discountPrice >= values.price) {
@@ -226,7 +276,7 @@ export default function AdminProductsPage() {
     }
 
     try {
-      const payload = toProductPayload(values);
+      const payload = toProductPayload(values, productImages);
       if (editingProduct) {
         await updateProductMutation.mutateAsync({
           id: editingProduct.id,
@@ -239,6 +289,7 @@ export default function AdminProductsPage() {
       }
       setIsCreateOpen(false);
       setEditingProduct(null);
+      setProductImages([]);
       reset();
       setIsActiveValue(true);
     } catch (err: unknown) {
@@ -381,7 +432,7 @@ export default function AdminProductsPage() {
                       <TableCell className="text-center py-2.5">
                         <div className="size-12 rounded-xl border border-border bg-muted/20 p-1 mx-auto flex items-center justify-center overflow-hidden">
                           <Image
-                            src={prod.images?.[0]?.url || FALLBACK_IMAGE}
+                            src={prod.images?.[0]?.url ? normalizeImageUrl(prod.images[0].url) : FALLBACK_IMAGE}
                             alt={prod.title}
                             width={44}
                             height={44}
@@ -673,6 +724,88 @@ export default function AdminProductsPage() {
                 />
                 {errors.discountPrice && (
                   <p className="text-[11px] text-destructive">{errors.discountPrice.message}</p>
+                )}
+              </div>
+
+              {/* گالری تصاویر محصول */}
+              <div className="space-y-2 sm:col-span-2 p-3.5 rounded-xl border border-border bg-muted/10">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="text-xs font-bold text-foreground">
+                      تصاویر و گالری محصول
+                    </label>
+                    <p className="text-[11px] text-muted-foreground">
+                      اولین تصویر به عنوان تصویر اصلی نمایش داده می‌شود.
+                    </p>
+                  </div>
+                  <label className="cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      className="hidden"
+                      onChange={handleUploadProductImage}
+                      disabled={uploadMutation.isPending}
+                    />
+                    <span
+                      className={cn(
+                        buttonVariants({ variant: "outline", size: "sm" }),
+                        "h-8 gap-1.5 text-xs rounded-lg cursor-pointer",
+                        uploadMutation.isPending && "opacity-50 pointer-events-none"
+                      )}
+                    >
+                      {uploadMutation.isPending ? (
+                        <Loader2 className="size-3.5 animate-spin" />
+                      ) : (
+                        <UploadCloud className="size-3.5" />
+                      )}
+                      {uploadMutation.isPending ? "در حال آپلود..." : "افزودن تصویر"}
+                    </span>
+                  </label>
+                </div>
+
+                {productImages.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 pt-2">
+                    {productImages.map((img, idx) => (
+                      <div
+                        key={`${img.url}-${idx}`}
+                        className="relative flex items-center gap-2 p-2 rounded-lg border border-border bg-card/60"
+                      >
+                        <div className="relative size-14 rounded-md border border-border overflow-hidden shrink-0 bg-muted/20">
+                          <Image
+                            src={normalizeImageUrl(img.url)}
+                            alt={img.alt || `تصویر شماره ${idx + 1}`}
+                            fill
+                            className="object-contain p-1"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0 space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-semibold text-muted-foreground">
+                              {idx === 0 ? "تصویر اصلی" : `تصویر ${idx + 1}`}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveProductImage(idx)}
+                              className="size-5 rounded-md text-destructive hover:bg-destructive/10 flex items-center justify-center transition-colors"
+                              title="حذف این تصویر"
+                            >
+                              <X className="size-3.5" />
+                            </button>
+                          </div>
+                          <Input
+                            value={img.alt || ""}
+                            onChange={(e) => handleUpdateImageAlt(idx, e.target.value)}
+                            placeholder="متن جایگزین (Alt)..."
+                            className="h-7 text-[10px] px-2"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-4 border border-dashed border-border rounded-lg text-muted-foreground text-xs">
+                    هنوز تصویری برای این کالا آپلود نشده است.
+                  </div>
                 )}
               </div>
 

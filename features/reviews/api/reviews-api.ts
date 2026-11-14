@@ -7,7 +7,77 @@ import type {
   AdminReviewListResponse,
   AdminReviewQueryOptions,
   AdminUpdateReviewInput,
+  ReviewRecommendation,
+  ReviewStatus,
 } from "@/lib/types";
+
+interface RawCommentItem {
+  id: number;
+  productId: number;
+  userId?: number | null;
+  userName?: string;
+  userPhone?: string | null;
+  isBuyer?: boolean;
+  rating?: number;
+  recommendation?: ReviewRecommendation;
+  isRecommended?: boolean | null;
+  title?: string | null;
+  text?: string;
+  message?: string;
+  status?: string;
+  adminReply?: string | null;
+  adminReplyAt?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+  product?: {
+    id: number;
+    title: string;
+    slug: string;
+    image?: string | null;
+  };
+  user?: {
+    id: number;
+    name?: string;
+    phone?: string;
+  };
+}
+
+interface RawCommentListResponse {
+  items?: RawCommentItem[];
+  reviews?: RawCommentItem[];
+  total?: number;
+  page?: number;
+  limit?: number;
+}
+
+/**
+ * تبدیل دیدگاه از ساختار دیتابیس به ProductReview سازگار با فرانت‌اند
+ */
+function mapCommentToReview(raw: RawCommentItem): ProductReview {
+  let recommendation: ReviewRecommendation = "NO_OPINION";
+  if (raw.isRecommended === true) recommendation = "RECOMMENDED";
+  else if (raw.isRecommended === false) recommendation = "NOT_RECOMMENDED";
+  else if (raw.recommendation) recommendation = raw.recommendation;
+
+  return {
+    id: raw.id,
+    productId: raw.productId,
+    userId: raw.userId ?? null,
+    userName: raw.user?.name || raw.userName || "کاربر سایت",
+    userPhone: raw.user?.phone || raw.userPhone || null,
+    isBuyer: Boolean(raw.isBuyer),
+    rating: Number(raw.rating || 5),
+    recommendation,
+    title: raw.title ?? null,
+    message: raw.text || raw.message || "",
+    status: (raw.status as ReviewStatus) || "APPROVED",
+    adminReply: raw.adminReply ?? null,
+    adminReplyAt: raw.adminReplyAt ?? null,
+    createdAt: raw.createdAt || new Date().toISOString(),
+    updatedAt: raw.updatedAt,
+    product: raw.product,
+  };
+}
 
 /**
  * دریافت دیدگاه‌های تأییدشده یک محصول به همراه آمار کلی
@@ -21,18 +91,26 @@ export function useProductReviews(productId: number | undefined | null) {
     enabled: typeof productId === "number" && productId > 0,
     queryFn: async () => {
       try {
-        const data = await apiFetch<{
-          reviews?: ProductReview[];
-          items?: ProductReview[];
-          summary?: ProductReviewsSummary;
-        } | ProductReview[]>(`/products/${productId}/reviews`);
-
-        let reviewsList: ProductReview[] = [];
-        if (Array.isArray(data)) {
-          reviewsList = data;
-        } else if (data && typeof data === "object") {
-          reviewsList = data.reviews || data.items || [];
+        let rawList: RawCommentItem[] = [];
+        try {
+          const res = await apiFetch<RawCommentItem[] | RawCommentListResponse>(
+            `/comments/product/${productId}`
+          );
+          if (Array.isArray(res)) rawList = res;
+          else if (res && Array.isArray(res.items)) rawList = res.items;
+        } catch (err) {
+          if (err instanceof ApiError && err.status === 404) {
+            const fallback = await apiFetch<RawCommentItem[] | RawCommentListResponse>(
+              `/products/${productId}/reviews`
+            );
+            if (Array.isArray(fallback)) rawList = fallback;
+            else if (fallback?.reviews) rawList = fallback.reviews;
+          } else {
+            throw err;
+          }
         }
+
+        const reviewsList: ProductReview[] = rawList.map(mapCommentToReview);
 
         // فقط دیدگاه‌های تأییدشده برای عموم کاربران
         const approvedReviews = reviewsList.filter(
@@ -81,39 +159,17 @@ export function useProductReviews(productId: number | undefined | null) {
         };
 
         return { reviews: approvedReviews, summary };
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          // فال‌بک به اندپوینت عمومی /reviews?productId=
-          try {
-            const fallback = await apiFetch<ProductReview[]>(
-              `/reviews?productId=${productId}`
-            );
-            const list = Array.isArray(fallback) ? fallback : [];
-            return {
-              reviews: list,
-              summary: {
-                averageRating: 5,
-                totalReviews: list.length,
-                satisfactionRate: 100,
-                recommendationCounts: { recommended: list.length, notRecommended: 0, noOpinion: 0 },
-                ratingCounts: { 1: 0, 2: 0, 3: 0, 4: 0, 5: list.length },
-              },
-            };
-          } catch {
-            // در صورت عدم وجود اندپوینت، یک پاسخ پیش‌فرض استاندارد
-            return {
-              reviews: [],
-              summary: {
-                averageRating: 5,
-                totalReviews: 0,
-                satisfactionRate: 100,
-                recommendationCounts: { recommended: 0, notRecommended: 0, noOpinion: 0 },
-                ratingCounts: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
-              },
-            };
-          }
-        }
-        throw err;
+      } catch {
+        return {
+          reviews: [],
+          summary: {
+            averageRating: 5,
+            totalReviews: 0,
+            satisfactionRate: 100,
+            recommendationCounts: { recommended: 0, notRecommended: 0, noOpinion: 0 },
+            ratingCounts: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+          },
+        };
       }
     },
   });
@@ -121,23 +177,31 @@ export function useProductReviews(productId: number | undefined | null) {
 
 /**
  * ثبت دیدگاه جدید برای محصول
- * POST /products/:productId/reviews
+ * POST /comments/product/:productId
  */
 export function useSubmitReview() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (input: CreateReviewInput): Promise<{ message: string }> => {
-      const payload = {
-        rating: input.rating,
-        recommendation: input.recommendation,
-        title: input.title ? input.title.trim() : undefined,
-        message: input.message.trim(),
+    mutationFn: async (input: CreateReviewInput): Promise<{ message?: string }> => {
+      const payload: Record<string, unknown> = {
+        text: input.message.trim(),
       };
+      if (input.title && input.title.trim()) {
+        payload.title = input.title.trim();
+      }
+      if (typeof input.rating === "number") {
+        payload.rating = input.rating;
+      }
+      if (input.recommendation === "RECOMMENDED") {
+        payload.isRecommended = true;
+      } else if (input.recommendation === "NOT_RECOMMENDED") {
+        payload.isRecommended = false;
+      }
 
       try {
-        return await apiFetch<{ message: string }>(
-          `/products/${input.productId}/reviews`,
+        return await apiFetch<{ message?: string }>(
+          `/comments/product/${input.productId}`,
           {
             method: "POST",
             body: payload,
@@ -145,10 +209,19 @@ export function useSubmitReview() {
         );
       } catch (err) {
         if (err instanceof ApiError && err.status === 404) {
-          return await apiFetch<{ message: string }>(`/reviews`, {
-            method: "POST",
-            body: { ...payload, productId: input.productId },
-          });
+          // فال‌بک به اندپوینت قدیمی در صورت نیاز
+          return await apiFetch<{ message: string }>(
+            `/products/${input.productId}/reviews`,
+            {
+              method: "POST",
+              body: {
+                rating: input.rating,
+                recommendation: input.recommendation,
+                title: input.title,
+                message: input.message,
+              },
+            }
+          );
         }
         throw err;
       }
@@ -164,7 +237,7 @@ export function useSubmitReview() {
 
 /**
  * دریافت لیست دیدگاه‌ها در پنل ادمین
- * GET /admin/comments (با فال‌بک به /admin/reviews)
+ * GET /admin/comments
  */
 export function useAdminReviews(options: AdminReviewQueryOptions = {}) {
   const page = options.page ?? 1;
@@ -180,18 +253,58 @@ export function useAdminReviews(options: AdminReviewQueryOptions = {}) {
       params.set("page", String(page));
       params.set("limit", String(limit));
       if (status) params.set("status", status);
-      if (search) params.set("search", search);
       if (productId) params.set("productId", String(productId));
 
       try {
-        return await apiFetch<AdminReviewListResponse>(
+        const res = await apiFetch<RawCommentListResponse | RawCommentItem[]>(
           `/admin/comments?${params.toString()}`
         );
+
+        let items: ProductReview[] = [];
+        let total = 0;
+
+        if (res && "items" in res && Array.isArray(res.items)) {
+          items = res.items.map(mapCommentToReview);
+          total = res.total ?? items.length;
+        } else if (Array.isArray(res)) {
+          items = res.map(mapCommentToReview);
+          total = items.length;
+        }
+
+        // فیلتر جستجوی کلاینت در صورتی که سرور جستجو نداشت
+        if (search) {
+          const lowerSearch = search.toLowerCase();
+          items = items.filter(
+            (item) =>
+              item.message.toLowerCase().includes(lowerSearch) ||
+              (item.title && item.title.toLowerCase().includes(lowerSearch)) ||
+              item.userName.toLowerCase().includes(lowerSearch)
+          );
+        }
+
+        const counts = {
+          PENDING: items.filter((i) => i.status === "PENDING").length,
+          APPROVED: items.filter((i) => i.status === "APPROVED").length,
+          REJECTED: items.filter((i) => i.status === "REJECTED").length,
+          TOTAL: total,
+        };
+
+        return {
+          items,
+          total,
+          page,
+          limit,
+          counts,
+        };
       } catch (err) {
         if (err instanceof ApiError && err.status === 404) {
-          return await apiFetch<AdminReviewListResponse>(
-            `/admin/reviews?${params.toString()}`
-          );
+          return {
+            items: [],
+            total: 0,
+            page: 1,
+            limit,
+            counts: { PENDING: 0, APPROVED: 0, REJECTED: 0, TOTAL: 0 },
+          };
         }
         throw err;
       }
@@ -201,33 +314,35 @@ export function useAdminReviews(options: AdminReviewQueryOptions = {}) {
 
 /**
  * به‌روزرسانی وضعیت یا ثبت پاسخ ادمین
- * PATCH /admin/comments/:id
+ * PATCH /admin/comments/:id/status
+ * PATCH /admin/comments/:id/reply
  */
 export function useUpdateAdminReview() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (input: AdminUpdateReviewInput): Promise<ProductReview> => {
-      const payload: Record<string, unknown> = {};
-      if (input.status) payload.status = input.status;
-      if (input.adminReply !== undefined) {
-        payload.adminReply = input.adminReply ? input.adminReply.trim() : null;
+      if (input.status) {
+        const res = await apiFetch<RawCommentItem>(`/admin/comments/${input.id}/status`, {
+          method: "PATCH",
+          body: { status: input.status },
+        });
+        return mapCommentToReview(res);
       }
 
-      try {
-        return await apiFetch<ProductReview>(`/admin/comments/${input.id}`, {
+      if (input.adminReply !== undefined) {
+        const res = await apiFetch<RawCommentItem>(`/admin/comments/${input.id}/reply`, {
           method: "PATCH",
-          body: payload,
+          body: { adminReply: input.adminReply ? input.adminReply.trim() : "" },
         });
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          return await apiFetch<ProductReview>(`/admin/reviews/${input.id}`, {
-            method: "PATCH",
-            body: payload,
-          });
-        }
-        throw err;
+        return mapCommentToReview(res);
       }
+
+      const res = await apiFetch<RawCommentItem>(`/admin/comments/${input.id}`, {
+        method: "PATCH",
+        body: input,
+      });
+      return mapCommentToReview(res);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-reviews"] });
@@ -245,18 +360,10 @@ export function useDeleteAdminReview() {
 
   return useMutation({
     mutationFn: async (id: number): Promise<{ success: boolean }> => {
-      try {
-        return await apiFetch<{ success: boolean }>(`/admin/comments/${id}`, {
-          method: "DELETE",
-        });
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          return await apiFetch<{ success: boolean }>(`/admin/reviews/${id}`, {
-            method: "DELETE",
-          });
-        }
-        throw err;
-      }
+      await apiFetch<{ message?: string }>(`/admin/comments/${id}`, {
+        method: "DELETE",
+      });
+      return { success: true };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-reviews"] });
@@ -264,4 +371,3 @@ export function useDeleteAdminReview() {
     },
   });
 }
-
