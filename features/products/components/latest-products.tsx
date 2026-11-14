@@ -105,7 +105,7 @@ export function LatestProducts({
                   key={product.id}
                   className="ps-3 sm:ps-4 basis-[72%] sm:basis-[48%] md:basis-1/3 lg:basis-1/4 xl:basis-1/6"
                 >
-                  <div className="group relative flex flex-col justify-between h-[340px] sm:h-[360px] w-full rounded-2xl border border-border/80 bg-card p-3.5 sm:p-4 shadow-xs transition-all duration-300 hover:border-border hover:shadow-md hover:-translate-y-1">
+                  <div className="group relative flex flex-col justify-between h-[340px] w-full rounded-2xl border border-border/80 bg-card p-3.5 sm:p-4 shadow-xs transition-all duration-300 hover:border-border hover:shadow-md hover:-translate-y-1">
                     {/* بخش تصویر محصول در بالا */}
                     <Link
                       href={`/product/${product.slug}`}
@@ -127,7 +127,7 @@ export function LatestProducts({
                       href={`/product/${product.slug}`}
                       className="focus:outline-none focus-visible:underline"
                     >
-                      <h3 className="text-xs sm:text-[13px] font-bold text-foreground text-center leading-snug line-clamp-2 min-h-[2.5rem] transition-colors group-hover:text-primary">
+                      <h3 className="text-xs sm:text-[13px] font-bold text-foreground text-justify leading-snug line-clamp-2 min-h-[2.5rem] transition-colors group-hover:text-primary">
                         {product.title}
                       </h3>
                     </Link>
