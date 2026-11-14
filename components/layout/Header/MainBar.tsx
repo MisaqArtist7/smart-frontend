@@ -57,10 +57,10 @@ export function MainBar({
                 <Image
                   src={logo.src}
                   alt={logo.alt || logo.title || "اسمارت الکتریک"}
-                  width={140}
-                  height={44}
+                  width={369}
+                  height={369}
                   priority
-                  className="h-10 sm:h-11 w-auto object-contain transition-transform group-hover:scale-105"
+                  className="h-10 sm:h-14 w-auto object-contain transition-transform group-hover:scale-105"
                 />
               </div>
             ) : null}
@@ -84,7 +84,7 @@ export function MainBar({
             className="relative hidden md:flex flex-1 max-w-md lg:max-w-lg items-center"
             role="search"
           >
-            <div className="flex w-full items-center rounded-full border border-border bg-card px-3.5 py-2 shadow-xs transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 hover:border-primary/50">
+            <div className="flex w-full items-center rounded-full border-2 border-border bg-card px-3.5 py-2 shadow-xs transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 hover:border-primary/50">
               <Search className="size-4.5 text-muted-foreground shrink-0" />
               <input
                 type="text"
