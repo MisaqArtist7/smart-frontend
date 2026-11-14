@@ -329,10 +329,10 @@ export default function CheckoutPage() {
               <p className="text-xs text-muted-foreground">برای ثبت سفارش ابتدا کالاهای مورد نظر خود را به سبد خرید اضافه کنید.</p>
             </div>
             <Link
-              href="/products"
+              href="/"
               className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-bold px-6 py-3 rounded-2xl text-xs sm:text-sm shadow-xs hover:bg-primary/90 transition-all"
             >
-              <span>مشاهده محصولات</span>
+              <span>بازگشت به صفحه اصلی</span>
               <ArrowLeft className="size-4" />
             </Link>
           </div>

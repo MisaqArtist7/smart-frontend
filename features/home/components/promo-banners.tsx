@@ -15,13 +15,13 @@ const DEFAULT_PROMO_BANNERS: PromoBannerItem[] = [
     id: "banner-7",
     image: "/images/banners/7.png",
     alt: "تخفیف‌ها و پیشنهادهای ویژه تجهیزات برق و شبکه",
-    href: "/products",
+    href: "/offers",
   },
   {
     id: "banner-8",
     image: "/images/banners/8.png",
     alt: "جشنواره فروش انواع سوئیچ و تجهیزات هوشمند سازی",
-    href: "/products",
+    href: "/offers",
   },
 ];
 

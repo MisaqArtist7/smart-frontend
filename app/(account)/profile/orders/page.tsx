@@ -202,10 +202,10 @@ export default function ProfileOrdersPage() {
             </p>
             {activeTab === "all" && (
               <Link
-                href="/products"
+                href="/"
                 className="inline-flex items-center gap-2 bg-primary text-primary-foreground text-xs font-bold px-4 py-2 rounded-xl shadow-xs hover:bg-primary/90 mt-2"
               >
-                <span>مشاهده محصولات فروشگاه</span>
+                <span>بازگشت به صفحه اصلی</span>
                 <ChevronLeft className="size-3.5" />
               </Link>
             )}

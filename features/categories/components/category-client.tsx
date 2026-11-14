@@ -192,11 +192,11 @@ export function CategoryClient({ slug }: CategoryClientProps) {
           دسته‌بندی مورد نظر یافت نشد
         </h1>
         <p className="text-xs sm:text-sm text-muted-foreground max-w-md mb-6">
-          متأسفانه دسته‌بندی «{slug}» وجود ندارد یا غیرفعال شده است. می‌توانید به کاتالوگ تمام محصولات برگردید.
+          متأسفانه دسته‌بندی «{slug}» وجود ندارد یا غیرفعال شده است. می‌توانید به صفحه اصلی برگردید.
         </p>
-        <Link href="/products">
+        <Link href="/">
           <Button className="rounded-xl px-6 bg-primary text-primary-foreground font-bold text-xs sm:text-sm">
-            مشاهده تمام محصولات فروشگاه
+            بازگشت به صفحه اصلی
           </Button>
         </Link>
       </div>
@@ -209,10 +209,6 @@ export function CategoryClient({ slug }: CategoryClientProps) {
       <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap">
         <Link href="/" className="hover:text-primary transition-colors">
           خانه
-        </Link>
-        <ChevronLeft className="size-3 text-muted-foreground/60" />
-        <Link href="/products" className="hover:text-primary transition-colors">
-          محصولات
         </Link>
         {parentCategory && (
           <>

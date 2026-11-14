@@ -143,10 +143,10 @@ export default function CartPage() {
             </div>
 
             <Link
-              href="/products"
+              href="/"
               className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-bold px-6 py-3 rounded-2xl text-xs sm:text-sm shadow-xs hover:bg-primary/90 transition-all active:scale-95"
             >
-              <span>مشاهده محصولات فروشگاه</span>
+              <span>بازگشت به صفحه اصلی</span>
               <ArrowLeft className="size-4" />
             </Link>
           </div>

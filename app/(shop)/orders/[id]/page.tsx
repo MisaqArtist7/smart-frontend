@@ -837,10 +837,10 @@ export default function OrderDetailsPage() {
               </Link>
 
               <Link
-                href="/products"
+                href="/"
                 className="w-full h-11 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary font-bold text-xs flex items-center justify-center gap-2 transition-colors"
               >
-                <span>بازگشت به فروشگاه و ادامه خرید</span>
+                <span>بازگشت به صفحه اصلی</span>
                 <ArrowRight className="size-3.5" />
               </Link>
             </div>

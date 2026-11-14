@@ -3,7 +3,6 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft } from "lucide-react";
 import { useBrands } from "@/lib/api/brands";
 import { cn, normalizeImageUrl } from "@/lib/utils";
 
@@ -21,42 +20,42 @@ const FALLBACK_BRANDS: BrandItem[] = [
     name: "داهوا",
     latinName: "Dahua",
     logo: "/images/brand/dahua.png",
-    href: "/products?brand=dahua",
+    href: "/search?q=%D8%AF%D8%A7%D9%87%D9%88%D8%A7",
   },
   {
     id: "hikvision",
     name: "هایک‌ویژن",
     latinName: "Hikvision",
     logo: "/images/brand/hikvision.avif",
-    href: "/products?brand=hikvision",
+    href: "/search?q=%D9%87%D8%A7%DB%8C%DA%A9%E2%80%8C%D9%88%DB%8C%DA%98%D9%86",
   },
   {
     id: "khayam",
     name: "کابل خیام",
     latinName: "Khayam",
     logo: "/images/brand/khayam.png",
-    href: "/products?brand=khayam",
+    href: "/search?q=%DA%A9%D8%A7%D8%A8%D9%84%20%D8%AE%DB%8C%D8%A7%D9%85",
   },
   {
     id: "legrand",
     name: "لگراند فرانسه",
     latinName: "Legrand",
     logo: "/images/brand/1.webp",
-    href: "/products?brand=legrand",
+    href: "/search?q=%D9%84%DA%AF%D8%B1%D8%A7%D9%86%D8%AF",
   },
   {
     id: "schneider",
     name: "اشنایدر الکتریک",
     latinName: "Schneider",
     logo: "/images/brand/2.webp",
-    href: "/products?brand=schneider",
+    href: "/search?q=%D8%A7%D8%B4%D9%86%D8%A7%DB%8C%D8%AF%D8%B1",
   },
   {
     id: "siemens",
     name: "زیمنس آلمان",
     latinName: "Siemens",
     logo: "/images/brand/3.webp",
-    href: "/products?brand=siemens",
+    href: "/search?q=%D8%B2%DB%8C%D9%85%D9%86%D8%B3",
   },
 ];
 
@@ -81,7 +80,7 @@ export function BrandShowcase({ className }: BrandShowcaseProps) {
             name: b.name,
             latinName: b.slug?.toUpperCase() || "",
             logo: b.logo || FALLBACK_BRANDS[idx % FALLBACK_BRANDS.length]?.logo || null,
-            href: `/products?brandId=${b.id}`,
+            href: `/search?q=${encodeURIComponent(b.name)}`,
           }))
       : FALLBACK_BRANDS;
 
@@ -99,14 +98,6 @@ export function BrandShowcase({ className }: BrandShowcaseProps) {
             برندهای معتبر و همکاران تجاری
           </h2>
         </div>
-
-        <Link
-          href="/products"
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:text-primary/80 transition-colors group"
-        >
-          <span>مشاهده همه کاتالوگ</span>
-          <ArrowLeft className="size-3.5 transition-transform group-hover:-translate-x-1" />
-        </Link>
       </div>
 
       {/* گرید کارت‌های برند: تمرکز کامل بر نمایش تصویر/لوگوی برند بدون متن‌های اضافی */}

@@ -64,8 +64,7 @@ const FOOTER_FEATURES: FooterFeature[] = [
  */
 const QUICK_LINKS = [
   { id: "home", title: "صفحه اصلی", href: "/" },
-  { id: "products", title: "فروشگاه و محصولات", href: "/products" },
-  { id: "offers", title: "پیشنهادهای شگفت‌انگیز", href: "/products" },
+  { id: "offers", title: "پیشنهادهای شگفت‌انگیز", href: "/offers" },
   { id: "about", title: "درباره اسمارت الکتریک", href: "/about-us" },
   { id: "contact", title: "تماس با ما", href: "/contact-us" },
 ];

@@ -461,7 +461,7 @@ export default function AdminBrandsPage() {
                       <TableCell className="py-3 text-left">
                         <div className="flex items-center justify-end gap-1">
                           <Link
-                            href={`/products?brandId=${brand.id}`}
+                            href={`/search?q=${encodeURIComponent(brand.name)}`}
                             target="_blank"
                             title="مشاهده کالاهای این برند در سایت"
                             className="inline-flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:text-primary hover:bg-muted transition-colors"

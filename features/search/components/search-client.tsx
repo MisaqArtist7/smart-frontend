@@ -177,10 +177,6 @@ export function SearchClient() {
           خانه
         </Link>
         <ChevronLeft className="size-3 text-muted-foreground/60" />
-        <Link href="/products" className="hover:text-primary transition-colors">
-          محصولات
-        </Link>
-        <ChevronLeft className="size-3 text-muted-foreground/60" />
         <span className="text-foreground font-bold">
           {activeQuery ? `جستجوی «${activeQuery}»` : "جستجوی محصولات"}
         </span>
@@ -482,9 +478,9 @@ export function SearchClient() {
                   </Button>
                 )}
 
-                <Link href="/products">
+                <Link href="/">
                   <Button className="rounded-xl text-xs font-bold gap-2">
-                    <span>مشاهده همه محصولات</span>
+                    <span>بازگشت به صفحه اصلی</span>
                     <ArrowRight className="size-3.5" />
                   </Button>
                 </Link>

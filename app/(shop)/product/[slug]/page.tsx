@@ -166,10 +166,10 @@ export default function SingleProductPage({ params }: PageProps) {
             ممکن است این کالا حذف شده یا شناسه آن تغییر کرده باشد.
           </p>
           <Link
-            href="/products"
+            href="/"
             className="bg-primary text-primary-foreground font-bold px-6 py-2.5 rounded-xl text-xs sm:text-sm"
           >
-            بازگشت به فهرست محصولات
+            بازگشت به صفحه اصلی
           </Link>
         </main>
         <Footer />
@@ -190,15 +190,11 @@ export default function SingleProductPage({ params }: PageProps) {
           <Link href="/" className="hover:text-primary transition-colors">
             صفحه اصلی
           </Link>
-          <ChevronLeft className="size-3.5 text-muted-foreground/60 shrink-0" />
-          <Link href="/products" className="hover:text-primary transition-colors">
-            محصولات
-          </Link>
           {product.category?.name && (
             <>
               <ChevronLeft className="size-3.5 text-muted-foreground/60 shrink-0" />
               <Link
-                href={product.category.slug ? `/category/${product.category.slug}` : "/products"}
+                href={product.category.slug ? `/category/${product.category.slug}` : "/"}
                 className="hover:text-primary transition-colors"
               >
                 {product.category.name}
@@ -299,7 +295,7 @@ export default function SingleProductPage({ params }: PageProps) {
 
                 {product.brand && (
                   <Link
-                    href={`/products?brandId=${product.brand.id}`}
+                    href={`/search?q=${encodeURIComponent(product.brand.name)}`}
                     className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 transition-colors"
                   >
                     {product.brand.logo ? (
@@ -605,7 +601,7 @@ export default function SingleProductPage({ params }: PageProps) {
                       <td className="p-3.5 text-muted-foreground">
                         {product.brand ? (
                           <Link
-                            href={`/products?brandId=${product.brand.id}`}
+                            href={`/search?q=${encodeURIComponent(product.brand.name)}`}
                             className="inline-flex items-center gap-1.5 text-primary hover:underline font-bold"
                           >
                             <span>{product.brand.name}</span>
