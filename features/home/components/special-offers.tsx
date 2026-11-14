@@ -73,8 +73,8 @@ export function SpecialOffers({ className }: SpecialOffersProps) {
     >
       <div className="rounded-3xl bg-primary text-primary-foreground p-4 sm:p-6 lg:p-7 shadow-md overflow-hidden relative">
         {/* پس‌زمینه تزئینی ملایم */}
-        <div className="absolute -start-10 -bottom-10 size-60 rounded-full bg-white/5 blur-3xl pointer-events-none" />
-        <div className="absolute -end-10 -top-10 size-60 rounded-full bg-black/10 blur-3xl pointer-events-none" />
+        <div className="absolute -inset-s-10 -bottom-10 size-60 rounded-full bg-white/5 blur-3xl pointer-events-none" />
+        <div className="absolute -inset-e-10 -top-10 size-60 rounded-full bg-black/10 blur-3xl pointer-events-none" />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-center">
           {/* ستون راست (در دسکتاپ): عنوان شگفت‌انگیز + تایمر معکوس */}
@@ -137,7 +137,7 @@ export function SpecialOffers({ className }: SpecialOffersProps) {
               }}
               className="w-full relative group/special"
             >
-              <CarouselContent className="-ms-3">
+              <CarouselContent>
                 {discountedProducts.map((product) => {
                   const rawImageUrl =
                     product.images?.[0]?.url ||
@@ -154,10 +154,10 @@ export function SpecialOffers({ className }: SpecialOffersProps) {
                       key={product.id}
                       className="ps-3 basis-[70%] sm:basis-[45%] md:basis-1/3 xl:basis-1/4"
                     >
-                      <div className="group/card relative flex flex-col justify-between h-[340px] w-full rounded-2xl bg-card text-card-foreground p-3.5 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                      <div className="group/card relative flex flex-col justify-between h-85 w-full rounded-xs bg-card text-card-foreground p-3.5 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
                         {/* بج درصد تخفیف قرمز رنگ */}
                         {discountPercent && (
-                          <div className="absolute top-3 end-3 z-10 flex items-center gap-0.5 bg-primary text-primary-foreground font-black text-[11px] px-2 py-0.5 rounded-full shadow-xs">
+                          <div className="absolute top-3 inset-e-3 z-10 flex items-center gap-0.5 bg-primary text-primary-foreground font-black text-[11px] px-2 py-0.5 rounded-full shadow-xs">
                             <span>{discountPercent.toLocaleString("fa-IR")}٪</span>
                             <Percent className="size-2.5" />
                           </div>
@@ -172,8 +172,8 @@ export function SpecialOffers({ className }: SpecialOffersProps) {
                             <Image
                               src={imageUrl}
                               alt={product.title}
-                              width={120}
-                              height={85}
+                              width={333}
+                              height={333}
                               className="max-h-full max-w-full object-contain transition-transform duration-300 ease-out group-hover/card:scale-108 drop-shadow-xs"
                             />
                           </div>
@@ -184,7 +184,7 @@ export function SpecialOffers({ className }: SpecialOffersProps) {
                           href={`/product/${product.slug}`}
                           className="focus:outline-none focus-visible:underline"
                         >
-                          <h3 className="text-xs font-bold text-foreground text-center leading-snug line-clamp-2 min-h-[2.5rem] transition-colors group-hover/card:text-primary">
+                          <h3 className="text-xs font-bold text-foreground text-center leading-snug line-clamp-2 min-h-10 transition-colors group-hover/card:text-primary">
                             {product.title}
                           </h3>
                         </Link>
@@ -209,7 +209,7 @@ export function SpecialOffers({ className }: SpecialOffersProps) {
                         {/* دکمه خرید */}
                         <Link
                           href={`/product/${product.slug}`}
-                          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-[0.98]"
+                          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs py-2 px-3 rounded-md flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-[0.98]"
                         >
                           <ShoppingCart className="size-3.5" />
                           <span>خرید شگفت‌انگیز</span>
@@ -222,11 +222,11 @@ export function SpecialOffers({ className }: SpecialOffersProps) {
 
               <CarouselPrevious
                 aria-label="کالای قبلی"
-                className="hidden md:flex opacity-0 group-hover/special:opacity-100 transition-opacity start-2 end-auto top-1/2 -translate-y-1/2 z-20 size-8 rounded-full bg-background/90 text-foreground border border-border shadow-md"
+                className="hidden md:flex opacity-0 group-hover/special:opacity-100 transition-opacity inset-s-2 inset-e-auto top-1/2 -translate-y-1/2 z-20 size-8 rounded-full bg-background/90 text-foreground border border-border shadow-md"
               />
               <CarouselNext
                 aria-label="کالای بعدی"
-                className="hidden md:flex opacity-0 group-hover/special:opacity-100 transition-opacity end-2 start-auto top-1/2 -translate-y-1/2 z-20 size-8 rounded-full bg-background/90 text-foreground border border-border shadow-md"
+                className="hidden md:flex opacity-0 group-hover/special:opacity-100 transition-opacity inset-e-2 inset-s-auto top-1/2 -translate-y-1/2 z-20 size-8 rounded-full bg-background/90 text-foreground border border-border shadow-md"
               />
             </Carousel>
           </div>
