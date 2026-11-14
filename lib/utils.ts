@@ -18,5 +18,19 @@ export function normalizeImageUrl(
   ) {
     return trimmed;
   }
+  if (trimmed.startsWith("/uploads/")) {
+    return trimmed;
+  }
+  if (
+    trimmed.startsWith("products/") ||
+    trimmed.startsWith("categories/") ||
+    trimmed.startsWith("brands/") ||
+    trimmed.startsWith("receipts/")
+  ) {
+    return `/uploads/${trimmed}`;
+  }
+  if (trimmed.startsWith("uploads/")) {
+    return `/${trimmed}`;
+  }
   return trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
 }
