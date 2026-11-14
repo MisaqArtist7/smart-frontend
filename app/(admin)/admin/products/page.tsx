@@ -153,6 +153,7 @@ export default function AdminProductsPage() {
   const [conflictProduct, setConflictProduct] = useState<{ id: number; title: string } | null>(null);
   const [isActiveValue, setIsActiveValue] = useState(true);
   const [productImages, setProductImages] = useState<ProductImageItem[]>([]);
+  const [specItems, setSpecItems] = useState<SpecItem[]>([]);
 
   const { data: products = [], isLoading: isProductsLoading } = useAdminProducts();
   const { data: categories = [] } = useAdminCategories();
@@ -204,6 +205,11 @@ export default function AdminProductsPage() {
   const handleOpenCreate = () => {
     setEditingProduct(null);
     setProductImages([]);
+    setSpecItems([
+      { id: "1", key: "توان مصرفی", value: "" },
+      { id: "2", key: "ولتاژ ورودی", value: "" },
+      { id: "3", key: "گارانتی", value: "" },
+    ]);
     reset({
       title: "",
       slug: "",
@@ -232,6 +238,19 @@ export default function AdminProductsPage() {
         sortOrder: img.sortOrder ?? i,
       }))
     );
+
+    // بارگذاری مشخصات فنی (specs) از محصول
+    if (prod.specs && typeof prod.specs === "object" && !Array.isArray(prod.specs)) {
+      const loadedSpecs = Object.entries(prod.specs).map(([k, v], idx) => ({
+        id: `${idx}-${k}`,
+        key: k,
+        value: String(v ?? ""),
+      }));
+      setSpecItems(loadedSpecs);
+    } else {
+      setSpecItems([]);
+    }
+
     reset({
       title: prod.title,
       slug: prod.slug,
@@ -248,6 +267,24 @@ export default function AdminProductsPage() {
     });
     setIsActiveValue(prod.isActive);
     setIsCreateOpen(true);
+  };
+
+  // مدیریت مشخصات فنی (specs)
+  const handleAddSpec = (key = "", value = "") => {
+    setSpecItems((prev) => [
+      ...prev,
+      { id: Math.random().toString(36).substring(2, 9), key, value },
+    ]);
+  };
+
+  const handleRemoveSpec = (id: string) => {
+    setSpecItems((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const handleUpdateSpec = (id: string, field: "key" | "value", val: string) => {
+    setSpecItems((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, [field]: val } : item))
+    );
   };
 
   // آپلود عکس جدید برای محصول
@@ -285,7 +322,17 @@ export default function AdminProductsPage() {
     }
 
     try {
-      const payload = toProductPayload(values, productImages);
+      // تجمیع مشخصات فنی به صورت یک شیء JSON
+      const specsRecord: Record<string, string> = {};
+      specItems.forEach((item) => {
+        const k = item.key.trim();
+        const v = item.value.trim();
+        if (k && v) {
+          specsRecord[k] = v;
+        }
+      });
+
+      const payload = toProductPayload(values, productImages, specsRecord);
       if (editingProduct) {
         await updateProductMutation.mutateAsync({
           id: editingProduct.id,
@@ -821,16 +868,120 @@ export default function AdminProductsPage() {
                 )}
               </div>
 
-              {/* توضیحات */}
+              {/* معرفی محصول (توضیحات تفصیلی) */}
               <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-bold text-foreground">
-                  توضیحات و مشخصات اجمالی
+                <label className="text-xs font-bold text-foreground flex items-center justify-between">
+                  <span>معرفی محصول (توضیحات کلی و نقد تخصصی)</span>
+                  <span className="text-[11px] text-muted-foreground font-normal">اختیاری</span>
                 </label>
                 <Textarea
                   {...register("description")}
-                  placeholder="مشخصات، کاربرد و ویژگی‌های محصول..."
-                  rows={3}
+                  placeholder="معرفی محصول، ویژگی‌ها، کاربرد و توضیحات تفصیلی که در تب معرفی محصول نمایش داده می‌شود..."
+                  rows={4}
+                  className="leading-relaxed text-xs sm:text-sm"
                 />
+                <p className="text-[10px] text-muted-foreground">
+                  این متن در صفحه تک‌محصول تحت تب «معرفی محصول» برای خریداران به نمایش درمی‌آید.
+                </p>
+              </div>
+
+              {/* مشخصات فنی محصول (Specs) */}
+              <div className="space-y-3 sm:col-span-2 p-3.5 rounded-xl border border-border bg-muted/10">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="text-xs font-bold text-foreground">
+                      مشخصات فنی محصول (Specs)
+                    </label>
+                    <p className="text-[11px] text-muted-foreground">
+                      ویژگی‌ها و مشخصات فنی که در جدول مشخصات صفحه محصول نمایش داده می‌شوند.
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleAddSpec()}
+                    className="h-8 gap-1.5 text-xs rounded-lg cursor-pointer"
+                  >
+                    <Plus className="size-3.5" />
+                    <span>افزودن ویژگی</span>
+                  </Button>
+                </div>
+
+                {/* دکمه‌های پیش‌فرض پرکاربرد */}
+                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                  <span className="text-[10px] text-muted-foreground font-medium">پیشنهاد سریع:</span>
+                  {[
+                    "توان مصرفی",
+                    "ولتاژ ورودی",
+                    "نوع سرپیچ",
+                    "رنگ نور",
+                    "گارانتی",
+                    "ابعاد",
+                    "وزن",
+                    "جنس بدنه",
+                    "کشور سازنده",
+                  ].map((presetKey) => {
+                    const exists = specItems.some((s) => s.key.trim() === presetKey);
+                    return (
+                      <button
+                        key={presetKey}
+                        type="button"
+                        onClick={() => handleAddSpec(presetKey, "")}
+                        disabled={exists}
+                        className={cn(
+                          "text-[10px] px-2 py-0.5 rounded-md border border-border transition-colors",
+                          exists
+                            ? "opacity-40 cursor-not-allowed bg-muted text-muted-foreground"
+                            : "hover:bg-primary/10 hover:border-primary/40 text-foreground cursor-pointer"
+                        )}
+                      >
+                        + {presetKey}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* لیست ردیف‌های مشخصات فنی */}
+                {specItems.length > 0 ? (
+                  <div className="space-y-2 pt-2">
+                    {specItems.map((spec, idx) => (
+                      <div
+                        key={spec.id}
+                        className="flex items-center gap-2 bg-card p-2 rounded-lg border border-border shadow-2xs"
+                      >
+                        <span className="text-[10px] font-bold text-muted-foreground w-5 text-center shrink-0">
+                          {idx + 1}
+                        </span>
+                        <Input
+                          value={spec.key}
+                          onChange={(e) => handleUpdateSpec(spec.id, "key", e.target.value)}
+                          placeholder="نام ویژگی (مثلاً: توان مصرفی)"
+                          className="h-8 text-xs flex-1 min-w-[100px]"
+                        />
+                        <span className="text-muted-foreground text-xs">:</span>
+                        <Input
+                          value={spec.value}
+                          onChange={(e) => handleUpdateSpec(spec.id, "value", e.target.value)}
+                          placeholder="مقدار (مثلاً: ۹ وات)"
+                          className="h-8 text-xs flex-1 min-w-[100px]"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveSpec(spec.id)}
+                          className="size-7 rounded-md text-destructive hover:bg-destructive/10 flex items-center justify-center transition-colors shrink-0"
+                          title="حذف این ویژگی"
+                        >
+                          <X className="size-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-4 border border-dashed border-border rounded-lg text-muted-foreground text-xs">
+                    هیچ ویژگی فنی اضافه نشده است. روی دکمه «افزودن ویژگی» کلیک کنید.
+                  </div>
+                )}
               </div>
 
               {/* سئو */}

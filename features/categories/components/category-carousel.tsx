@@ -131,7 +131,7 @@ export function CategoryCarousel({
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              className="h-[180px] sm:h-[200px] md:h-[220px] w-full rounded-2xl border border-border/70 bg-muted/40 shadow-xs animate-pulse"
+              className="h-45 sm:h-50 md:h-55 w-full rounded-2xl border border-border/70 bg-muted/40 shadow-xs animate-pulse"
             />
           ))}
         </div>
@@ -145,7 +145,7 @@ export function CategoryCarousel({
           }}
           className="w-full relative group/carousel"
         >
-          <CarouselContent className="-ms-3 sm:-ms-4">
+          <CarouselContent className="-ms-3 sm:-ms-4 py-1">
             {displayCategories.map((cat) => (
               <CarouselItem
                 key={cat.id}
@@ -153,7 +153,7 @@ export function CategoryCarousel({
               >
                 <Link
                   href={cat.href}
-                  className="group relative block h-[180px] sm:h-[200px] md:h-[220px] w-full rounded-2xl border border-border/80 bg-card shadow-xs transition-all duration-300 hover:shadow-xl hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-border overflow-hidden select-none"
+                  className="group relative block h-45 sm:h-50 md:h-55 w-full rounded-2xl border border-border/80 bg-card shadow-xs transition-all duration-300 hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-border overflow-hidden select-none"
                 >
                   {/* تصویر تمام‌صفحه که کل کارت را پر می‌کند */}
                   <Image
