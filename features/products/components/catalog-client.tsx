@@ -28,6 +28,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Select } from "@/components/ui/select";
 import { formatToman } from "@/lib/order-utils";
+import { normalizeImageUrl } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
 type SortOption = "newest" | "price-asc" | "price-desc" | "discount-desc";
@@ -389,12 +390,13 @@ export function CatalogClient() {
                   : 0;
                 const finalPrice = product.discountPrice ?? product.price;
 
-                const mainImage =
+                const rawImage =
                   product.images && product.images.length > 0
                     ? typeof product.images[0] === "string"
                       ? product.images[0]
-                      : product.images[0].url || "/images/products/adapter-52240.png"
-                    : "/images/products/adapter-52240.png";
+                      : product.images[0]?.url
+                    : null;
+                const mainImage = normalizeImageUrl(rawImage, "/images/products/adapter-52240.png");
 
                 return (
                   <div

@@ -12,7 +12,7 @@ import {
   CarouselNext,
 } from "@/components/ui/carousel";
 import { useProducts, type Product } from "@/lib/api";
-import { cn } from "@/lib/utils";
+import { cn, normalizeImageUrl } from "@/lib/utils";
 
 export interface LatestProductsProps {
   initialProducts?: Product[];
@@ -94,10 +94,10 @@ export function LatestProducts({
           {/* کانتینر اسلایدها با مارجین منطقی */}
           <CarouselContent className="-ms-3 sm:-ms-4">
             {products.map((product) => {
-              const imageUrl =
+              const rawImageUrl =
                 product.images?.[0]?.url ||
-                (typeof product.images?.[0] === "string" ? product.images[0] : null) ||
-                "/images/products/adapter-52240.png";
+                (typeof product.images?.[0] === "string" ? product.images[0] : null);
+              const imageUrl = normalizeImageUrl(rawImageUrl, "/images/products/adapter-52240.png");
               const displayPrice = product.discountPrice ?? product.price;
 
               return (

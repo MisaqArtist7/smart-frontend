@@ -33,6 +33,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LatestProducts from "@/components/home/latest-products";
 import { ProductReviews } from "@/components/product/product-reviews";
+import { normalizeImageUrl } from "@/lib/utils";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -58,9 +59,10 @@ export default function SingleProductPage({ params }: PageProps) {
     if (!product || !product.images || product.images.length === 0) {
       return ["/images/products/adapter-52240.png"];
     }
-    return product.images.map((img) =>
-      typeof img === "string" ? img : img.url || "/images/products/adapter-52240.png"
-    );
+    return product.images.map((img) => {
+      const raw = typeof img === "string" ? img : img.url;
+      return normalizeImageUrl(raw, "/images/products/adapter-52240.png");
+    });
   }, [product]);
 
   const activeImage = images[selectedImageIndex] || images[0];

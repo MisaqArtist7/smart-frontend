@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Product } from "@/lib/api";
+import { normalizeImageUrl } from "@/lib/utils";
 
 export interface CartItem {
   id: number;
@@ -84,10 +85,10 @@ export const useCartStore = create<CartStoreState>()(
         const existing = items.find((i) => i.id === product.id);
         const effectivePrice = product.discountPrice ?? product.price;
 
-        const imgUrl =
+        const rawImg =
           product.images?.[0]?.url ||
-          (typeof product.images?.[0] === "string" ? product.images[0] : null) ||
-          "/images/products/adapter-52240.png";
+          (typeof product.images?.[0] === "string" ? product.images[0] : null);
+        const imgUrl = normalizeImageUrl(rawImg, "/images/products/adapter-52240.png");
 
         let newItems: CartItem[];
         let newStored: StoredCartItem[];
@@ -229,10 +230,10 @@ export const useCartStore = create<CartStoreState>()(
             );
           }
 
-          const imgUrl =
+          const rawImg =
             product.images?.[0]?.url ||
-            (typeof product.images?.[0] === "string" ? product.images[0] : null) ||
-            "/images/products/adapter-52240.png";
+            (typeof product.images?.[0] === "string" ? product.images[0] : null);
+          const imgUrl = normalizeImageUrl(rawImg, "/images/products/adapter-52240.png");
 
           const freshItem: CartItem = {
             id: product.id,

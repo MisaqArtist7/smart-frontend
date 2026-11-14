@@ -20,7 +20,7 @@ import {
 import { toast } from "sonner";
 import { useProducts, type Product } from "@/lib/api";
 import { useCartStore } from "@/lib/cart-store";
-import { cn } from "@/lib/utils";
+import { cn, normalizeImageUrl } from "@/lib/utils";
 
 type SortOption = "discount-desc" | "price-asc" | "price-desc" | "newest";
 type DiscountFilter = "all" | "discounted" | "high-discount" | "in-stock";
@@ -398,12 +398,10 @@ export function OffersClient() {
         /* لیست محصولات تخفیف‌دار و پیشنهادات شگفت‌انگیز */
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-5">
           {processedProducts.map((product) => {
-            const imageUrl =
+            const rawImageUrl =
               product.images?.[0]?.url ||
-              (typeof product.images?.[0] === "string"
-                ? product.images[0]
-                : null) ||
-              "/images/products/adapter-52240.png";
+              (typeof product.images?.[0] === "string" ? product.images[0] : null);
+            const imageUrl = normalizeImageUrl(rawImageUrl, "/images/products/adapter-52240.png");
 
             const isOutOfStock = product.stock <= 0;
             const isLowStock = product.stock > 0 && product.stock <= 3;

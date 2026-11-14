@@ -12,7 +12,7 @@ import {
   CarouselNext,
 } from "@/components/ui/carousel";
 import { useProducts } from "@/lib/api";
-import { cn } from "@/lib/utils";
+import { cn, normalizeImageUrl } from "@/lib/utils";
 
 export interface SpecialOffersProps {
   className?: string;
@@ -139,10 +139,10 @@ export function SpecialOffers({ className }: SpecialOffersProps) {
             >
               <CarouselContent className="-ms-3">
                 {discountedProducts.map((product) => {
-                  const imageUrl =
+                  const rawImageUrl =
                     product.images?.[0]?.url ||
-                    (typeof product.images?.[0] === "string" ? product.images[0] : null) ||
-                    "/images/products/adapter-52240.png";
+                    (typeof product.images?.[0] === "string" ? product.images[0] : null);
+                  const imageUrl = normalizeImageUrl(rawImageUrl, "/images/products/adapter-52240.png");
 
                   const currentPrice = product.discountPrice ?? product.price;
                   const discountPercent = product.discountPrice
