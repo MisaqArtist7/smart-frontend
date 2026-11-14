@@ -25,16 +25,16 @@ export interface SpecialOffersProps {
 export function SpecialOffers({ className }: SpecialOffersProps) {
   const { data: products = [], isLoading } = useProducts();
 
-  // فیلتر کردن محصولاتی که دارای تخفیف هستند
+  // فیلتر کردن دقیق و صرفاً محصولاتی که دارای تخفیف معتبر هستند
   const discountedProducts = useMemo(() => {
-    const withDiscount = products.filter(
-      (p) => p.isActive !== false && p.discountPrice != null && p.discountPrice < p.price
+    return products.filter(
+      (p) =>
+        p.isActive !== false &&
+        p.discountPrice != null &&
+        typeof p.discountPrice === "number" &&
+        p.discountPrice > 0 &&
+        p.discountPrice < p.price
     );
-    // اگر کالای تخفیف‌دار کمی ثبت شده باشد، محصولات موجود را اضافه می‌کنیم
-    if (withDiscount.length < 3 && products.length > 0) {
-      return products.filter((p) => p.isActive !== false).slice(0, 6);
-    }
-    return withDiscount;
   }, [products]);
 
   // تایمر معکوس زنده ۲۴ ساعته
@@ -118,7 +118,7 @@ export function SpecialOffers({ className }: SpecialOffersProps) {
             </div>
 
             <Link
-              href="/products"
+              href="/offers"
               className="inline-flex items-center gap-2 text-xs font-bold text-primary-foreground/90 hover:text-white transition-colors group pt-2"
             >
               <span>مشاهده تمام تخفیف‌ها</span>

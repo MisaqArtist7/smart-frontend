@@ -73,17 +73,23 @@ export function OffersClient() {
     return Array.from(set);
   }, [serverProducts]);
 
-  // پردازش و فیلتر محصولات
+  // پردازش و فیلتر محصولات (فقط محصولاتی که دارای تخفیف واقعی هستند)
   const processedProducts = useMemo(() => {
     return serverProducts
-      .filter((p) => p.isActive !== false)
+      .filter(
+        (p) =>
+          p.isActive !== false &&
+          p.discountPrice != null &&
+          typeof p.discountPrice === "number" &&
+          p.discountPrice > 0 &&
+          p.discountPrice < p.price
+      )
       .map((p) => {
-        const isDiscounted =
-          p.discountPrice != null && p.discountPrice < p.price;
-        const discountPercent = isDiscounted
-          ? Math.round(((p.price - p.discountPrice!) / p.price) * 100)
-          : 0;
-        const finalPrice = p.discountPrice ?? p.price;
+        const isDiscounted = true;
+        const discountPercent = Math.round(
+          ((p.price - p.discountPrice!) / p.price) * 100
+        );
+        const finalPrice = p.discountPrice!;
         const catName =
           p.categoryName ||
           (typeof p.category === "object" && p.category?.name) ||
@@ -112,9 +118,7 @@ export function OffersClient() {
         }
 
         // فیلتر نوع تخفیف و موجودی
-        if (selectedDiscountFilter === "discounted") {
-          return p.isDiscounted;
-        } else if (selectedDiscountFilter === "high-discount") {
+        if (selectedDiscountFilter === "high-discount") {
           return p.discountPercent >= 15;
         } else if (selectedDiscountFilter === "in-stock") {
           return p.stock > 0;
@@ -298,20 +302,7 @@ export function OffersClient() {
                   : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
               )}
             >
-              همه کالاها
-            </button>
-            <button
-              type="button"
-              onClick={() => setSelectedDiscountFilter("discounted")}
-              className={cn(
-                "rounded-xl px-3 py-1.5 text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer",
-                selectedDiscountFilter === "discounted"
-                  ? "bg-primary text-primary-foreground shadow-xs"
-                  : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
-              )}
-            >
-              <Percent className="size-3" />
-              <span>فقط تخفیف‌دارها</span>
+              همه پیشنهادها
             </button>
             <button
               type="button"

@@ -68,14 +68,15 @@ export default function SingleProductPage({ params }: PageProps) {
   const activeImage = images[selectedImageIndex] || images[0];
 
   // مشخصات فنی پارس شده کالا
+  const rawSpecs = product?.specs;
   const parsedSpecs = useMemo<Record<string, unknown>>(() => {
-    if (!product?.specs) return {};
-    if (typeof product.specs === "object" && !Array.isArray(product.specs)) {
-      return product.specs as Record<string, unknown>;
+    if (!rawSpecs) return {};
+    if (typeof rawSpecs === "object" && !Array.isArray(rawSpecs)) {
+      return rawSpecs as Record<string, unknown>;
     }
-    if (typeof product.specs === "string") {
+    if (typeof rawSpecs === "string") {
       try {
-        const parsed = JSON.parse(product.specs);
+        const parsed = JSON.parse(rawSpecs);
         if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
           return parsed as Record<string, unknown>;
         }
@@ -84,7 +85,7 @@ export default function SingleProductPage({ params }: PageProps) {
       }
     }
     return {};
-  }, [product?.specs]);
+  }, [rawSpecs]);
 
   // محاسبه قیمت‌ها و درصد تخفیف
   const finalPrice = product ? product.discountPrice ?? product.price : 0;
@@ -531,7 +532,7 @@ export default function SingleProductPage({ params }: PageProps) {
           </div>
         </div>
 
-        {/* تب‌های تکمیلی کالا (توضیحات جامع، مشخصات فنی، نظرات خریداران) */}
+        {/* تب‌های تکمیلی کالا (معرفی محصول، مشخصات فنی، نظرات خریداران) */}
         <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-xs">
           <Tabs defaultValue="description" className="w-full">
             <TabsList className="w-full justify-start border-b border-border rounded-none p-0 bg-transparent h-auto gap-4 sm:gap-6 overflow-x-auto">
@@ -540,7 +541,7 @@ export default function SingleProductPage({ params }: PageProps) {
                 className="rounded-none border-b-2 border-transparent data-active:border-primary data-active:text-primary data-active:bg-transparent pb-3 text-xs sm:text-sm font-bold gap-2 cursor-pointer"
               >
                 <FileText className="size-4" />
-                <span>توضیحات و نقد تخصصی</span>
+                <span>معرفی محصول</span>
               </TabsTrigger>
 
               <TabsTrigger
@@ -548,7 +549,7 @@ export default function SingleProductPage({ params }: PageProps) {
                 className="rounded-none border-b-2 border-transparent data-active:border-primary data-active:text-primary data-active:bg-transparent pb-3 text-xs sm:text-sm font-bold gap-2 cursor-pointer"
               >
                 <Sliders className="size-4" />
-                <span>مشخصات فنی و استانداردهای کالا</span>
+                <span>مشخصات فنی</span>
               </TabsTrigger>
 
               <TabsTrigger
@@ -565,36 +566,36 @@ export default function SingleProductPage({ params }: PageProps) {
               </TabsTrigger>
             </TabsList>
 
-            {/* محتوای تب توضیحات */}
+            {/* محتوای تب معرفی محصول (توضیحات کلی) */}
             <TabsContent value="description" className="pt-6 space-y-4">
               <h2 className="text-base sm:text-lg font-black text-foreground">
-                معرفی اجمالی {product.title}
+                معرفی {product.title}
               </h2>
-              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed text-justify">
-                {product.description ||
-                  `محصول ${product.title} با تکیه بر استانداردهای بالای صنعتی تولید شده و برای پاسخگویی به الزامات دقیق مهندسی برق و شبکه طراحی گردیده است. ساختار آلومینیومی مستحکم، عملکرد بی وقفه در بازه دمایی گسترده و مصرف بهینه انرژی از ویژگی‌های ممتاز این کالا به شمار می‌روند.`}
-              </p>
-              <div className="rounded-2xl bg-muted/20 border border-border p-4 text-xs text-muted-foreground leading-relaxed space-y-2">
-                <div className="font-bold text-foreground">نکات مهم قبل از نصب و راه‌اندازی:</div>
-                <p>• از تطابق ولتاژ ورودی تجهیز با شبکه برق محلی اطمینان حاصل نمایید.</p>
-                <p>• جهت افزایش طول عمر قطعه، از سیستم اتصال به زمین (ارتینگ) استاندارد استفاده کنید.</p>
-              </div>
+              {product.description ? (
+                <div className="rounded-2xl bg-muted/10 border border-border/60 p-5 text-xs sm:text-sm text-foreground/90 leading-relaxed text-justify whitespace-pre-line">
+                  {product.description}
+                </div>
+              ) : (
+                <div className="rounded-2xl bg-muted/10 border border-border/60 p-5 text-xs sm:text-sm text-muted-foreground text-center">
+                  توضیحات و معرفی تکمیلی برای این کالا ثبت نشده است.
+                </div>
+              )}
             </TabsContent>
 
-            {/* محتوای تب مشخصات فنی */}
+            {/* محتوای تب مشخصات فنی (برگرفته از specs و اطلاعات ساختاری) */}
             <TabsContent value="specs" className="pt-6">
               <h2 className="text-base sm:text-lg font-black text-foreground mb-4">
-                جدول مشخصات فنی کالا
+                جدول مشخصات فنی {product.title}
               </h2>
               <div className="rounded-2xl border border-border overflow-hidden">
                 <table className="w-full text-xs text-right">
                   <tbody>
                     <tr className="border-b border-border/60 bg-muted/10">
-                      <td className="p-3.5 font-bold text-foreground w-1/3">شناسه کالا (SKU)</td>
+                      <td className="p-3.5 font-bold text-foreground w-1/3 sm:w-1/4">شناسه کالا (SKU)</td>
                       <td className="p-3.5 text-muted-foreground font-mono">{product.sku || "—"}</td>
                     </tr>
                     <tr className="border-b border-border/60">
-                      <td className="p-3.5 font-bold text-foreground">دسته‌بندی تخصصی</td>
+                      <td className="p-3.5 font-bold text-foreground">دسته‌بندی</td>
                       <td className="p-3.5 text-muted-foreground">
                         {product.category?.name || product.categoryName || "عمومی"}
                       </td>
@@ -614,37 +615,31 @@ export default function SingleProductPage({ params }: PageProps) {
                         )}
                       </td>
                     </tr>
-                    <tr className="border-b border-border/60 bg-muted/10">
-                      <td className="p-3.5 font-bold text-foreground">نوع کاربری</td>
-                      <td className="p-3.5 text-muted-foreground">صنعتی، ساختمانی و شبکه‌های اداری</td>
-                    </tr>
                     <tr className="border-b border-border/60">
-                      <td className="p-3.5 font-bold text-foreground">دمای کاری مجاز</td>
-                      <td className="p-3.5 text-muted-foreground font-mono">منفی ۴۰ الی ۸۵ درجه سانتی‌گراد</td>
-                    </tr>
-                    <tr className="border-b border-border/60 bg-muted/10">
-                      <td className="p-3.5 font-bold text-foreground">گارانتی و خدمات</td>
-                      <td className="p-3.5 text-muted-foreground">۲۴ ماه تعویض قطعات شرکتی</td>
-                    </tr>
-                    {product.specs &&
-                      typeof product.specs === "object" &&
-                      Object.entries(product.specs).map(([key, val], idx) => (
-                        <tr
-                          key={key}
-                          className={`border-b border-border/60 ${
-                            idx % 2 === 0 ? "bg-muted/10" : ""
-                          }`}
-                        >
-                          <td className="p-3.5 font-bold text-foreground">{key}</td>
-                          <td className="p-3.5 text-muted-foreground font-mono">{String(val)}</td>
-                        </tr>
-                      ))}
-                    <tr>
-                      <td className="p-3.5 font-bold text-foreground">موجودی انبار مرکزی</td>
+                      <td className="p-3.5 font-bold text-foreground">وضعیت موجودی</td>
                       <td className="p-3.5 text-muted-foreground">
-                        {product.stock > 0 ? `${product.stock} عدد موجود` : "ناموجود"}
+                        {product.stock > 0 ? `${product.stock.toLocaleString("fa-IR")} عدد موجود در انبار` : "ناموجود"}
                       </td>
                     </tr>
+
+                    {/* مشخصات داینامیک استخراج‌شده از specs JSON */}
+                    {Object.entries(parsedSpecs).map(([key, val], idx) => (
+                      <tr
+                        key={key}
+                        className={`border-b border-border/60 ${
+                          idx % 2 === 1 ? "bg-muted/10" : ""
+                        }`}
+                      >
+                        <td className="p-3.5 font-bold text-foreground">{key}</td>
+                        <td className="p-3.5 text-muted-foreground font-mono">
+                          {typeof val === "boolean"
+                            ? val
+                              ? "دارد"
+                              : "ندارد"
+                            : String(val ?? "—")}
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>

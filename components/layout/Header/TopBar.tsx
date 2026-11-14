@@ -1,28 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
-import { Copy, Check } from "lucide-react";
+import React from "react";
 import type { TopBarProps } from "./header.types";
 
 /**
  * لایه اول: نوار بالای هدر (Top Bar)
  * - سمت راست (RTL): نقطه نشانگر رنگ اصلی (bg-primary) + متن اطلاعیه ارسال رایگان
- * - سمت چپ (RTL): لیبل کد تخفیف + کادر خط‌چین تمیز (border-dashed border-primary text-primary)
- * با قابلیت کپی مستقیم کد تخفیف در کلیپ‌بورد کاربر
+ * - سمت چپ (RTL): متن بنر اطلاع‌رسانی
  */
 export function TopBar({ config, className = "" }: TopBarProps) {
-  const { announcement, discount } = config;
-  const [copied, setCopied] = useState(false);
-
-  const handleCopyCode = async () => {
-    try {
-      await navigator.clipboard.writeText(discount.code);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Fallback for older browsers
-    }
-  };
+  const { announcement } = config;
 
   return (
     <div
