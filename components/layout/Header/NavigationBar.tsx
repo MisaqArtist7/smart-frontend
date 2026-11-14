@@ -214,7 +214,7 @@ export function NavigationBar({
             <DropdownMenu>
               <DropdownMenuTrigger
                 title={`حساب کاربری: ${authButton.text}`}
-                className="flex items-center gap-1.5 rounded-lg bg-primary text-primary-foreground px-3 py-2 text-xs sm:text-sm font-semibold shadow-xs transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 max-w-[180px] cursor-pointer"
+                className="flex items-center gap-1.5 rounded-lg bg-primary text-primary-foreground px-3 py-2 text-xs sm:text-sm font-semibold shadow-xs transition-opacity hover:opacity-90 outline-none ring-2 ring-primary ring-offset-2 max-w-45 cursor-pointer"
                 aria-label="منوی حساب کاربری"
               >
                 <UserCheck className="size-4 shrink-0 text-primary-foreground" />
