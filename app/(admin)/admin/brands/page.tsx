@@ -62,9 +62,10 @@ const brandFormSchema = z.object({
     .max(100, "نام برند نباید بیشتر از ۱۰۰ کاراکتر باشد"),
   slug: z
     .string()
+    .min(2, "اسلاگ برند باید حداقل ۲ کاراکتر باشد")
     .regex(
-      /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-      "فقط حروف کوچک انگلیسی، عدد و خط تیره مجاز است (مثلاً pars-shoa)"
+      /^[\p{L}\p{N}]+(?:-[\p{L}\p{N}]+)*$/u,
+      "اسلاگ فقط می‌تواند شامل حروف (فارسی یا انگلیسی)، عدد و خط تیره (-) باشد (بدون فاصله)"
     )
     .max(120, "اسلاگ نباید بیشتر از ۱۲۰ کاراکتر باشد"),
   logo: z.string().max(300, "حداکثر ۳۰۰ کاراکتر").optional().nullable(),
@@ -530,13 +531,13 @@ export default function AdminBrandsPage() {
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-foreground">
-                  اسلاگ انگلیسی (Slug) <span className="text-destructive">*</span>:
+                  اسلاگ برند (Slug) <span className="text-destructive">*</span>:
                 </label>
                 <Input
                   {...register("slug")}
-                  placeholder="مثلاً: pars-shoa"
-                  className={errors.slug ? "border-destructive font-mono text-xs rounded-xl" : "font-mono text-xs rounded-xl"}
-                  dir="ltr"
+                  placeholder="مثلاً: pars-shoa یا پارس-شعاع"
+                  className={errors.slug ? "border-destructive text-xs rounded-xl" : "text-xs rounded-xl"}
+                  dir="auto"
                 />
                 {errors.slug && (
                   <p className="text-[11px] text-destructive">{errors.slug.message}</p>

@@ -43,7 +43,14 @@ export function useBrand(idOrSlug: string | number | undefined | null) {
         if (!isNaN(numId) && numId > 0 && String(numId) === String(idOrSlug)) {
           return await apiFetch<Brand>(`/brands/${numId}`);
         }
-        return await apiFetch<Brand>(`/brands/slug/${idOrSlug}`);
+        const rawSlug = String(idOrSlug).trim();
+        let cleanSlug = rawSlug;
+        try {
+          cleanSlug = decodeURIComponent(rawSlug);
+        } catch {
+          cleanSlug = rawSlug;
+        }
+        return await apiFetch<Brand>(`/brands/slug/${encodeURIComponent(cleanSlug)}`);
       } catch (err) {
         if (err instanceof ApiError && err.status === 404) {
           return null;

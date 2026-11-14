@@ -315,12 +315,20 @@ export function useProduct(slugOrId: string | number) {
       }
 
       // جستجو با اسلاگ
+      const rawSlug = String(slugOrId).trim();
+      let cleanSlug = rawSlug;
       try {
-        return await apiFetch<Product>(`/product/slug/${slugOrId}`);
+        cleanSlug = decodeURIComponent(rawSlug);
+      } catch {
+        cleanSlug = rawSlug;
+      }
+
+      try {
+        return await apiFetch<Product>(`/product/slug/${encodeURIComponent(cleanSlug)}`);
       } catch (err) {
         if (err instanceof ApiError && (err.status === 404 || err.status === 400)) {
           const allProducts = await apiFetch<Product[]>("/product");
-          const found = allProducts.find((p) => p.slug === slugOrId);
+          const found = allProducts.find((p) => p.slug === rawSlug || p.slug === cleanSlug);
           if (found) return found;
         }
         throw err;
@@ -513,8 +521,15 @@ export function useCategory(idOrSlug: number | string | undefined | null) {
 
       // جستجو با اسلاگ متنی
       const slug = String(idOrSlug).trim();
+      let cleanSlug = slug;
       try {
-        return await apiFetch<Category>(`/categories/slug/${slug}`);
+        cleanSlug = decodeURIComponent(slug);
+      } catch {
+        cleanSlug = slug;
+      }
+
+      try {
+        return await apiFetch<Category>(`/categories/slug/${encodeURIComponent(cleanSlug)}`);
       } catch {
         // فال‌بک: جستجو در میان تمام دسته‌بندی‌ها
         try {
@@ -524,7 +539,7 @@ export function useCategory(idOrSlug: number | string | undefined | null) {
           else if (list && typeof list === "object" && "items" in list && Array.isArray((list as { items: unknown }).items)) {
             items = (list as { items: Category[] }).items;
           }
-          return items.find((c) => c.slug === slug) || null;
+          return items.find((c) => c.slug === slug || c.slug === cleanSlug) || null;
         } catch {
           return null;
         }
