@@ -70,11 +70,12 @@ const categoryFormSchema = z.object({
     .max(100, "نام دسته‌بندی نباید بیشتر از ۱۰۰ کاراکتر باشد"),
   slug: z
     .string()
+    .min(2, "اسلاگ دسته‌بندی باید حداقل ۲ کاراکتر باشد")
     .regex(
-      /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-      "فقط حروف کوچک انگلیسی، اعداد و خط تیره مجاز است (مثلاً smart-switches)"
+      /^[\p{L}\p{N}]+(?:-[\p{L}\p{N}]+)*$/u,
+      "اسلاگ فقط می‌تواند شامل حروف (فارسی یا انگلیسی)، اعداد و خط تیره (-) باشد (بدون فاصله)"
     )
-    .max(120, "شناسه انگلیسی نباید بیشتر از ۱۲۰ کاراکتر باشد"),
+    .max(120, "اسلاگ نباید بیشتر از ۱۲۰ کاراکتر باشد"),
   parentId: z.string().optional().nullable(),
   description: z.string().optional(),
   image: z.string().max(255, "حداکثر ۲۵۵ کاراکتر").optional(),
@@ -231,9 +232,10 @@ export default function AdminCategoriesPage() {
       const autoSlug = val
         .trim()
         .toLowerCase()
-        .replace(/[\s\-_]+/g, "-")
-        .replace(/[^\w\u0600-\u06FF-]/g, "");
-      setValue("slug", autoSlug);
+        .replace(/[\s\u200C\-_]+/g, "-")
+        .replace(/[^\p{L}\p{N}-]/gu, "")
+        .replace(/^-+|-+$/g, "");
+      setValue("slug", autoSlug, { shouldValidate: true });
     }
   };
 
@@ -542,17 +544,20 @@ export default function AdminCategoriesPage() {
                 )}
               </div>
 
-              {/* اسلاگ انگلیسی */}
+              {/* اسلاگ دسته‌بندی */}
               <div className="space-y-1.5 sm:col-span-2">
                 <label className="text-xs font-bold text-foreground">
-                  شناسه انگلیسی (Slug) <span className="text-destructive">*</span>
+                  اسلاگ دسته‌بندی (Slug) <span className="text-destructive">*</span>
                 </label>
                 <Input
                   {...register("slug")}
-                  placeholder="smart-switches"
-                  dir="ltr"
+                  placeholder="مثلاً: smart-switches یا کلید-و-پریز"
+                  dir="auto"
                   className={errors.slug ? "border-destructive text-start" : "text-start"}
                 />
+                <p className="text-[10px] text-muted-foreground">
+                  می‌توانید اسلاگ را به زبان انگلیسی یا فارسی وارد کنید (بین کلمات از خط تیره استفاده نمایید).
+                </p>
                 {errors.slug && (
                   <p className="text-[11px] text-destructive">{errors.slug.message}</p>
                 )}
