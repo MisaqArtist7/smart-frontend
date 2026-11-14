@@ -113,11 +113,18 @@ interface ProductImageItem {
   sortOrder?: number;
 }
 
+interface SpecItem {
+  id: string;
+  key: string;
+  value: string;
+}
+
 // تبدیل مقادیر فرم به بدنه‌ای که بک‌اند می‌خواد
 // فیلدهای خالی undefined می‌شن تا اصلاً ارسال نشن
 function toProductPayload(
   v: ProductFormValues,
-  images?: ProductImageItem[]
+  images?: ProductImageItem[],
+  specs?: Record<string, unknown>
 ) {
   return {
     title: v.title.trim(),
@@ -129,6 +136,7 @@ function toProductPayload(
     stock: v.stock,
     sku: v.sku?.trim() || undefined,
     description: v.description?.trim() || undefined,
+    specs: specs && Object.keys(specs).length > 0 ? specs : undefined,
     metaTitle: v.metaTitle?.trim() || undefined,
     metaDescription: v.metaDescription?.trim() || undefined,
     isActive: v.isActive,
