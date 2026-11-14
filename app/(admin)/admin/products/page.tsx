@@ -609,14 +609,17 @@ export default function AdminProductsPage() {
               {/* اسلاگ */}
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-foreground">
-                  اسلاگ انگلیسی (Slug) <span className="text-destructive">*</span>
+                  اسلاگ محصول (Slug) <span className="text-destructive">*</span>
                 </label>
                 <Input
                   {...register("slug")}
-                  placeholder="led-lamp-9w"
-                  dir="ltr"
+                  placeholder="مثلاً: led-lamp-9w یا لامپ-ال-ای-دی-۹وات"
+                  dir="auto"
                   className={errors.slug ? "border-destructive text-start" : "text-start"}
                 />
+                <p className="text-[10px] text-muted-foreground">
+                  می‌توانید اسلاگ را به زبان انگلیسی یا فارسی وارد کنید (بین کلمات از خط تیره استفاده نمایید).
+                </p>
                 {errors.slug && (
                   <p className="text-[11px] text-destructive">{errors.slug.message}</p>
                 )}
