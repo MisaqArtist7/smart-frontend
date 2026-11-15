@@ -4,8 +4,8 @@ import React from "react";
 import { PhoneCall } from "lucide-react";
 
 export interface FloatingCallButtonProps {
-  techSupportPhone?: string;
-  adminPhone?: string;
+  phoneNumber?: string;
+  displayPhone?: string;
   className?: string;
 }
 
@@ -14,8 +14,8 @@ export interface FloatingCallButtonProps {
  * باز کردن مستقیم شماره‌گیر گوشی هنگام کلیک (tel:)
  */
 export function FloatingCallButton({
-  techSupportPhone = "09302340279",
-  adminPhone = "09122193551",
+  phoneNumber = "09122193551",
+  displayPhone = "۰۹۱۲ ۲۱۹ ۳۵۵۱",
   className = "",
 }: FloatingCallButtonProps) {
   return (
@@ -24,9 +24,9 @@ export function FloatingCallButton({
       className={`fixed bottom-6 left-6 z-50 flex items-center select-none ${className}`}
     >
       <a
-        href={`tel:${techSupportPhone}`}
-        aria-label="تماس تلفنی با پشتیبانی فنی وب‌سایت"
-        title="تماس تلفنی با پشتیبانی فنی وب‌سایت"
+        href={`tel:${phoneNumber.replace(/\s+/g, "")}`}
+        aria-label="تماس تلفنی با مدیریت و فروش"
+        title="تماس تلفنی با مدیریت"
         className="group relative flex size-13 sm:size-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl hover:scale-108 active:scale-95 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-primary/30 cursor-pointer"
       >
         {/* موج پالس رادار بیرونی */}
@@ -35,21 +35,13 @@ export function FloatingCallButton({
         {/* آیکون تماس تلفنی */}
         <PhoneCall className="size-5 sm:size-6 text-primary-foreground transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110" />
 
-        {/* لیبل راهنما در دسکتاپ (سمت راست دکمه) */}
-        <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3.5 hidden sm:flex flex-col gap-1.5 px-3 py-2 rounded-xl bg-card text-foreground text-xs font-bold border border-border/80 shadow-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-muted-foreground text-[11px]">پشتیبانی فنی:</span>
-            <span className="font-mono text-primary text-xs font-black" dir="ltr">
-              ۰۹۳۰ ۲۳۴ ۰۲۷۹
-            </span>
-          </div>
-          <div className="flex items-center justify-between gap-3 border-t border-border/50 pt-1">
-            <span className="text-muted-foreground text-[11px]">مدیریت و ادمین:</span>
-            <span className="font-mono text-foreground text-xs font-black" dir="ltr">
-              ۰۹۱۲ ۲۱۹ ۳۵۵۱
-            </span>
-          </div>
-        </div>
+        {/* لیبل راهنما در دسکتاپ (سمت راست دکمه) با ارقام فاصله‌دار و خوانا */}
+        <span className="absolute left-full top-1/2 -translate-y-1/2 ml-3.5 hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-card text-foreground text-xs font-bold border border-border/80 shadow-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+          <span>تماس با مدیریت</span>
+          <span className="font-mono text-primary text-xs font-black tracking-wide" dir="ltr">
+            {displayPhone}
+          </span>
+        </span>
       </a>
     </div>
   );

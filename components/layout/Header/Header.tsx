@@ -132,9 +132,9 @@ export const DEFAULT_HEADER_CONFIG: HeaderConfig = {
       placeholder: "جستجوی کالا، برند یا کد محصول (کلید و پریز، فیوز، سیم و کابل...)",
     },
     support: {
-      label: "پشتیبانی فنی وب‌سایت",
-      phone: "tel:09302340279",
-      displayPhone: "۰۹۳۰ ۲۳۴ ۰۲۷۹",
+      label: "مشاوره و پشتیبانی فروش",
+      phone: "tel:09122193551",
+      displayPhone: "۰۹۱۲ ۲۱۹ ۳۵۵۱",
     },
   },
   navigation: {
