@@ -74,7 +74,7 @@ export function B2BConsultation({ className }: B2BConsultationProps) {
                   <PhoneCall className="size-5" />
                 </div>
                 <div>
-                  <div className="text-xs text-muted-foreground">تماس مستقیم با کارشناس فنی</div>
+                  <div className="text-xs text-muted-foreground">تماس مستقیم با مدیریت و ادمین</div>
                   <div className="text-sm font-black text-foreground font-mono mt-0.5" dir="ltr">
                     ۰۹۱۲ ۲۱۹ ۳۵۵۱
                   </div>

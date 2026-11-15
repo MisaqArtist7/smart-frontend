@@ -116,9 +116,11 @@ export function ContactUsClient() {
   }, [user, setValue, getValues]);
 
   // متغیرهای اطلاعات تماس و آدرس حضوری فروشگاه با مقادیر پیش‌فرض اسمارت الکتریک
-  const shopPhone =
-    process.env.NEXT_PUBLIC_SHOP_PHONE?.trim() || "۰۲۱-۹۱۰۱۵۵۵۵";
-  const shopMobile =
+  const technicalSupportPhone =
+    process.env.NEXT_PUBLIC_SHOP_TECH_SUPPORT?.trim() ||
+    process.env.NEXT_PUBLIC_SHOP_PHONE?.trim() ||
+    "۰۹۳۰۲۳۴۰۲۷۹";
+  const adminMobile =
     process.env.NEXT_PUBLIC_SHOP_MOBILE?.trim() || "۰۹۱۲۲۱۹۳۵۵۱";
   const shopAddress =
     process.env.NEXT_PUBLIC_SHOP_ADDRESS?.trim() ||
@@ -234,28 +236,28 @@ export function ContactUsClient() {
             </div>
             <div className="space-y-2.5 flex-1">
               <span className="block text-xs font-bold text-muted-foreground text-right">
-                تماس تلفنی و مشاوره تخصصی
+                تماس تلفنی و پشتیبانی
               </span>
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs text-muted-foreground">تلفن دفتر مرکزی:</span>
+                  <span className="text-xs text-muted-foreground">پشتیبانی فنی وب‌سایت:</span>
                   <a
-                    href={`tel:${shopPhone.replace(/[^0-9]/g, "")}`}
+                    href={`tel:${technicalSupportPhone.replace(/[^0-9]/g, "")}`}
                     dir="ltr"
                     className="text-sm sm:text-base font-black text-foreground hover:text-primary transition-colors text-start"
                   >
-                    {shopPhone}
+                    {technicalSupportPhone}
                   </a>
                 </div>
-                {shopMobile && (
+                {adminMobile && (
                   <div className="flex items-center justify-between gap-2 border-t border-border/40 pt-2">
-                    <span className="text-xs text-muted-foreground">پشتیبانی و همراه:</span>
+                    <span className="text-xs text-muted-foreground">مدیریت و ادمین:</span>
                     <a
-                      href={`tel:${shopMobile.replace(/[^0-9]/g, "")}`}
+                      href={`tel:${adminMobile.replace(/[^0-9]/g, "")}`}
                       dir="ltr"
                       className="text-xs sm:text-sm font-bold text-muted-foreground hover:text-primary transition-colors text-start"
                     >
-                      {shopMobile}
+                      {adminMobile}
                     </a>
                   </div>
                 )}
