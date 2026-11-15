@@ -60,7 +60,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { cn, normalizeImageUrl } from "@/lib/utils";
+import { cn, normalizeImageUrl, generateSlug } from "@/lib/utils";
 
 // ولیدیشن فرم دسته‌بندی مطابق با CreateCategoryDto بک‌اند
 const categoryFormSchema = z.object({
@@ -97,7 +97,7 @@ function toCategoryPayload(v: CategoryFormValues): CreateCategoryInput {
   const normalizedImage = rawImage ? normalizeImageUrl(rawImage, "") : undefined;
   return {
     name: v.name.trim(),
-    slug: v.slug.trim(),
+    slug: generateSlug(v.name) || v.slug.trim(),
     parentId: v.parentId && v.parentId !== "" ? Number(v.parentId) : null,
     description: v.description?.trim() || undefined,
     image: normalizedImage || undefined,
@@ -224,19 +224,11 @@ export default function AdminCategoriesPage() {
     setIsModalOpen(true);
   };
 
-  // تولید خودکار اسلاگ بر اساس نام فارسی در حالت افزودن کالا
+  // تولید خودکار اسلاگ بر اساس نام دسته‌بندی (همیشه هماهنگ با نام)
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
-    setValue("name", val);
-    if (!editingCategory) {
-      const autoSlug = val
-        .trim()
-        .toLowerCase()
-        .replace(/[\s\u200C\-_]+/g, "-")
-        .replace(/[^\p{L}\p{N}-]/gu, "")
-        .replace(/^-+|-+$/g, "");
-      setValue("slug", autoSlug, { shouldValidate: true });
-    }
+    setValue("name", val, { shouldValidate: true });
+    setValue("slug", generateSlug(val), { shouldValidate: true });
   };
 
   // ثبت فرم (ایجاد یا ویرایش)
@@ -544,19 +536,24 @@ export default function AdminCategoriesPage() {
                 )}
               </div>
 
-              {/* اسلاگ دسته‌بندی */}
+              {/* اسلاگ دسته‌بندی (خودکار و غیرقابل ویرایش دستی) */}
               <div className="space-y-1.5 sm:col-span-2">
                 <label className="text-xs font-bold text-foreground">
-                  اسلاگ دسته‌بندی (Slug) <span className="text-destructive">*</span>
+                  اسلاگ دسته‌بندی (خودکار)
                 </label>
                 <Input
                   {...register("slug")}
-                  placeholder="مثلاً: smart-switches یا کلید-و-پریز"
+                  disabled
+                  readOnly
+                  placeholder="به‌صورت خودکار ساخته می‌شود..."
                   dir="auto"
-                  className={errors.slug ? "border-destructive text-start" : "text-start"}
+                  className={cn(
+                    "text-start bg-muted/60 cursor-not-allowed opacity-80",
+                    errors.slug && "border-destructive"
+                  )}
                 />
                 <p className="text-[10px] text-muted-foreground">
-                  می‌توانید اسلاگ را به زبان انگلیسی یا فارسی وارد کنید (بین کلمات از خط تیره استفاده نمایید).
+                  به‌صورت خودکار و هماهنگ با نام دسته‌بندی تولید می‌شود.
                 </p>
                 {errors.slug && (
                   <p className="text-[11px] text-destructive">{errors.slug.message}</p>

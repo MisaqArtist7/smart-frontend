@@ -29,7 +29,7 @@ import {
   ApiError,
   type Product,
 } from "@/lib/api";
-import { cn, normalizeImageUrl } from "@/lib/utils";
+import { cn, normalizeImageUrl, generateSlug } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -128,7 +128,7 @@ function toProductPayload(
 ) {
   return {
     title: v.title.trim(),
-    slug: v.slug.trim(),
+    slug: generateSlug(v.title) || v.slug.trim(),
     categoryId: Number(v.categoryId),
     brandId: v.brandId && v.brandId !== "" ? Number(v.brandId) : null,
     price: v.price,
@@ -267,6 +267,13 @@ export default function AdminProductsPage() {
     });
     setIsActiveValue(prod.isActive);
     setIsCreateOpen(true);
+  };
+
+  // تولید خودکار اسلاگ هنگام تغییر عنوان محصول
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setValue("title", val, { shouldValidate: true });
+    setValue("slug", generateSlug(val), { shouldValidate: true });
   };
 
   // مدیریت مشخصات فنی (specs)
@@ -653,6 +660,7 @@ export default function AdminProductsPage() {
                 </label>
                 <Input
                   {...register("title")}
+                  onChange={handleTitleChange}
                   placeholder="مثال: لامپ LED ۹ وات"
                   className={errors.title ? "border-destructive" : ""}
                 />
@@ -661,19 +669,24 @@ export default function AdminProductsPage() {
                 )}
               </div>
 
-              {/* اسلاگ */}
+              {/* اسلاگ (خودکار و غیرقابل ویرایش دستی) */}
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-foreground">
-                  اسلاگ محصول (Slug) <span className="text-destructive">*</span>
+                  اسلاگ محصول (خودکار)
                 </label>
                 <Input
                   {...register("slug")}
-                  placeholder="مثلاً: led-lamp-9w یا لامپ-ال-ای-دی-۹وات"
+                  disabled
+                  readOnly
+                  placeholder="به‌صورت خودکار ساخته می‌شود..."
                   dir="auto"
-                  className={errors.slug ? "border-destructive text-start" : "text-start"}
+                  className={cn(
+                    "text-start bg-muted/60 cursor-not-allowed opacity-80",
+                    errors.slug && "border-destructive"
+                  )}
                 />
                 <p className="text-[10px] text-muted-foreground">
-                  می‌توانید اسلاگ را به زبان انگلیسی یا فارسی وارد کنید (بین کلمات از خط تیره استفاده نمایید).
+                  به‌صورت خودکار و هماهنگ با نام محصول تولید می‌شود.
                 </p>
                 {errors.slug && (
                   <p className="text-[11px] text-destructive">{errors.slug.message}</p>

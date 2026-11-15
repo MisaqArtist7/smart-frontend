@@ -44,7 +44,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { cn, normalizeImageUrl } from "@/lib/utils";
+import { cn, normalizeImageUrl, generateSlug } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -169,12 +169,19 @@ export default function AdminBrandsPage() {
     setIsDialogOpen(true);
   };
 
+  // تولید خودکار اسلاگ هنگام تغییر نام برند
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setValue("name", val, { shouldValidate: true });
+    setValue("slug", generateSlug(val), { shouldValidate: true });
+  };
+
   // ارسال فرم ایجاد یا ویرایش
   const onSubmitForm = async (values: BrandFormValues) => {
     const rawLogo = values.logo?.trim();
     const payload = {
       name: values.name.trim(),
-      slug: values.slug.trim().toLowerCase(),
+      slug: generateSlug(values.name) || values.slug.trim().toLowerCase(),
       logo: rawLogo ? normalizeImageUrl(rawLogo, "") : null,
       description: values.description?.trim() || null,
       metaTitle: values.metaTitle?.trim() || null,
@@ -521,6 +528,7 @@ export default function AdminBrandsPage() {
                 </label>
                 <Input
                   {...register("name")}
+                  onChange={handleNameChange}
                   placeholder="مثلاً: پارس شعاع توس"
                   className={errors.name ? "border-destructive text-xs rounded-xl" : "text-xs rounded-xl"}
                 />
@@ -531,14 +539,22 @@ export default function AdminBrandsPage() {
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-foreground">
-                  اسلاگ برند (Slug) <span className="text-destructive">*</span>:
+                  اسلاگ برند (خودکار):
                 </label>
                 <Input
                   {...register("slug")}
-                  placeholder="مثلاً: pars-shoa یا پارس-شعاع"
-                  className={errors.slug ? "border-destructive text-xs rounded-xl" : "text-xs rounded-xl"}
+                  disabled
+                  readOnly
+                  placeholder="به‌صورت خودکار ساخته می‌شود..."
+                  className={cn(
+                    "text-xs rounded-xl bg-muted/60 cursor-not-allowed opacity-80",
+                    errors.slug && "border-destructive"
+                  )}
                   dir="auto"
                 />
+                <p className="text-[10px] text-muted-foreground">
+                  به‌صورت خودکار و هماهنگ با نام برند تولید می‌شود.
+                </p>
                 {errors.slug && (
                   <p className="text-[11px] text-destructive">{errors.slug.message}</p>
                 )}

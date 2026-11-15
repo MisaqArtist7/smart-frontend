@@ -34,3 +34,17 @@ export function normalizeImageUrl(
   }
   return trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
 }
+
+/**
+ * تولید خودکار اسلاگ استاندارد از روی عنوان یا نام (پشتیبانی از فارسی، انگلیسی و اعداد)
+ * فاصله‌ها و نیم‌فاصله‌ها به خط تیره (-) تبدیل می‌شوند.
+ */
+export function generateSlug(text: string): string {
+  return text
+    .trim()
+    .toLowerCase()
+    .replace(/[\s\u200C\-_]+/g, "-")
+    .replace(/[^\p{L}\p{N}-]/gu, "")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}

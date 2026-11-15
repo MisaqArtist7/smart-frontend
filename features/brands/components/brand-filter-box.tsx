@@ -1,12 +1,11 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import Image from "next/image";
 import { Search, X, Award, Check } from "lucide-react";
 import { useBrands } from "@/lib/api/brands";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { cn, normalizeImageUrl } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 export interface BrandFilterBoxProps {
   selectedBrandIds: number[];
@@ -18,7 +17,6 @@ export interface BrandFilterBoxProps {
 export function BrandFilterBox({
   selectedBrandIds,
   onChange,
-  brandCounts = {},
   className,
 }: BrandFilterBoxProps) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -121,7 +119,6 @@ export function BrandFilterBox({
         ) : (
           filteredBrands.map((brand) => {
             const isSelected = selectedBrandIds.includes(brand.id);
-            const count = brandCounts[brand.id] ?? brand.productsCount;
 
             return (
               <div
@@ -156,39 +153,9 @@ export function BrandFilterBox({
                     {isSelected && <Check className="size-3 stroke-[3]" />}
                   </div>
 
-                  {/* لوگوی کوچک برند */}
-                  <div className="size-5 rounded-md bg-muted/50 border border-border/50 flex items-center justify-center overflow-hidden shrink-0 relative">
-                    {brand.logo ? (
-                      <Image
-                        src={normalizeImageUrl(brand.logo)}
-                        alt={brand.name}
-                        fill
-                        className="object-contain p-0.5"
-                      />
-                    ) : (
-                      <span className="text-[9px] font-mono font-bold text-muted-foreground uppercase">
-                        {brand.slug.slice(0, 2)}
-                      </span>
-                    )}
-                  </div>
-
                   {/* نام برند */}
                   <span className="truncate">{brand.name}</span>
                 </div>
-
-                {/* تعداد محصولات این برند */}
-                {typeof count === "number" && (
-                  <span
-                    className={cn(
-                      "text-[10px] px-1.5 py-0.5 rounded-md font-mono shrink-0 mr-1",
-                      isSelected
-                        ? "bg-primary/20 text-primary"
-                        : "text-muted-foreground bg-muted/50"
-                    )}
-                  >
-                    {count.toLocaleString("fa-IR")}
-                  </span>
-                )}
               </div>
             );
           })

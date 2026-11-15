@@ -4,7 +4,6 @@ import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  Search,
   Filter,
   SlidersHorizontal,
   X,
@@ -14,7 +13,7 @@ import {
   RotateCcw,
   Loader2,
   FolderTree,
-  CornerDownLeft,
+  Banknote,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useProducts, useCategories, useCategory, type Product } from "@/lib/api";
@@ -23,13 +22,30 @@ import { useCartStore } from "@/lib/cart-store";
 import { BrandFilterBox } from "@/features/brands/components/brand-filter-box";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
-import { Select } from "@/components/ui/select";
 import { formatToman } from "@/lib/order-utils";
+import { toEnglishDigits } from "@/lib/auth-api";
 import { cn, normalizeImageUrl } from "@/lib/utils";
 
-type SortOption = "newest" | "price-asc" | "price-desc" | "discount-desc";
+type SortOption = "newest" | "bestselling" | "price-desc" | "price-asc";
+
+const PRICE_MIN = 0;
+const PRICE_MAX = 500_000_000;
+const PRICE_STEP = 100_000;
+
+/** تبدیل رشته عددی فارسی یا انگلیسی (با یا بدون کاما) به عدد معتبر */
+function parsePriceInput(val: string): number | null {
+  const digits = toEnglishDigits(val).replace(/[^0-9]/g, "");
+  if (!digits) return null;
+  const num = Number(digits);
+  return Number.isFinite(num) ? num : null;
+}
+
+/** فرمت‌دهی عدد قیمت به ارقام فارسی با جداکننده هزارگان */
+function formatPriceInput(num: number): string {
+  return num.toLocaleString("fa-IR");
+}
 
 const FALLBACK_PRODUCT_IMAGE = "/images/products/adapter-52240.png";
 
@@ -46,9 +62,10 @@ export function CategoryClient({ slug }: CategoryClientProps) {
   const addItemToCart = useCartStore((s) => s.addItem);
 
   // استیت‌های فیلتر
-  const [searchQuery, setSearchQuery] = useState("");
   const [selectedBrandIds, setSelectedBrandIds] = useState<number[]>([]);
   const [inStockOnly, setInStockOnly] = useState(false);
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
@@ -102,19 +119,47 @@ export function CategoryClient({ slug }: CategoryClientProps) {
     return counts;
   }, [categoryProducts]);
 
+  // مقادیر اسلایدر خطی در بازه ثابت ۰ تا ۵۰۰ میلیون تومان
+  const sliderMinVal = useMemo(() => {
+    const parsed = parsePriceInput(minPrice);
+    if (parsed === null) return PRICE_MIN;
+    return Math.max(PRICE_MIN, Math.min(parsed, PRICE_MAX));
+  }, [minPrice]);
+
+  const sliderMaxVal = useMemo(() => {
+    const parsed = parsePriceInput(maxPrice);
+    if (parsed === null) return PRICE_MAX;
+    return Math.min(PRICE_MAX, Math.max(parsed, sliderMinVal));
+  }, [maxPrice, sliderMinVal]);
+
+  const handleSliderChange = (newValue: number | readonly number[]) => {
+    if (Array.isArray(newValue) && newValue.length === 2) {
+      const [low, high] = newValue;
+      setMinPrice(low <= PRICE_MIN ? "" : formatPriceInput(low));
+      setMaxPrice(high >= PRICE_MAX ? "" : formatPriceInput(high));
+    }
+  };
+
+  const handlePriceTextChange = (
+    raw: string,
+    setter: React.Dispatch<React.SetStateAction<string>>
+  ) => {
+    const parsed = parsePriceInput(raw);
+    if (parsed === null) {
+      setter("");
+      return;
+    }
+    const clamped = Math.min(PRICE_MAX, Math.max(PRICE_MIN, parsed));
+    setter(formatPriceInput(clamped));
+  };
+
   // اعمال فیلترها و مرتب‌سازی روی محصولات دسته‌بندی
   const filteredProducts = useMemo(() => {
+    const minPriceVal = parsePriceInput(minPrice);
+    const maxPriceVal = parsePriceInput(maxPrice);
+
     return categoryProducts
       .filter((p) => {
-        // فیلتر جستجو
-        if (searchQuery.trim()) {
-          const q = searchQuery.trim().toLowerCase();
-          const matchTitle = p.title.toLowerCase().includes(q);
-          const matchSku = p.sku ? p.sku.toLowerCase().includes(q) : false;
-          const matchBrand = p.brand ? p.brand.name.toLowerCase().includes(q) : false;
-          if (!matchTitle && !matchSku && !matchBrand) return false;
-        }
-
         // فیلتر برند
         if (selectedBrandIds.length > 0) {
           if (!p.brandId || !selectedBrandIds.includes(p.brandId)) {
@@ -127,6 +172,15 @@ export function CategoryClient({ slug }: CategoryClientProps) {
           return false;
         }
 
+        // محدودیت قیمت
+        const finalPrice = p.discountPrice ?? p.price;
+        if (minPriceVal !== null && finalPrice < minPriceVal) {
+          return false;
+        }
+        if (maxPriceVal !== null && finalPrice > maxPriceVal) {
+          return false;
+        }
+
         return true;
       })
       .sort((a, b) => {
@@ -135,14 +189,15 @@ export function CategoryClient({ slug }: CategoryClientProps) {
 
         if (sortBy === "price-asc") return priceA - priceB;
         if (sortBy === "price-desc") return priceB - priceA;
-        if (sortBy === "discount-desc") {
+        if (sortBy === "bestselling") {
           const discA = a.discountPrice ? a.price - a.discountPrice : 0;
           const discB = b.discountPrice ? b.price - b.discountPrice : 0;
-          return discB - discA;
+          if (discB !== discA) return discB - discA;
+          return b.id - a.id;
         }
         return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
       });
-  }, [categoryProducts, searchQuery, selectedBrandIds, inStockOnly, sortBy]);
+  }, [categoryProducts, selectedBrandIds, inStockOnly, minPrice, maxPrice, sortBy]);
 
   // افزودن کالا به سبد خرید
   const handleAddToCart = (e: React.MouseEvent, product: Product) => {
@@ -161,14 +216,89 @@ export function CategoryClient({ slug }: CategoryClientProps) {
 
   // پاک کردن تمام فیلترها
   const handleResetFilters = () => {
-    setSearchQuery("");
     setSelectedBrandIds([]);
     setInStockOnly(false);
+    setMinPrice("");
+    setMaxPrice("");
     setSortBy("newest");
   };
 
   const hasActiveFilters = Boolean(
-    searchQuery.trim() || selectedBrandIds.length > 0 || inStockOnly
+    selectedBrandIds.length > 0 ||
+      inStockOnly ||
+      minPrice.trim() !== "" ||
+      maxPrice.trim() !== ""
+  );
+
+  // بخش فیلتر محدودیت قیمت (مشترک بین دسکتاپ و موبایل)
+  const priceFilterSection = (
+    <div className="rounded-2xl border border-border bg-card p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Banknote className="size-4 text-primary" />
+          <h3 className="text-xs font-bold text-foreground">محدوده قیمت (تومان)</h3>
+        </div>
+        {(minPrice.trim() !== "" || maxPrice.trim() !== "") && (
+          <button
+            type="button"
+            onClick={() => {
+              setMinPrice("");
+              setMaxPrice("");
+            }}
+            className="text-[11px] text-primary hover:underline cursor-pointer flex items-center gap-0.5"
+          >
+            <span>حذف</span>
+            <X className="size-3" />
+          </button>
+        )}
+      </div>
+
+      <div className="grid grid-cols-2 gap-2.5">
+        <div className="space-y-1">
+          <label className="text-[11px] font-medium text-muted-foreground block">
+            تا قیمت
+          </label>
+          <Input
+            type="text"
+            inputMode="numeric"
+            dir="ltr"
+            value={maxPrice}
+            onChange={(e) => handlePriceTextChange(e.target.value, setMaxPrice)}
+            placeholder={formatPriceInput(PRICE_MAX)}
+            className="h-8.5 text-xs rounded-xl bg-muted/40 border-border/80 text-start font-semibold"
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="text-[11px] font-medium text-muted-foreground block">
+            از قیمت
+          </label>
+          <Input
+            type="text"
+            inputMode="numeric"
+            dir="ltr"
+            value={minPrice}
+            onChange={(e) => handlePriceTextChange(e.target.value, setMinPrice)}
+            placeholder={formatPriceInput(PRICE_MIN)}
+            className="h-8.5 text-xs rounded-xl bg-muted/40 border-border/80 text-start font-semibold"
+          />
+        </div>
+      </div>
+
+      {/* اهرم خطی دوپوزیشنی (Range Slider) */}
+      <div className="pt-1 space-y-1.5" dir="ltr">
+        <Slider
+          min={PRICE_MIN}
+          max={PRICE_MAX}
+          step={PRICE_STEP}
+          value={[sliderMinVal, sliderMaxVal]}
+          onValueChange={handleSliderChange}
+        />
+        <div className="flex items-center justify-between text-[10px] text-muted-foreground font-medium" dir="rtl">
+          <span>تا {formatToman(sliderMaxVal)}</span>
+          <span>از {formatToman(sliderMinVal)}</span>
+        </div>
+      </div>
+    </div>
   );
 
   // در حال بارگذاری اولیه
@@ -225,115 +355,59 @@ export function CategoryClient({ slug }: CategoryClientProps) {
         <span className="font-bold text-foreground">{currentCategory.name}</span>
       </nav>
 
-      {/* سربرگ اختصاصی دسته‌بندی */}
-      <header className="relative rounded-2xl border border-border/80 bg-card p-5 sm:p-7 shadow-xs overflow-hidden">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5 relative z-10">
-          <div className="space-y-2 max-w-2xl">
-            <div className="flex items-center gap-2.5">
-              <span className="relative flex size-3 shrink-0">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
-                <span className="relative inline-flex size-3 rounded-full bg-primary" />
-              </span>
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-foreground tracking-tight">
-                دسته‌بندی {currentCategory.name}
-              </h1>
-              <Badge variant="outline" className="text-[11px] font-semibold border-border">
-                {categoryProducts.length} کالا
-              </Badge>
-            </div>
-
-            {currentCategory.description && (
-              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed pt-1">
-                {currentCategory.description}
-              </p>
-            )}
+      {/* نوار مرتب‌سازی (سمت راست) و تعداد کل کالاها (سمت چپ) */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-3 sm:px-5 sm:py-3.5 rounded-2xl border border-border shadow-xs">
+        {/* سمت راست (RTL): گزینه‌های مرتب‌سازی به صورت دکمه‌ای */}
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-foreground shrink-0">
+            <SlidersHorizontal className="size-4 text-primary hidden sm:inline" />
+            <span>مرتب‌سازی:</span>
           </div>
 
-          {/* تصویر یا آیکون دسته‌بندی */}
-          {currentCategory.image && (
-            <div className="size-20 sm:size-24 rounded-2xl border border-border bg-muted/30 p-2 flex items-center justify-center shrink-0 self-start sm:self-center overflow-hidden">
-              <Image
-                src={normalizeImageUrl(currentCategory.image)}
-                alt={currentCategory.imageAlt || currentCategory.name}
-                width={80}
-                height={80}
-                className="size-full object-contain drop-shadow-sm"
-              />
-            </div>
-          )}
-        </div>
-
-        {/* لیست زیردسته‌ها به صورت چیپ‌های فیلتر (در صورت وجود) */}
-        {subcategories.length > 0 && (
-          <div className="mt-5 pt-4 border-t border-border/60 flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-bold text-muted-foreground flex items-center gap-1.5 ms-1">
-              <CornerDownLeft className="size-3.5" />
-              <span>زیردسته‌ها:</span>
-            </span>
-            {subcategories.map((sub) => (
-              <Link key={sub.id} href={`/category/${sub.slug}`}>
-                <Badge
-                  variant="outline"
-                  className="rounded-lg py-1 px-3 text-xs font-semibold bg-muted/40 hover:bg-primary/10 hover:border-primary/40 hover:text-primary transition-all"
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {[
+              { id: "newest" as const, label: "جدیدترین" },
+              { id: "bestselling" as const, label: "پرفروش‌ترین" },
+              { id: "price-desc" as const, label: "گران‌ترین" },
+              { id: "price-asc" as const, label: "ارزان‌ترین" },
+            ].map((option) => {
+              const isSelected = sortBy === option.id;
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => setSortBy(option.id)}
+                  className={cn(
+                    "px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer",
+                    isSelected
+                      ? "bg-primary/10 text-primary font-bold"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                  )}
                 >
-                  {sub.name}
-                </Badge>
-              </Link>
-            ))}
+                  {option.label}
+                </button>
+              );
+            })}
           </div>
-        )}
-      </header>
-
-      {/* نوار جستجو و ابزار فیلتر در بالای گرید */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-3 sm:p-4 rounded-2xl border border-border shadow-xs">
-        {/* اینپوت جستجو در این دسته */}
-        <div className="relative flex-1">
-          <Search className="absolute start-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-          <Input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={`جستجو در محصولات ${currentCategory.name}...`}
-            className="ps-9 h-10 rounded-xl bg-background border-border"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery("")}
-              className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-            >
-              <X className="size-4" />
-            </button>
-          )}
         </div>
 
-        {/* دکمه‌های مرتب‌سازی و فیلتر موبایل */}
-        <div className="flex items-center gap-2">
-          {/* دکمه باز کردن سایدبار فیلتر در موبایل */}
+        {/* سمت چپ (RTL): دکمه فیلتر موبایل + تعداد کل کالاها */}
+        <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 border-t sm:border-t-0 pt-2.5 sm:pt-0 border-border/60">
           <Button
             variant="outline"
             onClick={() => setIsMobileFilterOpen(true)}
-            className="lg:hidden h-10 px-3.5 gap-2 rounded-xl text-xs font-bold"
+            className="lg:hidden h-9 px-3 gap-1.5 rounded-xl text-xs font-bold"
           >
-            <SlidersHorizontal className="size-4 text-primary" />
+            <SlidersHorizontal className="size-3.5 text-primary" />
             <span>فیلترها</span>
             {hasActiveFilters && (
               <span className="size-2 rounded-full bg-primary" />
             )}
           </Button>
 
-          {/* مرتب‌سازی */}
-          <div className="flex items-center gap-1.5 shrink-0">
-            <span className="text-xs text-muted-foreground hidden sm:inline">مرتب‌سازی:</span>
-            <Select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortOption)}
-              className="h-10 text-xs rounded-xl min-w-[130px]"
-            >
-              <option value="newest">جدیدترین</option>
-              <option value="price-asc">ارزان‌ترین</option>
-              <option value="price-desc">گران‌ترین</option>
-              <option value="discount-desc">بیشترین تخفیف</option>
-            </Select>
-          </div>
+          <span className="text-xs font-bold text-muted-foreground whitespace-nowrap">
+            {filteredProducts.length} کالا
+          </span>
         </div>
       </div>
 
@@ -368,6 +442,11 @@ export function CategoryClient({ slug }: CategoryClientProps) {
                 checked={inStockOnly}
                 onCheckedChange={setInStockOnly}
               />
+            </div>
+
+            {/* محدوده قیمت */}
+            <div className="pt-2 border-t border-border">
+              {priceFilterSection}
             </div>
 
             {/* فیلتر برندهای موجود در این دسته‌بندی */}
@@ -541,6 +620,8 @@ export function CategoryClient({ slug }: CategoryClientProps) {
                   onCheckedChange={setInStockOnly}
                 />
               </div>
+
+              {priceFilterSection}
 
               {brands.length > 0 && (
                 <div>
