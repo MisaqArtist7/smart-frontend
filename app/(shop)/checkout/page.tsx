@@ -297,23 +297,23 @@ export default function CheckoutPage() {
       <main className="flex-1 mx-auto max-w-8xl w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 select-none">
         {/* نوار مراحل خرید */}
         <div className="rounded-2xl border border-border bg-card p-4 shadow-xs">
-          <div className="flex items-center justify-center gap-3 sm:gap-8 text-xs font-bold">
+          <div className="flex items-center justify-center gap-3 sm:gap-8 text-sm font-bold">
             <Link href="/cart" className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
-              <span className="size-6 rounded-full bg-muted flex items-center justify-center text-xs">
+              <span className="size-7 rounded-full bg-muted flex items-center justify-center text-sm">
                 ۱
               </span>
               <span>سبد خرید</span>
             </Link>
             <div className="w-10 sm:w-20 h-0.5 bg-border" />
             <div className="flex items-center gap-2 text-primary">
-              <span className="size-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs">
+              <span className="size-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm">
                 ۲
               </span>
               <span>انتخاب آدرس تحویل</span>
             </div>
             <div className="w-10 sm:w-20 h-0.5 bg-border" />
             <div className="flex items-center gap-2 text-primary">
-              <span className="size-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs">
+              <span className="size-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm">
                 ۳
               </span>
               <span>پرداخت کارت‌به‌کارت و ثبت نهایی</span>
@@ -325,12 +325,12 @@ export default function CheckoutPage() {
           <div className="rounded-3xl border border-dashed border-border bg-card p-12 sm:p-16 text-center space-y-5 my-6">
             <ShoppingBag className="size-16 text-muted-foreground mx-auto stroke-1" />
             <div className="space-y-1">
-              <h2 className="text-xl font-black text-foreground">کالایی در سبد خرید شما وجود ندارد!</h2>
-              <p className="text-xs text-muted-foreground">برای ثبت سفارش ابتدا کالاهای مورد نظر خود را به سبد خرید اضافه کنید.</p>
+              <h2 className="text-2xl font-black text-foreground">کالایی در سبد خرید شما وجود ندارد!</h2>
+              <p className="text-sm text-muted-foreground">برای ثبت سفارش ابتدا کالاهای مورد نظر خود را به سبد خرید اضافه کنید.</p>
             </div>
             <Link
               href="/"
-              className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-bold px-6 py-3 rounded-2xl text-xs sm:text-sm shadow-xs hover:bg-primary/90 transition-all"
+              className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-bold px-6 py-3 rounded-2xl text-sm sm:text-base shadow-xs hover:bg-primary/90 transition-all"
             >
               <span>بازگشت به صفحه اصلی</span>
               <ArrowLeft className="size-4" />
@@ -345,7 +345,7 @@ export default function CheckoutPage() {
                 <div className="flex items-center justify-between pb-2 border-b border-border/60">
                   <div className="flex items-center gap-2">
                     <MapPin className="size-5 text-primary" />
-                    <h2 className="font-black text-base text-foreground">آدرس تحویل سفارش</h2>
+                    <h2 className="font-black text-lg text-foreground">آدرس تحویل سفارش</h2>
                   </div>
 
                   <Button
@@ -354,22 +354,22 @@ export default function CheckoutPage() {
                     size="sm"
                     onClick={handleOpenNewAddressModal}
                     disabled={addresses.length >= 10}
-                    className="rounded-xl text-xs font-bold gap-1.5 cursor-pointer"
+                    className="rounded-xl text-sm font-bold gap-1.5 cursor-pointer"
                   >
-                    <Plus className="size-3.5" />
+                    <Plus className="size-4" />
                     <span>افزودن آدرس جدید</span>
                   </Button>
                 </div>
 
                 {isAddressesLoading ? (
-                  <div className="py-8 text-center text-xs text-muted-foreground flex items-center justify-center gap-2">
+                  <div className="py-8 text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
                     <Loader2 className="size-4 animate-spin" />
                     <span>در حال بارگذاری آدرس‌های ثبت‌شده...</span>
                   </div>
                 ) : addresses.length === 0 ? (
                   <div className="p-6 rounded-2xl border border-dashed border-border text-center space-y-3 bg-muted/10">
-                    <p className="text-xs text-muted-foreground">هنوز هیچ آدرسی ثبت نکرده‌اید.</p>
-                    <Button onClick={handleOpenNewAddressModal} className="rounded-xl text-xs font-bold">
+                    <p className="text-sm text-muted-foreground">هنوز هیچ آدرسی ثبت نکرده‌اید.</p>
+                    <Button onClick={handleOpenNewAddressModal} className="rounded-xl text-sm font-bold">
                       ثبت آدرس تحویل
                     </Button>
                   </div>
@@ -381,7 +381,7 @@ export default function CheckoutPage() {
                         <div
                           key={addr.id}
                           onClick={() => setSelectedAddressId(addr.id)}
-                          className={`p-4 rounded-xl border text-xs cursor-pointer transition-all space-y-2 relative ${
+                          className={`p-4 rounded-xl border text-sm cursor-pointer transition-all space-y-2 relative ${
                             isSelected
                               ? "border-primary bg-primary/[0.04] ring-1 ring-primary/40 shadow-xs"
                               : "border-border hover:border-border/80 bg-card"
@@ -397,7 +397,7 @@ export default function CheckoutPage() {
                               {addr.title}
                             </span>
                             {addr.isDefault && (
-                              <Badge className="text-[10px] bg-primary/10 text-primary border-primary/20">
+                              <Badge className="text-xs bg-primary/10 text-primary border-primary/20">
                                 پیش‌فرض
                               </Badge>
                             )}
@@ -407,7 +407,7 @@ export default function CheckoutPage() {
                             {addr.province}، {addr.city}، {addr.addressLine}
                           </p>
 
-                          <div className="flex items-center justify-between text-[11px] text-muted-foreground font-mono pt-1 border-t border-border/40">
+                          <div className="flex items-center justify-between text-xs text-muted-foreground font-mono pt-1 border-t border-border/40">
                             <span>گیرنده: {addr.receiverName}</span>
                             <span>{addr.receiverPhone}</span>
                           </div>
@@ -422,23 +422,23 @@ export default function CheckoutPage() {
               <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-xs space-y-4">
                 <div className="flex items-center gap-2 pb-2 border-b border-border/60">
                   <CreditCard className="size-5 text-primary" />
-                  <h2 className="font-black text-base text-foreground">روش پرداخت و تسویه حساب</h2>
+                  <h2 className="font-black text-lg text-foreground">روش پرداخت و تسویه حساب</h2>
                 </div>
 
                 <div className="p-4 rounded-xl border border-primary/40 bg-primary/[0.03] flex items-start gap-3">
                   <CheckCircle2 className="size-5 text-primary shrink-0 mt-0.5" />
                   <div className="space-y-1">
-                    <div className="font-bold text-sm text-foreground">
+                    <div className="font-bold text-base text-foreground">
                       پرداخت از طریق کارت‌به‌کارت (انتقال بانکی و بارگذاری رسید)
                     </div>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
+                    <p className="text-sm text-muted-foreground leading-relaxed">
                       پس از ثبت نهایی سفارش، شماره کارت فروشگاه و دستورالعمل واریز همراه با فاکتور به شما نمایش داده می‌شود و می‌توانید فیش واریزی خود را ثبت نمایید تا بلافاصله تایید و پردازش گردد.
                     </p>
                   </div>
                 </div>
 
                 {/* اطلاعیه رسمی عدم دریافت هزینه پست در زمان ثبت */}
-                <div className="p-4 rounded-xl border border-border bg-muted/20 flex items-start gap-3 text-xs leading-relaxed">
+                <div className="p-4 rounded-xl border border-border bg-muted/20 flex items-start gap-3 text-sm leading-relaxed">
                   <Truck className="size-5 text-primary shrink-0 mt-0.5" />
                   <div className="space-y-1 text-muted-foreground">
                     <strong className="text-foreground block">
@@ -456,9 +456,9 @@ export default function CheckoutPage() {
                 <div className="flex items-center justify-between pb-2 border-b border-border/60">
                   <div className="flex items-center gap-2">
                     <ShoppingBag className="size-5 text-primary" />
-                    <h2 className="font-black text-base text-foreground">اقلام انتخابی سفارش</h2>
+                    <h2 className="font-black text-lg text-foreground">اقلام انتخابی سفارش</h2>
                   </div>
-                  <Link href="/cart" className="text-xs text-primary hover:underline font-bold">
+                  <Link href="/cart" className="text-sm text-primary hover:underline font-bold">
                     ویرایش سبد خرید
                   </Link>
                 </div>
@@ -467,7 +467,7 @@ export default function CheckoutPage() {
                   {items.map((item) => {
                     const price = item.discountPrice ?? item.price;
                     return (
-                      <div key={item.id} className="py-3 flex items-center justify-between gap-4 text-xs">
+                      <div key={item.id} className="py-3 flex items-center justify-between gap-4 text-sm">
                         <div className="flex items-center gap-3 min-w-0">
                           <div className="size-12 rounded-lg bg-muted/30 border border-border p-1 shrink-0 flex items-center justify-center">
                             <Image
@@ -482,7 +482,7 @@ export default function CheckoutPage() {
                             <span className="font-bold text-foreground line-clamp-1 block">
                               {item.title}
                             </span>
-                            <span className="text-[11px] text-muted-foreground font-mono">
+                            <span className="text-xs text-muted-foreground font-mono">
                               تعداد: {item.quantity.toLocaleString("fa-IR")} عدد
                             </span>
                           </div>
@@ -500,10 +500,10 @@ export default function CheckoutPage() {
               {/* بخش ۴: یادداشت سفارش (اختیاری، حداکثر ۵۰۰ کاراکتر) */}
               <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-xs space-y-3">
                 <div className="flex items-center justify-between">
-                  <label htmlFor="orderNote" className="text-xs font-bold text-foreground">
+                  <label htmlFor="orderNote" className="text-sm font-bold text-foreground">
                     یادداشت یا توضیحات سفارش (اختیاری)
                   </label>
-                  <span className="text-[11px] font-mono text-muted-foreground">
+                  <span className="text-xs font-mono text-muted-foreground">
                     {orderNote.length}/۵۰۰
                   </span>
                 </div>
@@ -515,7 +515,7 @@ export default function CheckoutPage() {
                   placeholder="در صورت وجود توضیح خاص پیرامون زمان تحویل، هماهنگی یا نوع بسته‌بندی اینجا بنویسید..."
                   rows={3}
                   maxLength={500}
-                  className="rounded-xl text-xs"
+                  className="rounded-xl text-sm"
                 />
               </div>
             </div>
@@ -526,11 +526,11 @@ export default function CheckoutPage() {
               <CouponSection />
 
               <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-xs space-y-4">
-                <h3 className="font-black text-sm text-foreground pb-2 border-b border-border/60">
+                <h3 className="font-black text-base text-foreground pb-2 border-b border-border/60">
                   فاکتور و تسویه سفارش
                 </h3>
 
-                <div className="space-y-3 text-xs">
+                <div className="space-y-3 text-sm">
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">مجموع قیمت اقلام:</span>
                     <span className="font-mono font-bold text-foreground">
@@ -564,14 +564,14 @@ export default function CheckoutPage() {
                   </div>
 
                   <div className="pt-3 border-t border-border flex items-baseline justify-between">
-                    <span className="font-black text-xs sm:text-sm text-foreground">
+                    <span className="font-black text-sm sm:text-base text-foreground">
                       مبلغ نهایی پرداخت:
                     </span>
                     <div className="text-end">
-                      <span className="text-xl sm:text-2xl font-black text-primary font-mono tracking-tight">
+                      <span className="text-2xl sm:text-3xl font-black text-primary font-mono tracking-tight">
                         {finalTotal.toLocaleString("fa-IR")}
                       </span>
-                      <span className="text-xs text-muted-foreground ms-1">تومان</span>
+                      <span className="text-sm text-muted-foreground ms-1">تومان</span>
                     </div>
                   </div>
                 </div>
@@ -579,7 +579,7 @@ export default function CheckoutPage() {
                 <Button
                   onClick={handleFinalSubmit}
                   disabled={createOrderMutation.isPending || !effectiveAddressId || items.length === 0}
-                  className="w-full h-12 rounded-2xl bg-primary text-primary-foreground font-black text-xs sm:text-sm shadow-xs hover:bg-primary/90 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.98]"
+                  className="w-full h-12 rounded-2xl bg-primary text-primary-foreground font-black text-sm sm:text-base shadow-xs hover:bg-primary/90 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.98]"
                 >
                   {createOrderMutation.isPending ? (
                     <span className="flex items-center gap-2">
@@ -591,7 +591,7 @@ export default function CheckoutPage() {
                   )}
                 </Button>
 
-                <div className="space-y-1.5 pt-2 text-[11px] text-muted-foreground">
+                <div className="space-y-1.5 pt-2 text-xs text-muted-foreground">
                   <div className="flex items-center gap-1.5 text-foreground font-bold">
                     <ShieldCheck className="size-3.5 text-primary" />
                     <span>تضمین اصالت کالا و گارانتی معتبر</span>
@@ -610,10 +610,10 @@ export default function CheckoutPage() {
       <Dialog open={isAddressModalOpen} onOpenChange={setIsAddressModalOpen}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-lg font-black text-foreground">
+            <DialogTitle className="text-xl font-black text-foreground">
               افزودن آدرس جدید تحویل
             </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">
+            <DialogDescription className="text-sm text-muted-foreground">
               لطفاً نشانی کامل پستی و مشخصات تحویل‌گیرنده را جهت ارسال سفارش وارد فرمایید.
             </DialogDescription>
           </DialogHeader>
@@ -621,7 +621,7 @@ export default function CheckoutPage() {
           <form onSubmit={handleSaveInlineAddress} className="space-y-4 py-2">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-bold text-foreground">
+                <label className="text-sm font-bold text-foreground">
                   عنوان آدرس (مثال: شرکت، منزل، کارگاه) <span className="text-destructive">*</span>
                 </label>
                 <Input
@@ -633,7 +633,7 @@ export default function CheckoutPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground">
+                <label className="text-sm font-bold text-foreground">
                   نام و نام خانوادگی گیرنده <span className="text-destructive">*</span>
                 </label>
                 <Input
@@ -645,7 +645,7 @@ export default function CheckoutPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground">
+                <label className="text-sm font-bold text-foreground">
                   شماره موبایل گیرنده <span className="text-destructive">*</span>
                 </label>
                 <Input
@@ -659,7 +659,7 @@ export default function CheckoutPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground">
+                <label className="text-sm font-bold text-foreground">
                   استان <span className="text-destructive">*</span>
                 </label>
                 <select
@@ -676,7 +676,7 @@ export default function CheckoutPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground">
+                <label className="text-sm font-bold text-foreground">
                   شهر <span className="text-destructive">*</span>
                 </label>
                 <Input
@@ -688,7 +688,7 @@ export default function CheckoutPage() {
               </div>
 
               <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-bold text-foreground">
+                <label className="text-sm font-bold text-foreground">
                   کد پستی ۱۰ رقمی <span className="text-destructive">*</span>
                 </label>
                 <Input
@@ -703,7 +703,7 @@ export default function CheckoutPage() {
               </div>
 
               <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-bold text-foreground">
+                <label className="text-sm font-bold text-foreground">
                   نشانی کامل پستی <span className="text-destructive">*</span>
                 </label>
                 <Textarea
@@ -721,14 +721,14 @@ export default function CheckoutPage() {
                 type="button"
                 variant="outline"
                 onClick={() => setIsAddressModalOpen(false)}
-                className="rounded-xl text-xs sm:text-sm cursor-pointer"
+                className="rounded-xl text-sm sm:text-base cursor-pointer"
               >
                 انصراف
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmittingAddress}
-                className="rounded-xl bg-primary text-primary-foreground text-xs sm:text-sm font-bold shadow-xs hover:bg-primary/90 cursor-pointer"
+                className="rounded-xl bg-primary text-primary-foreground text-sm sm:text-base font-bold shadow-xs hover:bg-primary/90 cursor-pointer"
               >
                 {isSubmittingAddress ? (
                   <span className="flex items-center gap-1.5">
