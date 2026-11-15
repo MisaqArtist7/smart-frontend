@@ -12,6 +12,7 @@ import {
   ShoppingCart,
   ChevronLeft,
   PackageCheck,
+  LayoutDashboard,
 } from "lucide-react";
 import type { HeaderConfig } from "./header.types";
 
@@ -137,24 +138,37 @@ export function MobileMenu({
               <div className="font-bold text-muted-foreground text-[11px] px-1">
                 دسترسی سریع حساب:
               </div>
-              <div className="grid grid-cols-2 gap-1.5">
-                <Link
-                  href="/profile"
-                  onClick={onClose}
-                  className="flex items-center gap-1.5 p-2 rounded-lg bg-card border border-border/60 font-semibold text-foreground hover:bg-accent text-[11px]"
-                >
-                  <User className="size-3.5 text-muted-foreground" />
-                  <span>پروفایل</span>
-                </Link>
-                <Link
-                  href="/profile/orders"
-                  onClick={onClose}
-                  className="flex items-center gap-1.5 p-2 rounded-lg bg-card border border-border/60 font-bold text-primary hover:bg-accent text-[11px]"
-                >
-                  <PackageCheck className="size-3.5 text-primary" />
-                  <span>سفارش‌های من</span>
-                </Link>
-              </div>
+              {navigation.authButton.role === "ADMIN" ? (
+                <div className="grid grid-cols-1 gap-1.5">
+                  <Link
+                    href="/admin"
+                    onClick={onClose}
+                    className="flex items-center justify-center gap-1.5 p-2 rounded-lg bg-card border border-border/60 font-bold text-primary hover:bg-accent text-xs"
+                  >
+                    <LayoutDashboard className="size-3.5 text-primary" />
+                    <span>ورود به پنل مدیریت</span>
+                  </Link>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-1.5">
+                  <Link
+                    href="/profile"
+                    onClick={onClose}
+                    className="flex items-center gap-1.5 p-2 rounded-lg bg-card border border-border/60 font-semibold text-foreground hover:bg-accent text-[11px]"
+                  >
+                    <User className="size-3.5 text-muted-foreground" />
+                    <span>پروفایل</span>
+                  </Link>
+                  <Link
+                    href="/profile/orders"
+                    onClick={onClose}
+                    className="flex items-center gap-1.5 p-2 rounded-lg bg-card border border-border/60 font-bold text-primary hover:bg-accent text-[11px]"
+                  >
+                    <PackageCheck className="size-3.5 text-primary" />
+                    <span>سفارش‌های من</span>
+                  </Link>
+                </div>
+              )}
             </div>
           )}
 

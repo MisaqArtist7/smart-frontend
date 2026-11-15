@@ -64,7 +64,7 @@ export function LatestProducts({
           {Array.from({ length: 6 }).map((_, index) => (
             <div
               key={index}
-              className="flex flex-col justify-between h-[340px] sm:h-[360px] w-full rounded-md border border-border/70 bg-card p-3.5 sm:p-4 shadow-xs animate-pulse"
+              className="flex flex-col justify-between h-85 sm:h-90 w-full rounded-md border border-border/70 bg-card p-3.5 sm:p-4 shadow-xs animate-pulse"
             >
               <div className="w-full h-32 sm:h-36 rounded-xl bg-muted/60 mb-2" />
               <div className="space-y-2 my-auto">
@@ -120,7 +120,7 @@ export function LatestProducts({
                           alt={product.title}
                           width={130}
                           height={90}
-                          className="max-h-full max-w-full object-contain transition-transform duration-300 ease-out group-hover:scale-108 drop-shadow-xs"
+                          className="max-h-full max-w-full object-contain transition-transform duration-300 ease-out group-hover:scale-108 "
                         />
                       </div>
                     </Link>

@@ -98,25 +98,26 @@ export function AdminSidebar({
         className
       )}
     >
-      {/* سربرگ سایدبار ادمین: لوگو و نام فروشگاه */}
+      {/* سربرگ سایدبار ادمین: لوگو و نام فروشگاه (کلیک به صفحه اصلی) */}
       <div className="h-16 flex items-center justify-between px-4 border-b border-border">
         <Link
-          href="/admin"
+          href="/"
           onClick={onNavigate}
-          className="flex items-center gap-3 overflow-hidden focus:outline-none"
+          title="مشاهده و بازگشت به صفحه اصلی فروشگاه"
+          className="flex items-center gap-3 overflow-hidden focus:outline-none group"
         >
-          <div className="relative size-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+          <div className="relative size-11 sm:size-12 flex items-center justify-center shrink-0">
             <Image
               src="/images/brand/logo.png"
-              alt="اسمارت الکتریک"
-              width={26}
-              height={26}
-              className="object-contain"
+              alt="لوگوی اسمارت الکتریک"
+              width={44}
+              height={44}
+              className="size-full object-contain transition-transform group-hover:scale-105"
             />
           </div>
           {!isCollapsed && (
             <div className="flex flex-col">
-              <span className="font-black text-sm text-foreground tracking-tight line-clamp-1">
+              <span className="font-black text-sm text-foreground tracking-tight line-clamp-1 group-hover:text-primary transition-colors">
                 اسمارت الکتریک
               </span>
               <span className="text-[11px] text-muted-foreground flex items-center gap-1 font-medium">

@@ -17,17 +17,24 @@ export default function ProfileLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { isLoading, isAuthenticated } = useAuth();
+  const { isLoading, isAuthenticated, isAdmin, user, role } = useAuth();
+  const isUserAdmin = isAdmin || role === "ADMIN" || user?.role === "ADMIN";
 
-  // محافظت از مسیرهای حساب کاربری: در صورت عدم ورود، هدایت به /login
+  // محافظت از مسیرهای حساب کاربری:
+  // ۱. در صورت عدم ورود، هدایت به /login
+  // ۲. ادمین پنل مشتری ندارد و بلافاصله به /admin هدایت می‌شود
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.replace(`/login?redirect=${encodeURIComponent(pathname)}`);
+    if (!isLoading) {
+      if (!isAuthenticated) {
+        router.replace(`/login?redirect=${encodeURIComponent(pathname)}`);
+      } else if (isUserAdmin) {
+        router.replace("/admin");
+      }
     }
-  }, [isLoading, isAuthenticated, pathname, router]);
+  }, [isLoading, isAuthenticated, isUserAdmin, pathname, router]);
 
-  // ۱. حالت در حال بارگذاری استعلام نشست
-  if (isLoading) {
+  // ۱. حالت در حال بارگذاری استعلام نشست یا ریدایرکت ادمین
+  if (isLoading || (isAuthenticated && isUserAdmin)) {
     return (
       <div dir="rtl" className="min-h-screen bg-background text-foreground flex flex-col">
         <Header />
@@ -35,7 +42,11 @@ export default function ProfileLayout({
           <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-3">
             <Loader2 className="w-6 h-6 animate-spin" />
           </div>
-          <p className="text-sm font-bold text-foreground">در حال بارگذاری اطلاعات حساب کاربری...</p>
+          <p className="text-sm font-bold text-foreground">
+            {isUserAdmin
+              ? "هدایت خودکار به پنل مدیریت..."
+              : "در حال بارگذاری اطلاعات حساب کاربری..."}
+          </p>
           <p className="text-xs text-muted-foreground mt-1">بررسی وضعیت نشست کاربری</p>
         </main>
         <Footer />

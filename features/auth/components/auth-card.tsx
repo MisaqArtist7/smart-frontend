@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import {
   Phone,
@@ -46,9 +46,8 @@ interface AuthCardProps {
 
 export function AuthCard({
   initialStep = "phone",
-  redirectUrl = "/profile",
+  redirectUrl = "/",
 }: AuthCardProps) {
-  const router = useRouter();
   const searchParams = useSearchParams();
 
   // خواندن پارامترهای احتمالی از URL
@@ -222,25 +221,31 @@ export function AuthCard({
           loginSuccess(res.user);
         }
 
+        // همگام‌سازی فوری وضعیت احراز هویت
+        loginSuccess(currentUser);
+
         toast.success(res.message || "ورود با موفقیت انجام شد!");
 
         // تعیین هوشمند مقصد ریدایرکت:
-        // اگر ADMIN است -> /admin
-        // در غیر این صورت -> queryRedirect معتبر یا /profile
-        let destination = "/profile";
+        // ۱. ادمین فقط پنل مدیریت دارد -> /admin
+        // ۲. کاربر معمولی بعد از لاگین حتماً به صفحه اصلی (/) می‌رود نه پنل پروفایل
+        let destination = "/";
         if (currentUser.role === "ADMIN") {
           destination = "/admin";
         } else if (
           queryRedirect &&
           queryRedirect.startsWith("/") &&
           !queryRedirect.startsWith("//") &&
-          !queryRedirect.startsWith("/admin")
+          !queryRedirect.startsWith("/admin") &&
+          !queryRedirect.startsWith("/profile") &&
+          !queryRedirect.startsWith("/login")
         ) {
           destination = queryRedirect;
         }
 
         setTimeout(() => {
-          router.push(destination);
+          // انتقال کامل با window.location برای اطمینان از پاکسازی کش سرور کامپوننت و لود ۱۰۰٪ تازه هدر و کوکی‌ها
+          window.location.href = destination;
         }, 300);
       } catch (err) {
         setOtpError(true);
@@ -271,7 +276,7 @@ export function AuthCard({
         setIsSubmitting(false);
       }
     },
-    [isNewUser, loginSuccess, name, otpCode, phone, queryRedirect, refreshUser, router]
+    [isNewUser, loginSuccess, name, otpCode, phone, queryRedirect, refreshUser]
   );
 
   // درج خودکار کد تست محیط توسعه

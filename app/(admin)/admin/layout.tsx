@@ -37,7 +37,7 @@ export default function AdminLayout({
       } else if (role !== "ADMIN") {
         toast.error("دسترسی غیرمجاز (۴۰۳): حساب کاربری شما اجازه ورود به پنل مدیریت را ندارد.");
         const timer = setTimeout(() => {
-          router.replace("/profile");
+          router.replace("/");
         }, 2500);
         return () => clearTimeout(timer);
       }

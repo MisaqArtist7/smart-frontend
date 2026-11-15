@@ -62,7 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 60 * 1000,
     retry: false,
   });
 
@@ -111,6 +111,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         role: userData.role === "ADMIN" ? "ADMIN" : "CUSTOMER",
         avatarUrl: userData.avatarUrl ?? undefined,
       });
+      queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
     },
     [queryClient, setAuthUser]
   );

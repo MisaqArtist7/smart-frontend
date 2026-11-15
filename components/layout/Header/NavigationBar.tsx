@@ -233,30 +233,32 @@ export function NavigationBar({
                   )}
                 </div>
 
-                <DropdownMenuItem
-                  onClick={() => router.push("/profile")}
-                  className="flex items-center gap-2 cursor-pointer text-xs font-medium py-2 rounded-lg"
-                >
-                  <User className="size-4 text-muted-foreground" />
-                  <span>پروفایل من</span>
-                </DropdownMenuItem>
-
-                <DropdownMenuItem
-                  onClick={() => router.push("/profile/orders")}
-                  className="flex items-center gap-2 cursor-pointer text-xs font-bold text-primary py-2 rounded-lg"
-                >
-                  <PackageCheck className="size-4 text-primary" />
-                  <span>سفارش‌های من</span>
-                </DropdownMenuItem>
-
-                {authButton.role === "ADMIN" && (
+                {authButton.role === "ADMIN" ? (
                   <DropdownMenuItem
                     onClick={() => router.push("/admin")}
-                    className="flex items-center gap-2 cursor-pointer text-xs font-medium py-2 rounded-lg"
+                    className="flex items-center gap-2 cursor-pointer text-xs font-bold text-primary py-2 rounded-lg"
                   >
-                    <LayoutDashboard className="size-4 text-muted-foreground" />
+                    <LayoutDashboard className="size-4 text-primary" />
                     <span>پنل مدیریت</span>
                   </DropdownMenuItem>
+                ) : (
+                  <>
+                    <DropdownMenuItem
+                      onClick={() => router.push("/profile")}
+                      className="flex items-center gap-2 cursor-pointer text-xs font-medium py-2 rounded-lg"
+                    >
+                      <User className="size-4 text-muted-foreground" />
+                      <span>پروفایل من</span>
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem
+                      onClick={() => router.push("/profile/orders")}
+                      className="flex items-center gap-2 cursor-pointer text-xs font-bold text-primary py-2 rounded-lg"
+                    >
+                      <PackageCheck className="size-4 text-primary" />
+                      <span>سفارش‌های من</span>
+                    </DropdownMenuItem>
+                  </>
                 )}
 
                 <DropdownMenuSeparator />
