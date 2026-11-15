@@ -369,7 +369,7 @@ export default function CheckoutPage() {
                 ) : addresses.length === 0 ? (
                   <div className="p-6 rounded-2xl border border-dashed border-border text-center space-y-3 bg-muted/10">
                     <p className="text-sm text-muted-foreground">هنوز هیچ آدرسی ثبت نکرده‌اید.</p>
-                    <Button onClick={handleOpenNewAddressModal} className="rounded-xl text-sm font-bold">
+                    <Button onClick={handleOpenNewAddressModal} className="rounded-xl text-sm font-bold cursor-pointer">
                       ثبت آدرس تحویل
                     </Button>
                   </div>
@@ -613,15 +613,15 @@ export default function CheckoutPage() {
             <DialogTitle className="text-xl font-black text-foreground">
               افزودن آدرس جدید تحویل
             </DialogTitle>
-            <DialogDescription className="text-sm text-muted-foreground">
+            <DialogDescription className="text-sm text-muted-foreground leading-relaxed mt-1">
               لطفاً نشانی کامل پستی و مشخصات تحویل‌گیرنده را جهت ارسال سفارش وارد فرمایید.
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleSaveInlineAddress} className="space-y-4 py-2">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-sm font-bold text-foreground">
+          <form onSubmit={handleSaveInlineAddress} className="space-y-5 pt-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+              <div className="space-y-2 sm:col-span-2">
+                <label className="block text-sm font-bold text-foreground">
                   عنوان آدرس (مثال: شرکت، منزل، کارگاه) <span className="text-destructive">*</span>
                 </label>
                 <Input
@@ -632,8 +632,8 @@ export default function CheckoutPage() {
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-sm font-bold text-foreground">
+              <div className="space-y-2">
+                <label className="block text-sm font-bold text-foreground">
                   نام و نام خانوادگی گیرنده <span className="text-destructive">*</span>
                 </label>
                 <Input
@@ -644,8 +644,8 @@ export default function CheckoutPage() {
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-sm font-bold text-foreground">
+              <div className="space-y-2">
+                <label className="block text-sm font-bold text-foreground">
                   شماره موبایل گیرنده <span className="text-destructive">*</span>
                 </label>
                 <Input
@@ -658,8 +658,8 @@ export default function CheckoutPage() {
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-sm font-bold text-foreground">
+              <div className="space-y-2">
+                <label className="block text-sm font-bold text-foreground">
                   استان <span className="text-destructive">*</span>
                 </label>
                 <select
@@ -675,8 +675,8 @@ export default function CheckoutPage() {
                 </select>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-sm font-bold text-foreground">
+              <div className="space-y-2">
+                <label className="block text-sm font-bold text-foreground">
                   شهر <span className="text-destructive">*</span>
                 </label>
                 <Input
@@ -687,8 +687,8 @@ export default function CheckoutPage() {
                 />
               </div>
 
-              <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-sm font-bold text-foreground">
+              <div className="space-y-2 sm:col-span-2">
+                <label className="block text-sm font-bold text-foreground">
                   کد پستی ۱۰ رقمی <span className="text-destructive">*</span>
                 </label>
                 <Input
@@ -702,8 +702,8 @@ export default function CheckoutPage() {
                 />
               </div>
 
-              <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-sm font-bold text-foreground">
+              <div className="space-y-2 sm:col-span-2">
+                <label className="block text-sm font-bold text-foreground">
                   نشانی کامل پستی <span className="text-destructive">*</span>
                 </label>
                 <Textarea
@@ -716,7 +716,7 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            <DialogFooter className="gap-2 pt-3">
+            <DialogFooter className="gap-3">
               <Button
                 type="button"
                 variant="outline"
