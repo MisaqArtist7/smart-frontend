@@ -118,15 +118,15 @@ export function SpecialOffers({ className }: SpecialOffersProps) {
                         {/* تصویر کالا */}
                         <Link
                           href={`/product/${product.slug}`}
-                          className="relative w-full h-32 flex items-center justify-center p-2 mb-2 focus:outline-none"
+                          className="relative w-full h-44 flex items-center justify-center p-2 mb-2 focus:outline-none"
                         >
                           <div className="relative size-full flex items-center justify-center">
                             <Image
                               src={imageUrl}
                               alt={product.title}
-                              width={333}
-                              height={333}
-                              className="max-h-full max-w-full object-contain transition-transform duration-300 ease-out group-hover/card:scale-108 drop-shadow-xs"
+                              width={444}
+                              height={444}
+                              className="max-h-full max-w-full object-contain transition-transform duration-300 ease-out group-hover/card:scale-108"
                             />
                           </div>
                         </Link>
@@ -136,7 +136,7 @@ export function SpecialOffers({ className }: SpecialOffersProps) {
                           href={`/product/${product.slug}`}
                           className="focus:outline-none focus-visible:underline"
                         >
-                          <h3 className="text-xs font-bold text-foreground text-center leading-snug line-clamp-2 min-h-10 transition-colors group-hover/card:text-primary">
+                          <h3 className="font-bold text-foreground leading-snug line-clamp-2 min-h-10 transition-colors group-hover/card:text-primary">
                             {product.title}
                           </h3>
                         </Link>
