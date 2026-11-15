@@ -721,14 +721,14 @@ export default function CheckoutPage() {
                 type="button"
                 variant="outline"
                 onClick={() => setIsAddressModalOpen(false)}
-                className="rounded-xl text-sm sm:text-base cursor-pointer"
+                className="h-10 px-5 rounded-md text-sm font-semibold flex items-center justify-center leading-none cursor-pointer"
               >
                 انصراف
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmittingAddress}
-                className="rounded-xl bg-primary text-primary-foreground text-sm sm:text-base font-bold shadow-xs hover:bg-primary/90 cursor-pointer"
+                className="h-10 px-5 rounded-md bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center leading-none shadow-xs hover:bg-primary/90 cursor-pointer"
               >
                 {isSubmittingAddress ? (
                   <span className="flex items-center gap-1.5">
