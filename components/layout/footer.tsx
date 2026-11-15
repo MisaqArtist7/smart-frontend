@@ -334,12 +334,12 @@ export default function Footer() {
             <span>طراحی و توسعه توسط</span>
             <span className="inline-block size-2 rounded-full bg-primary" />
             <a
-              href="https://novalabs.ir"
+              href="https://nova-labz.ir/"
               target="_blank"
               rel="noopener noreferrer"
               className="font-semibold text-foreground hover:text-primary transition-colors underline-offset-4 hover:underline"
             >
-              تیم نوا لبز
+              تیم نووا لبز
             </a>
           </div>
         </div>
