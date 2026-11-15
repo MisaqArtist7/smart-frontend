@@ -185,7 +185,7 @@ export default function SingleProductPage({ params }: PageProps) {
         {/* مسیر راهنما (Breadcrumbs) */}
         <nav
           aria-label="مسیر صفحه"
-          className="flex items-center gap-1.5 text-xs text-muted-foreground overflow-x-auto whitespace-nowrap py-1"
+          className="flex items-center gap-1.5 text-sm text-muted-foreground overflow-x-auto whitespace-nowrap py-1"
         >
           <Link href="/" className="hover:text-primary transition-colors">
             صفحه اصلی
@@ -214,7 +214,7 @@ export default function SingleProductPage({ params }: PageProps) {
             {/* تصویر بزرگ اصلی */}
             <div className="relative w-full aspect-square rounded-2xl bg-muted/20 border border-border/60 p-4 flex items-center justify-center overflow-hidden">
               {hasDiscount && (
-                <div className="absolute top-3 end-3 z-10 bg-primary text-primary-foreground text-xs font-black px-2.5 py-1 rounded-full shadow-xs">
+                <div className="absolute top-3 end-3 z-10 bg-primary text-primary-foreground text-sm font-black px-2.5 py-1 rounded-full shadow-xs">
                   {discountPercent}٪ تخفیف
                 </div>
               )}
@@ -225,7 +225,7 @@ export default function SingleProductPage({ params }: PageProps) {
                 width={400}
                 height={400}
                 priority
-                className="object-contain size-full max-h-[320px] drop-shadow-sm transition-transform duration-300 hover:scale-105"
+                className="object-contain size-full max-h-[320px] transition-transform duration-300 hover:scale-105"
               />
             </div>
 
@@ -256,7 +256,7 @@ export default function SingleProductPage({ params }: PageProps) {
             )}
 
             {/* دکمه‌های اشتراک‌گذاری و علاقه‌مندی */}
-            <div className="flex items-center justify-between pt-2 border-t border-border/40 text-xs text-muted-foreground">
+            <div className="flex items-center justify-between pt-2 border-t border-border/40 text-sm text-muted-foreground">
               <button
                 type="button"
                 onClick={handleShare}
@@ -289,14 +289,14 @@ export default function SingleProductPage({ params }: PageProps) {
             <div>
               {/* دسته‌بندی، برند و کد کالا */}
               <div className="flex flex-wrap items-center gap-2 mb-2">
-                <Badge variant="outline" className="text-xs font-semibold border-border">
+                <Badge variant="outline" className="text-sm font-semibold border-border">
                   {product.category?.name || product.categoryName || "تجهیزات صنعتی"}
                 </Badge>
 
                 {product.brand && (
                   <Link
                     href={`/search?q=${encodeURIComponent(product.brand.name)}`}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-sm font-bold bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 transition-colors"
                   >
                     {product.brand.logo ? (
                       <span className="relative size-4 rounded-full overflow-hidden bg-background shrink-0 inline-block">
@@ -315,25 +315,25 @@ export default function SingleProductPage({ params }: PageProps) {
                 )}
 
                 {product.sku && (
-                  <span className="font-mono text-xs text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-md">
+                  <span className="font-mono text-sm text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-md">
                     SKU: {product.sku}
                   </span>
                 )}
               </div>
 
               {/* عنوان کالا */}
-              <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight leading-snug">
+              <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight leading-snug">
                 {product.title}
               </h1>
 
               {/* نامک انگلیسی */}
-              <p className="text-xs font-mono text-muted-foreground mt-1">
+              <p className="text-sm font-mono text-muted-foreground mt-1">
                 {product.slug}
               </p>
             </div>
 
             {/* امتیاز و ارزیابی خریداران */}
-            <div className="flex items-center gap-3 text-xs border-y border-border/50 py-3">
+            <div className="flex items-center gap-3 text-sm border-y border-border/50 py-3">
               <div className="flex items-center gap-1 text-amber-500 font-bold">
                 <Star className="size-4 fill-amber-500" />
                 <span>
@@ -357,57 +357,71 @@ export default function SingleProductPage({ params }: PageProps) {
             </div>
 
             {/* ویژگی‌های شاخص کالا */}
-            <div className="space-y-2">
-              <h3 className="text-xs font-bold text-foreground">ویژگی‌های اصلی محصول:</h3>
-              <ul className="space-y-1.5 text-xs text-muted-foreground leading-relaxed">
-                {product.specs &&
-                typeof product.specs === "object" &&
-                !Array.isArray(product.specs) &&
-                Object.keys(product.specs).length > 0 ? (
-                  Object.entries(product.specs).slice(0, 4).map(([key, val]) => (
-                    <li key={key} className="flex items-center gap-2">
-                      <span className="size-1.5 rounded-full bg-primary shrink-0" />
-                      <span className="font-semibold text-foreground/80">{key}:</span>
-                      <span className="text-foreground">{String(val)}</span>
-                    </li>
-                  ))
+            <div className="space-y-2.5">
+              <h3 className="text-sm font-bold text-foreground">ویژگی‌های اصلی محصول:</h3>
+              <div className="rounded-2xl border border-border overflow-hidden text-sm">
+                {Object.keys(parsedSpecs).length > 0 ? (
+                  Object.entries(parsedSpecs)
+                    .slice(0, 4)
+                    .map(([key, val], idx) => (
+                      <div
+                        key={key}
+                        className={`flex items-center justify-between gap-4 px-4 py-2.5 border-b border-border/60 last:border-b-0 ${
+                          idx % 2 === 0 ? "bg-muted/15" : "bg-card"
+                        }`}
+                      >
+                        <span className="font-bold text-foreground shrink-0">{key}</span>
+                        <span className="text-muted-foreground text-left truncate">
+                          {typeof val === "boolean"
+                            ? val
+                              ? "دارد"
+                              : "ندارد"
+                            : String(val ?? "—")}
+                        </span>
+                      </div>
+                    ))
                 ) : (
                   <>
-                    <li className="flex items-center gap-2">
-                      <span className="size-1.5 rounded-full bg-primary shrink-0" />
-                      <span>طراحی صنعتی مقاوم و استاندارد</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <span className="size-1.5 rounded-full bg-primary shrink-0" />
-                      <span>تضمین اصالت ۱۰۰٪ فیزیکی و قطعات باکیفیت</span>
-                    </li>
+                    <div className="flex items-center justify-between gap-4 px-4 py-2.5 border-b border-border/60 bg-muted/15">
+                      <span className="font-bold text-foreground">ساختار و کیفیت</span>
+                      <span className="text-muted-foreground">طراحی صنعتی مقاوم و استاندارد</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-4 px-4 py-2.5 border-b border-border/60 last:border-b-0 bg-card">
+                      <span className="font-bold text-foreground">اصالت کالا</span>
+                      <span className="text-muted-foreground">تضمین اصالت ۱۰۰٪ فیزیکی</span>
+                    </div>
                   </>
                 )}
-                {product.description && (
-                  <li className="flex items-start gap-2 pt-1 text-justify">
-                    <span className="size-1.5 rounded-full bg-primary shrink-0 mt-1.5" />
-                    <span className="line-clamp-2 text-foreground/70">{product.description}</span>
-                  </li>
-                )}
-              </ul>
+              </div>
             </div>
 
             {/* بنر تضمین اصالت و گارانتی */}
             <div className="grid grid-cols-2 gap-3 pt-2">
-              <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-muted/30 border border-border/60">
+              <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-card border border-border shadow-xs">
                 <ShieldCheck className="size-5 text-primary shrink-0" />
-                <div className="text-[11px] leading-tight">
+                <div className="text-xs sm:text-sm leading-tight">
                   <div className="font-bold text-foreground">گارانتی تعویض ۲۴ ماهه</div>
                   <div className="text-muted-foreground mt-0.5">ضمانت رسمی شرکتی</div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-muted/30 border border-border/60">
+              <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-card border border-border shadow-xs">
                 <Truck className="size-5 text-primary shrink-0" />
-                <div className="text-[11px] leading-tight">
+                <div className="text-xs sm:text-sm leading-tight">
                   <div className="font-bold text-foreground">تحویل فوری سفارش</div>
                   <div className="text-muted-foreground mt-0.5">تهران امروز / شهرستان تیپاکس</div>
                 </div>
+              </div>
+            </div>
+
+            {/* شرایط بازگشت کالا */}
+            <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-card border border-border shadow-xs">
+              <AlertCircle className="size-5 text-primary shrink-0 mt-0.5" />
+              <div className="text-xs sm:text-sm leading-relaxed">
+                <div className="font-bold text-foreground">شرایط بازگشت کالا</div>
+                <p className="text-muted-foreground mt-1 text-justify">
+                  درخواست مرجوع کردن کالا با دلیل &quot;انصراف از خرید&quot; تنها در صورتی قابل تایید است که کالا در شرایط اولیه باشد (در صورت پلمپ بودن، کالا نباید باز شده باشد).
+                </p>
               </div>
             </div>
           </div>
@@ -415,7 +429,7 @@ export default function SingleProductPage({ params }: PageProps) {
           {/* ستون چپ: باکس خرید هوشمند (Buy Box) */}
           <div className="lg:col-span-3 rounded-3xl border border-border bg-card p-5 sm:p-6 shadow-sm space-y-5 sticky top-24">
             {/* وضعیت فروشنده و انبارداری */}
-            <div className="space-y-3 pb-4 border-b border-border/60 text-xs">
+            <div className="space-y-3 pb-4 border-b border-border/60 text-sm">
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">فروشنده:</span>
                 <span className="font-bold text-foreground">اسمارت الکتریک (تامین‌کننده اصلی)</span>
@@ -451,24 +465,24 @@ export default function SingleProductPage({ params }: PageProps) {
             <div className="space-y-1 text-end">
               {hasDiscount && (
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-destructive bg-destructive/10 px-2 py-0.5 rounded-full">
+                  <span className="text-xs font-bold text-destructive bg-destructive/10 px-2 py-0.5 rounded-full">
                     {discountPercent}٪ تخفیف
                   </span>
-                  <span className="text-xs text-muted-foreground line-through font-mono">
+                  <span className="text-sm text-muted-foreground line-through font-mono">
                     {product.price.toLocaleString("fa-IR")} تومان
                   </span>
                 </div>
               )}
 
               <div className="flex items-baseline justify-end gap-1.5">
-                <span className="text-2xl sm:text-3xl font-black text-foreground tracking-tight font-mono">
+                <span className="text-3xl sm:text-4xl font-black text-foreground tracking-tight font-mono">
                   {finalPrice.toLocaleString("fa-IR")}
                 </span>
-                <span className="text-xs text-muted-foreground font-medium">تومان</span>
+                <span className="text-sm text-muted-foreground font-medium">تومان</span>
               </div>
 
               {hasDiscount && (
-                <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                <div className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
                   سود شما از این خرید: {(product.price - finalPrice).toLocaleString("fa-IR")} تومان
                 </div>
               )}
@@ -477,7 +491,7 @@ export default function SingleProductPage({ params }: PageProps) {
             {/* شمارنده انتخاب تعداد */}
             {product.stock > 0 && (
               <div className="flex items-center justify-between p-2 rounded-2xl border border-border bg-muted/20">
-                <span className="text-xs font-bold text-foreground ps-2">تعداد سفارش:</span>
+                <span className="text-sm font-bold text-foreground ps-2">تعداد سفارش:</span>
                 <div className="flex items-center gap-2 bg-card rounded-xl border border-border p-1">
                   <button
                     type="button"
@@ -488,7 +502,7 @@ export default function SingleProductPage({ params }: PageProps) {
                     <Plus className="size-3.5" />
                   </button>
 
-                  <span className="font-mono font-bold text-xs px-2 min-w-5 text-center">
+                  <span className="font-mono font-bold text-sm px-2 min-w-5 text-center">
                     {quantity.toLocaleString("fa-IR")}
                   </span>
 
@@ -509,7 +523,7 @@ export default function SingleProductPage({ params }: PageProps) {
               <Button
                 onClick={handleAddToCart}
                 disabled={product.stock === 0}
-                className="w-full h-11 rounded-2xl bg-primary text-primary-foreground font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs hover:bg-primary/90 cursor-pointer"
+                className="w-full h-11 rounded-2xl bg-primary text-primary-foreground font-bold text-sm sm:text-base flex items-center justify-center gap-2 shadow-xs hover:bg-primary/90 cursor-pointer"
               >
                 <ShoppingCart className="size-4" />
                 <span>افزودن به سبد خرید</span>
@@ -519,7 +533,7 @@ export default function SingleProductPage({ params }: PageProps) {
                 onClick={handleBuyNow}
                 disabled={product.stock === 0}
                 variant="outline"
-                className="w-full h-11 rounded-2xl border-primary/30 text-primary hover:bg-primary/5 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full h-11 rounded-2xl border-primary/30 text-primary hover:bg-primary/5 font-bold text-sm sm:text-base flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Zap className="size-4" />
                 <span>خرید سریع و تسویه</span>
@@ -534,7 +548,7 @@ export default function SingleProductPage({ params }: PageProps) {
             <TabsList className="w-full justify-start border-b border-border rounded-none p-0 bg-transparent h-auto gap-4 sm:gap-6 overflow-x-auto">
               <TabsTrigger
                 value="description"
-                className="rounded-none border-b-2 border-transparent data-active:border-primary data-active:text-primary data-active:bg-transparent pb-3 text-xs sm:text-sm font-bold gap-2 cursor-pointer"
+                className="rounded-none border-b-2 border-transparent data-active:border-primary data-active:text-primary data-active:bg-transparent pb-3 text-sm sm:text-base font-bold gap-2 cursor-pointer"
               >
                 <FileText className="size-4" />
                 <span>معرفی محصول</span>
@@ -542,7 +556,7 @@ export default function SingleProductPage({ params }: PageProps) {
 
               <TabsTrigger
                 value="specs"
-                className="rounded-none border-b-2 border-transparent data-active:border-primary data-active:text-primary data-active:bg-transparent pb-3 text-xs sm:text-sm font-bold gap-2 cursor-pointer"
+                className="rounded-none border-b-2 border-transparent data-active:border-primary data-active:text-primary data-active:bg-transparent pb-3 text-sm sm:text-base font-bold gap-2 cursor-pointer"
               >
                 <Sliders className="size-4" />
                 <span>مشخصات فنی</span>
@@ -550,7 +564,7 @@ export default function SingleProductPage({ params }: PageProps) {
 
               <TabsTrigger
                 value="reviews"
-                className="rounded-none border-b-2 border-transparent data-active:border-primary data-active:text-primary data-active:bg-transparent pb-3 text-xs sm:text-sm font-bold gap-2 cursor-pointer"
+                className="rounded-none border-b-2 border-transparent data-active:border-primary data-active:text-primary data-active:bg-transparent pb-3 text-sm sm:text-base font-bold gap-2 cursor-pointer"
               >
                 <MessageSquare className="size-4" />
                 <span>
@@ -564,15 +578,15 @@ export default function SingleProductPage({ params }: PageProps) {
 
             {/* محتوای تب معرفی محصول (توضیحات کلی) */}
             <TabsContent value="description" className="pt-6 space-y-4">
-              <h2 className="text-base sm:text-lg font-black text-foreground">
+              <h2 className="text-lg sm:text-xl font-black text-foreground">
                 معرفی {product.title}
               </h2>
               {product.description ? (
-                <div className="rounded-2xl bg-muted/10 border border-border/60 p-5 text-xs sm:text-sm text-foreground/90 leading-relaxed text-justify whitespace-pre-line">
+                <div className="rounded-2xl bg-muted/10 border border-border/60 p-5 text-sm sm:text-base text-foreground/90 leading-relaxed text-justify whitespace-pre-line">
                   {product.description}
                 </div>
               ) : (
-                <div className="rounded-2xl bg-muted/10 border border-border/60 p-5 text-xs sm:text-sm text-muted-foreground text-center">
+                <div className="rounded-2xl bg-muted/10 border border-border/60 p-5 text-sm sm:text-base text-muted-foreground text-center">
                   توضیحات و معرفی تکمیلی برای این کالا ثبت نشده است.
                 </div>
               )}
@@ -580,11 +594,11 @@ export default function SingleProductPage({ params }: PageProps) {
 
             {/* محتوای تب مشخصات فنی (برگرفته از specs و اطلاعات ساختاری) */}
             <TabsContent value="specs" className="pt-6">
-              <h2 className="text-base sm:text-lg font-black text-foreground mb-4">
+              <h2 className="text-lg sm:text-xl font-black text-foreground mb-4">
                 جدول مشخصات فنی {product.title}
               </h2>
               <div className="rounded-2xl border border-border overflow-hidden">
-                <table className="w-full text-xs text-right">
+                <table className="w-full text-sm text-right">
                   <tbody>
                     <tr className="border-b border-border/60 bg-muted/10">
                       <td className="p-3.5 font-bold text-foreground w-1/3 sm:w-1/4">شناسه کالا (SKU)</td>
