@@ -230,7 +230,10 @@ export function CategoryClient({ slug }: CategoryClientProps) {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5 relative z-10">
           <div className="space-y-2 max-w-2xl">
             <div className="flex items-center gap-2.5">
-              <span className="size-3 rounded-full bg-primary inline-block shrink-0 shadow-xs" />
+              <span className="relative flex size-3 shrink-0">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+                <span className="relative inline-flex size-3 rounded-full bg-primary" />
+              </span>
               <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-foreground tracking-tight">
                 دسته‌بندی {currentCategory.name}
               </h1>
@@ -387,7 +390,7 @@ export function CategoryClient({ slug }: CategoryClientProps) {
               {Array.from({ length: 6 }).map((_, i) => (
                 <div
                   key={i}
-                  className="rounded-2xl border border-border bg-card p-4 h-[320px] animate-pulse space-y-3 flex flex-col justify-between"
+                  className="rounded-md border border-border bg-card p-4 h-[320px] animate-pulse space-y-3 flex flex-col justify-between"
                 >
                   <div className="size-full max-h-[160px] bg-muted/60 rounded-xl" />
                   <div className="space-y-2">
@@ -431,7 +434,7 @@ export function CategoryClient({ slug }: CategoryClientProps) {
                 return (
                   <div
                     key={product.id}
-                    className="group relative flex flex-col justify-between rounded-2xl border border-border/80 bg-card p-3 sm:p-4 shadow-xs transition-all duration-300 hover:border-primary/40 hover:shadow-md"
+                    className="group relative flex flex-col justify-between rounded-md border border-border/80 bg-card p-3 sm:p-4 shadow-xs transition-all duration-300 hover:border-primary/40 hover:shadow-md"
                   >
                     <Link href={`/product/${product.slug}`} className="block space-y-3">
                       {/* تصویر کالا */}

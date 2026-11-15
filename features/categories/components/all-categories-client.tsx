@@ -99,7 +99,10 @@ export function AllCategoriesClient() {
       {/* گرید تمام‌عرض کارت‌های دسته‌بندی با افکت هاور اسلایدی */}
       <section className="space-y-5">
         <div className="flex items-center gap-2.5">
-          <span className="size-2.5 rounded-full bg-primary inline-block shrink-0 shadow-xs" />
+          <span className="relative flex size-2.5 shrink-0">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+            <span className="relative inline-flex size-2.5 rounded-full bg-primary" />
+          </span>
           <h2 className="text-base sm:text-lg md:text-xl font-black tracking-tight text-foreground">
             گروه‌های اصلی کالا
           </h2>

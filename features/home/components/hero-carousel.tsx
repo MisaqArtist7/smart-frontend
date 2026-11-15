@@ -31,40 +31,39 @@ export interface BannerItem {
  */
 export const DEFAULT_BANNERS: BannerItem[] = [
   {
-    id: "banner-1",
-    image: "/images/banners/1.webp",
+    id: "banner-electric",
+    image: "/images/carousel/بنر تبلیغاتی هوشمند الکتریک.png",
     link: "/offers",
-    alt: "بنر تبلیغاتی شماره ۱",
+    alt: "جشنواره فروش اسمارت الکتریک",
+    title: "جشنواره فروش اسمارت الکتریک",
   },
   {
-    id: "banner-2",
-    image: "/images/banners/2.webp",
-    link: "/category/smart-home",
-    alt: "بنر تبلیغاتی شماره ۲",
-  },
-  {
-    id: "banner-3",
-    image: "/images/banners/3.webp",
-    link: "/category/switches",
-    alt: "بنر تبلیغاتی شماره ۳",
-  },
-  {
-    id: "banner-4",
-    image: "/images/banners/4.webp",
-    link: "/category/cables",
-    alt: "بنر تبلیغاتی شماره ۴",
-  },
-  {
-    id: "banner-5",
-    image: "/images/banners/5.webp",
+    id: "banner-lighting",
+    image: "/images/carousel/روشنایی هوشمند در دکوراسیون مدرن.png",
     link: "/category/lighting",
-    alt: "بنر تبلیغاتی شماره ۵",
+    alt: "روشنایی هوشمند در دکوراسیون مدرن",
+    title: "روشنایی هوشمند در دکوراسیون مدرن",
   },
   {
-    id: "banner-6",
-    image: "/images/banners/6.webp",
-    link: "/category/switchboards",
-    alt: "بنر تبلیغاتی شماره ۶",
+    id: "banner-network",
+    image: "/images/carousel/راهکارهای هوشمند شبکه و تجهیزات حرفه_ای.png",
+    link: "/category/industrial",
+    alt: "راهکارهای هوشمند شبکه و تجهیزات حرفه‌ای",
+    title: "راهکارهای هوشمند شبکه و تجهیزات حرفه‌ای",
+  },
+  {
+    id: "banner-security",
+    image: "/images/carousel/امنیت هوشمند برای آرامش بیشتر.png",
+    link: "/category/security",
+    alt: "امنیت هوشمند برای آرامش بیشتر",
+    title: "امنیت هوشمند برای آرامش بیشتر",
+  },
+  {
+    id: "banner-intercom",
+    image: "/images/carousel/آیفون تصویری هوشمند اسمارت الکتریک.png",
+    link: "/category/smart-home",
+    alt: "آیفون تصویری هوشمند اسمارت الکتریک",
+    title: "آیفون تصویری هوشمند اسمارت الکتریک",
   },
 ];
 
@@ -139,16 +138,16 @@ export function HeroCarousel({
             <CarouselItem key={banner.id} className="ps-0">
               <Link
                 href={banner.link}
-                className="group relative block w-full h-10 sm:h-auto rounded-2xl overflow-hidden border border-border shadow-xs focus:outline-none focus:ring-2 focus:ring-primary"
+                className="group relative block w-full max-h-[600px] rounded-2xl overflow-hidden border border-border/80 shadow-xs focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 {/* تصویر خالص بنر بدون پوشش متنی */}
                 <Image
                   src={banner.image}
                   alt={banner.alt || banner.title || `بنر ${index + 1}`}
-                  width={2222}
-                  height={100}
+                  width={2089}
+                  height={753}
                   priority={index === 0}
-                  className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-[1.01]"
+                  className="w-full h-auto max-h-[600px] object-cover transition-transform duration-500 ease-out group-hover:scale-[1.01]"
                 />
               </Link>
             </CarouselItem>

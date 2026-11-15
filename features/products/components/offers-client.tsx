@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
   Flame,
-  Clock,
   Sparkles,
   Percent,
   ShoppingCart,
@@ -35,30 +34,6 @@ export function OffersClient() {
   const [selectedDiscountFilter, setSelectedDiscountFilter] =
     useState<DiscountFilter>("all");
   const [sortBy, setSortBy] = useState<SortOption>("discount-desc");
-
-  // تایمر معکوس زنده ۲۴ ساعته پیشنهادهای روز
-  const [timeLeft, setTimeLeft] = useState({
-    hours: 15,
-    minutes: 42,
-    seconds: 18,
-  });
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev.seconds > 0) {
-          return { ...prev, seconds: prev.seconds - 1 };
-        } else if (prev.minutes > 0) {
-          return { ...prev, minutes: 59, seconds: 59 };
-        } else if (prev.hours > 0) {
-          return { hours: prev.hours - 1, minutes: 59, seconds: 59 };
-        }
-        return { hours: 23, minutes: 59, seconds: 59 };
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
 
   // لیست دسته‌بندی‌های موجود از محصولات دریافتی
   const categories = useMemo(() => {
@@ -173,15 +148,15 @@ export function OffersClient() {
   return (
     <div className="space-y-8 sm:space-y-10">
       {/* =========================================================================
-          ۱. بنر هیرو پیشنهادهای شگفت‌انگیز با تایمر معکوس
+          ۱. بنر هیرو پیشنهادهای شگفت‌انگیز
           ========================================================================= */}
       <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-primary via-primary/95 to-primary/80 text-primary-foreground p-6 sm:p-8 lg:p-10 shadow-lg">
         {/* المان‌های نوری و ترنسپرنت پس‌زمینه */}
         <div className="absolute -left-16 -bottom-16 size-72 rounded-full bg-white/10 blur-3xl pointer-events-none" />
         <div className="absolute -right-16 -top-16 size-72 rounded-full bg-black/15 blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-          <div className="space-y-3 max-w-2xl text-right">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-3 max-w-3xl text-right">
             <div className="inline-flex items-center gap-2 rounded-full bg-white/20 backdrop-blur-md px-3.5 py-1 text-xs font-bold shadow-xs">
               <Flame className="size-4 text-amber-300 animate-pulse" />
               <span>جشنواره فروش شگفت‌انگیز (افرز)</span>
@@ -192,36 +167,6 @@ export function OffersClient() {
             <p className="text-xs sm:text-sm text-primary-foreground/85 leading-relaxed">
               انواع تجهیزات برق صنعتی، روشنایی، سیم و کابل و تابلو برق با بهترین قیمت‌های بازار و تخفیف‌های محدود روزانه.
             </p>
-          </div>
-
-          {/* باکس تایمر معکوس ۲۴ ساعته */}
-          <div className="flex flex-col items-center lg:items-end justify-center rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 p-4 sm:p-5 shrink-0">
-            <div className="flex items-center gap-2 mb-2 text-xs font-bold text-primary-foreground/90">
-              <Clock className="size-4 text-amber-300" />
-              <span>فرصت باقی‌مانده تخفیف امروز:</span>
-            </div>
-            <div className="flex items-center gap-2" dir="ltr">
-              <div className="flex flex-col items-center justify-center min-w-12 h-14 rounded-xl bg-white/20 backdrop-blur-xs border border-white/25 px-2">
-                <span className="font-mono text-xl font-black">
-                  {String(timeLeft.seconds).padStart(2, "0")}
-                </span>
-                <span className="text-[10px] text-white/80 font-medium">ثانیه</span>
-              </div>
-              <span className="text-lg font-black text-white/80">:</span>
-              <div className="flex flex-col items-center justify-center min-w-12 h-14 rounded-xl bg-white/20 backdrop-blur-xs border border-white/25 px-2">
-                <span className="font-mono text-xl font-black">
-                  {String(timeLeft.minutes).padStart(2, "0")}
-                </span>
-                <span className="text-[10px] text-white/80 font-medium">دقیقه</span>
-              </div>
-              <span className="text-lg font-black text-white/80">:</span>
-              <div className="flex flex-col items-center justify-center min-w-12 h-14 rounded-xl bg-white/20 backdrop-blur-xs border border-white/25 px-2">
-                <span className="font-mono text-xl font-black">
-                  {String(timeLeft.hours).padStart(2, "0")}
-                </span>
-                <span className="text-[10px] text-white/80 font-medium">ساعت</span>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -348,7 +293,7 @@ export function OffersClient() {
           {Array.from({ length: 8 }).map((_, index) => (
             <div
               key={index}
-              className="flex flex-col justify-between h-[370px] w-full rounded-2xl border border-border/70 bg-card p-4 shadow-xs animate-pulse"
+              className="flex flex-col justify-between h-[370px] w-full rounded-md border border-border/70 bg-card p-4 shadow-xs animate-pulse"
             >
               <div className="w-full h-40 rounded-xl bg-muted/60 mb-3" />
               <div className="space-y-2 my-auto">
@@ -400,7 +345,7 @@ export function OffersClient() {
             return (
               <div
                 key={product.id}
-                className="group relative flex flex-col justify-between h-[380px] sm:h-[400px] w-full rounded-2xl border border-border/80 bg-card p-3.5 sm:p-4 shadow-xs transition-all duration-300 hover:border-primary/40 hover:shadow-md hover:-translate-y-1"
+                className="group relative flex flex-col justify-between h-[380px] sm:h-[400px] w-full rounded-md border border-border/80 bg-card p-3.5 sm:p-4 shadow-xs transition-all duration-300 hover:border-primary/40 hover:shadow-md hover:-translate-y-1"
               >
                 {/* برچسب‌های شناور در بالای کارت */}
                 <div className="absolute top-3 right-3 left-3 flex items-center justify-between z-10 pointer-events-none">

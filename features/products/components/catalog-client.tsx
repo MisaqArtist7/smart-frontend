@@ -401,7 +401,7 @@ export function CatalogClient() {
                 return (
                   <div
                     key={product.id}
-                    className="group rounded-2xl border border-border/80 bg-card hover:border-primary/40 hover:shadow-md transition-all duration-300 flex flex-col justify-between overflow-hidden"
+                    className="group rounded-md border border-border/80 bg-card hover:border-primary/40 hover:shadow-md transition-all duration-300 flex flex-col justify-between overflow-hidden"
                   >
                     <div className="p-4 space-y-3">
                       {/* تصویر کالا و بج‌ها */}

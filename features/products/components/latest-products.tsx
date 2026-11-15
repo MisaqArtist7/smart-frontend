@@ -48,7 +48,10 @@ export function LatestProducts({
       {/* سربرگ بخش: دات قرمز رنگ شاخص + عنوان بولد «جدید ترین محصولات ما» */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2.5">
-          <span className="size-2.5 rounded-full bg-primary inline-block shrink-0 shadow-xs" />
+          <span className="relative flex size-2.5 shrink-0">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+            <span className="relative inline-flex size-2.5 rounded-full bg-primary" />
+          </span>
           <h2 className="text-base sm:text-lg md:text-xl font-black tracking-tight text-foreground">
             {title}
           </h2>
@@ -61,7 +64,7 @@ export function LatestProducts({
           {Array.from({ length: 6 }).map((_, index) => (
             <div
               key={index}
-              className="flex flex-col justify-between h-[340px] sm:h-[360px] w-full rounded-2xl border border-border/70 bg-card p-3.5 sm:p-4 shadow-xs animate-pulse"
+              className="flex flex-col justify-between h-[340px] sm:h-[360px] w-full rounded-md border border-border/70 bg-card p-3.5 sm:p-4 shadow-xs animate-pulse"
             >
               <div className="w-full h-32 sm:h-36 rounded-xl bg-muted/60 mb-2" />
               <div className="space-y-2 my-auto">
@@ -105,7 +108,7 @@ export function LatestProducts({
                   key={product.id}
                   className="ps-3 sm:ps-4 basis-[72%] sm:basis-[48%] md:basis-1/3 lg:basis-1/4 xl:basis-1/6"
                 >
-                  <div className="group relative flex flex-col justify-between h-[340px] w-full rounded-2xl border border-border/80 bg-card p-3.5 sm:p-4 shadow-xs transition-all duration-300 hover:border-border hover:shadow-md hover:-translate-y-1">
+                  <div className="group relative flex flex-col justify-between h-[340px] w-full rounded-md border border-border/80 bg-card p-3.5 sm:p-4 shadow-xs transition-all duration-300 hover:border-border hover:shadow-md hover:-translate-y-1">
                     {/* بخش تصویر محصول در بالا */}
                     <Link
                       href={`/product/${product.slug}`}

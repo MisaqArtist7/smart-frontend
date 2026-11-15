@@ -86,7 +86,7 @@ const B2B_LINKS = [
   { id: "b2b-invoice", title: "درخواست پیش‌فاکتور رسمی", href: "/contact-us" },
   { id: "bulk-discount", title: "تخفیف همکاری و خرید عمده", href: "/contact-us" },
   { id: "project-supply", title: "تجهیز پروژه‌های صنعتی", href: "/contact-us" },
-  { id: "consultation", title: "مشاوره فنی رایگان", href: "tel:09122193551" },
+  { id: "consultation", title: "تماس با ادمین (۰۹۱۲۲۱۹۳۵۵۱)", href: "tel:09122193551" },
 ];
 
 /**
@@ -248,13 +248,24 @@ export default function Footer() {
               ارتباط با ما
             </h3>
             <div className="space-y-2.5 text-xs text-muted-foreground">
-              <a
-                href="tel:09122193551"
-                className="flex items-center gap-2 hover:text-primary transition-colors font-medium"
-              >
-                <PhoneCall className="size-4 text-primary shrink-0" />
-                <span dir="ltr">۰۹۱۲ ۲۱۹ ۳۵۵۱</span>
-              </a>
+              <div className="flex flex-col gap-1.5">
+                <a
+                  href="tel:09302340279"
+                  className="flex items-center gap-2 hover:text-primary transition-colors font-medium"
+                >
+                  <PhoneCall className="size-4 text-primary shrink-0" />
+                  <span className="text-[11px] text-muted-foreground">پشتیبانی فنی:</span>
+                  <span dir="ltr" className="font-bold text-foreground hover:text-primary">۰۹۳۰ ۲۳۴ ۰۲۷۹</span>
+                </a>
+                <a
+                  href="tel:09122193551"
+                  className="flex items-center gap-2 hover:text-primary transition-colors font-medium"
+                >
+                  <PhoneCall className="size-4 text-primary shrink-0" />
+                  <span className="text-[11px] text-muted-foreground">مدیریت و ادمین:</span>
+                  <span dir="ltr" className="font-bold text-foreground hover:text-primary">۰۹۱۲ ۲۱۹ ۳۵۵۱</span>
+                </a>
+              </div>
 
               <div className="flex items-start gap-2 leading-relaxed">
                 <Clock className="size-4 text-primary shrink-0 mt-0.5" />

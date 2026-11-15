@@ -3,6 +3,7 @@ import { Vazirmatn } from "next/font/google";
 import "./globals.css";
 import QueryProvider from "@/components/providers/query-provider";
 import { AuthProvider } from "@/components/providers/auth-provider";
+import FloatingCallButton from "@/components/common/floating-call-button";
 
 // کانفیگ فونت وزیرمتن
 const vazir = Vazirmatn({
@@ -35,7 +36,10 @@ export default function RootLayout({
     <html lang="fa" dir="rtl" className={vazir.variable}>
       <body className={`${vazir.className}`}>
         <QueryProvider>
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            {children}
+            <FloatingCallButton />
+          </AuthProvider>
         </QueryProvider>
       </body>
     </html>

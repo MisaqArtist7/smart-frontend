@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Flame, ArrowLeft, ShoppingCart, Percent } from "lucide-react";
@@ -37,30 +37,6 @@ export function SpecialOffers({ className }: SpecialOffersProps) {
     );
   }, [products]);
 
-  // تایمر معکوس زنده ۲۴ ساعته
-  const [timeLeft, setTimeLeft] = useState({
-    hours: 14,
-    minutes: 38,
-    seconds: 45,
-  });
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev.seconds > 0) {
-          return { ...prev, seconds: prev.seconds - 1 };
-        } else if (prev.minutes > 0) {
-          return { ...prev, minutes: 59, seconds: 59 };
-        } else if (prev.hours > 0) {
-          return { hours: prev.hours - 1, minutes: 59, seconds: 59 };
-        }
-        return { hours: 23, minutes: 59, seconds: 59 };
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
   if (!isLoading && discountedProducts.length === 0) {
     return null;
   }
@@ -89,32 +65,8 @@ export function SpecialOffers({ className }: SpecialOffersProps) {
                 تخفیف‌های ویژه امروز
               </h2>
               <p className="text-xs text-primary-foreground/80 mt-1.5 leading-relaxed">
-                فرصت محدود خرید تجهیزات برق و شبکه با تخفیف طلایی
+                فرصت خرید تجهیزات برق و شبکه با تخفیف طلایی
               </p>
-            </div>
-
-            {/* باکس‌های شمارنده تایمر معکوس */}
-            <div className="flex items-center gap-2 pt-1" dir="ltr">
-              <div className="flex flex-col items-center justify-center size-12 rounded-xl bg-white/15 backdrop-blur-xs border border-white/20">
-                <span className="font-mono text-base font-black">
-                  {String(timeLeft.seconds).padStart(2, "0")}
-                </span>
-                <span className="text-[9px] text-primary-foreground/75 font-medium -mt-1">ثانیه</span>
-              </div>
-              <span className="font-black text-lg">:</span>
-              <div className="flex flex-col items-center justify-center size-12 rounded-xl bg-white/15 backdrop-blur-xs border border-white/20">
-                <span className="font-mono text-base font-black">
-                  {String(timeLeft.minutes).padStart(2, "0")}
-                </span>
-                <span className="text-[9px] text-primary-foreground/75 font-medium -mt-1">دقیقه</span>
-              </div>
-              <span className="font-black text-lg">:</span>
-              <div className="flex flex-col items-center justify-center size-12 rounded-xl bg-white/15 backdrop-blur-xs border border-white/20">
-                <span className="font-mono text-base font-black">
-                  {String(timeLeft.hours).padStart(2, "0")}
-                </span>
-                <span className="text-[9px] text-primary-foreground/75 font-medium -mt-1">ساعت</span>
-              </div>
             </div>
 
             <Link
@@ -154,7 +106,7 @@ export function SpecialOffers({ className }: SpecialOffersProps) {
                       key={product.id}
                       className="ps-3 basis-[70%] sm:basis-[45%] md:basis-1/3 xl:basis-1/4"
                     >
-                      <div className="group/card relative flex flex-col justify-between h-85 w-full rounded-xs bg-card text-card-foreground p-3.5 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                      <div className="group/card relative flex flex-col justify-between h-85 w-full rounded-md bg-card text-card-foreground p-3.5 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
                         {/* بج درصد تخفیف قرمز رنگ */}
                         {discountPercent && (
                           <div className="absolute top-3 inset-e-3 z-10 flex items-center gap-0.5 bg-primary text-primary-foreground font-black text-[11px] px-2 py-0.5 rounded-full shadow-xs">

@@ -509,7 +509,7 @@ export function SearchClient() {
                 return (
                   <div
                     key={product.id}
-                    className="group relative flex flex-col justify-between rounded-2xl border border-border/80 bg-card p-4 transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5"
+                    className="group relative flex flex-col justify-between rounded-md border border-border/80 bg-card p-4 transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5"
                   >
                     <div>
                       {/* تصویر کالا و بج‌های شناور */}

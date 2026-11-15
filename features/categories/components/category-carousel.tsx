@@ -118,7 +118,10 @@ export function CategoryCarousel({
       {/* سربرگ بخش: دات قرمز رنگ شاخص + عنوان بولد دسته‌بندی محصولات */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2.5">
-          <span className="size-2.5 rounded-full bg-primary inline-block shrink-0 shadow-xs" />
+          <span className="relative flex size-2.5 shrink-0">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+            <span className="relative inline-flex size-2.5 rounded-full bg-primary" />
+          </span>
           <h2 className="text-base sm:text-lg md:text-xl font-black tracking-tight text-foreground">
             {title}
           </h2>

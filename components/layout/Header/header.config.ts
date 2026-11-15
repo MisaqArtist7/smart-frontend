@@ -40,9 +40,9 @@ export const DEFAULT_HEADER_CONFIG: HeaderConfig = {
       placeholder: "جستجو در میان بیش از ۱۰,۰۰۰ کالای الکتریکی، برند یا کد محصول...",
     },
     support: {
-      label: "مشاوره فنی و پشتیبانی ۲۴/۷",
-      phone: "tel:02191015555",
-      displayPhone: "۰۲۱-۹۱۰۱۵۵۵۵",
+      label: "پشتیبانی فنی وب‌سایت",
+      phone: "tel:09302340279",
+      displayPhone: "۰۹۳۰ ۲۳۴ ۰۲۷۹",
     },
   },
   navigation: {
