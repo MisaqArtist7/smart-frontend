@@ -77,16 +77,16 @@ export default function CartPage() {
       <main className="flex-1 mx-auto max-w-8xl w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 select-none">
         {/* نوار مراحل خرید (Checkout Steps Bar) */}
         <div className="rounded-2xl border border-border bg-card p-4 shadow-xs">
-          <div className="flex items-center justify-center gap-3 sm:gap-8 text-xs font-bold">
+          <div className="flex items-center justify-center gap-3 sm:gap-8 text-sm font-bold">
             <div className="flex items-center gap-2 text-primary">
-              <span className="size-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs">
+              <span className="size-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm">
                 ۱
               </span>
               <span>سبد خرید</span>
             </div>
             <div className="w-10 sm:w-20 h-0.5 bg-border" />
             <div className="flex items-center gap-2 text-muted-foreground">
-              <span className="size-6 rounded-full bg-muted flex items-center justify-center text-xs">
+              <span className="size-7 rounded-full bg-muted flex items-center justify-center text-sm">
                 ۲
               </span>
               <span className="hidden sm:inline">آدرس و شیوه ارسال</span>
@@ -94,7 +94,7 @@ export default function CartPage() {
             </div>
             <div className="w-10 sm:w-20 h-0.5 bg-border" />
             <div className="flex items-center gap-2 text-muted-foreground">
-              <span className="size-6 rounded-full bg-muted flex items-center justify-center text-xs">
+              <span className="size-7 rounded-full bg-muted flex items-center justify-center text-sm">
                 ۳
               </span>
               <span>پرداخت کارت‌به‌کارت و ثبت</span>
@@ -104,7 +104,7 @@ export default function CartPage() {
 
         {/* هشدار تغییر قیمت، موجودی یا حذف کالاهای ناموجود */}
         {warnings.length > 0 && (
-          <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 space-y-2 text-amber-900 dark:text-amber-200 text-xs sm:text-sm relative">
+          <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 space-y-2 text-amber-900 dark:text-amber-200 text-sm sm:text-base relative">
             <div className="flex items-center justify-between">
               <div className="font-bold flex items-center gap-2">
                 <AlertTriangle className="size-4 text-amber-600 shrink-0" />
@@ -113,12 +113,12 @@ export default function CartPage() {
               <button
                 type="button"
                 onClick={dismissWarnings}
-                className="text-xs text-amber-800 dark:text-amber-300 hover:underline cursor-pointer"
+                className="text-sm text-amber-800 dark:text-amber-300 hover:underline cursor-pointer"
               >
                 بستن هشدار
               </button>
             </div>
-            <ul className="list-disc list-inside space-y-1 pr-2 text-xs">
+            <ul className="list-disc list-inside space-y-1 pr-2 text-sm">
               {warnings.map((w, idx) => (
                 <li key={idx}>{w}</li>
               ))}
@@ -134,17 +134,17 @@ export default function CartPage() {
             </div>
 
             <div className="space-y-1.5">
-              <h2 className="text-xl sm:text-2xl font-black text-foreground">
+              <h2 className="text-2xl sm:text-3xl font-black text-foreground">
                 سبد خرید شما در حال حاضر خالی است!
               </h2>
-              <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
+              <p className="text-sm sm:text-base text-muted-foreground max-w-md mx-auto leading-relaxed">
                 می‌توانید برای مشاهده و خرید انواع تجهیزات برق صنعتی، اتوماسیون، سوئیچ‌های شبکه و سیستم‌های هوشمند به فروشگاه سر بزنید.
               </p>
             </div>
 
             <Link
               href="/"
-              className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-bold px-6 py-3 rounded-2xl text-xs sm:text-sm shadow-xs hover:bg-primary/90 transition-all active:scale-95"
+              className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-bold px-6 py-3 rounded-2xl text-sm sm:text-base shadow-xs hover:bg-primary/90 transition-all active:scale-95"
             >
               <span>بازگشت به صفحه اصلی</span>
               <ArrowLeft className="size-4" />
@@ -157,15 +157,15 @@ export default function CartPage() {
             <div className="lg:col-span-8 space-y-4">
               <div className="flex items-center justify-between pb-1">
                 <div className="flex items-center gap-2">
-                  <h1 className="text-lg sm:text-xl font-black text-foreground">
+                  <h1 className="text-xl sm:text-2xl font-black text-foreground">
                     کالاهای انتخابی شما
                   </h1>
-                  <span className="text-xs font-bold text-muted-foreground bg-muted/60 px-2.5 py-0.5 rounded-full">
-                    {totalCount} عدد
+                  <span className="text-sm font-bold text-muted-foreground bg-muted/60 px-2.5 py-0.5 rounded-full">
+                    {totalCount.toLocaleString("fa-IR")} عدد
                   </span>
                   {isProductsLoading && (
-                    <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                      <Loader2 className="size-3 animate-spin" />
+                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Loader2 className="size-3.5 animate-spin" />
                       در حال بررسی موجودی و قیمت زنده...
                     </span>
                   )}
@@ -174,9 +174,9 @@ export default function CartPage() {
                 <button
                   type="button"
                   onClick={handleClearAll}
-                  className="text-xs text-destructive hover:underline flex items-center gap-1 cursor-pointer font-medium"
+                  className="text-sm text-destructive hover:underline flex items-center gap-1 cursor-pointer font-medium"
                 >
-                  <Trash2 className="size-3.5" />
+                  <Trash2 className="size-4" />
                   <span>حذف همه اقلام</span>
                 </button>
               </div>
@@ -212,18 +212,18 @@ export default function CartPage() {
                         <div>
                           <Link
                             href={`/product/${item.slug}`}
-                            className="font-bold text-xs sm:text-sm text-foreground hover:text-primary transition-colors line-clamp-2"
+                            className="font-bold text-base sm:text-lg text-foreground hover:text-primary transition-colors line-clamp-2"
                           >
                             {item.title}
                           </Link>
                           {item.sku && (
-                            <span className="font-mono text-[11px] text-muted-foreground block mt-0.5">
+                            <span className="font-mono text-xs text-muted-foreground block mt-0.5">
                               کد کالا: {item.sku}
                             </span>
                           )}
                         </div>
 
-                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 text-[11px] text-muted-foreground">
+                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 text-sm text-muted-foreground">
                           <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
                             <CheckCircle2 className="size-3.5" />
                             موجود در انبار ({item.stock.toLocaleString("fa-IR")} عدد)
@@ -248,7 +248,7 @@ export default function CartPage() {
                               <Plus className="size-3.5" />
                             </button>
 
-                            <span className="font-mono font-bold text-xs px-2 min-w-5 text-center">
+                            <span className="font-mono font-bold text-sm px-2 min-w-5 text-center">
                               {item.quantity.toLocaleString("fa-IR")}
                             </span>
 
@@ -268,12 +268,12 @@ export default function CartPage() {
                           {/* قیمت کل کالا */}
                           <div className="text-end">
                             {hasDiscount && (
-                              <div className="text-[11px] text-muted-foreground line-through font-mono">
+                              <div className="text-xs text-muted-foreground line-through font-mono">
                                 {(item.price * item.quantity).toLocaleString("fa-IR")}
                               </div>
                             )}
-                            <div className="text-sm sm:text-base font-black text-foreground font-mono">
-                              {itemTotal.toLocaleString("fa-IR")} <span className="text-xs font-normal">تومان</span>
+                            <div className="text-base sm:text-lg font-black text-foreground font-mono">
+                              {itemTotal.toLocaleString("fa-IR")} <span className="text-sm font-normal">تومان</span>
                             </div>
                           </div>
                         </div>
@@ -284,7 +284,7 @@ export default function CartPage() {
               </div>
 
               {/* یادداشت شیوه ارسال و پس‌کرایه */}
-              <div className="rounded-2xl border border-primary/20 bg-primary/[0.03] p-4 text-xs text-muted-foreground flex items-center gap-3">
+              <div className="rounded-2xl border border-primary/20 bg-primary/[0.03] p-4 text-sm text-muted-foreground flex items-center gap-3">
                 <Truck className="size-5 text-primary shrink-0" />
                 <span>
                   <strong>نحوه پرداخت هزینه پستی:</strong> هزینه ارسال سفارش پس‌کرایه بوده و در محل به مامور محترم پست یا باربری پرداخت می‌گردد (هزینه ارسال در پیش‌فاکتور ۰ تومان محاسبه شده است).
@@ -299,11 +299,11 @@ export default function CartPage() {
 
               {/* کارت فاکتور و پرداخت نهایی */}
               <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-xs space-y-4">
-                <h3 className="font-black text-sm text-foreground pb-2 border-b border-border/60">
+                <h3 className="font-black text-base text-foreground pb-2 border-b border-border/60">
                   خلاصه فاکتور خرید
                 </h3>
 
-                <div className="space-y-3 text-xs">
+                <div className="space-y-3 text-sm">
                   {/* قیمت بدون تخفیف */}
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">مجموع قیمت کالاها:</span>
@@ -342,14 +342,14 @@ export default function CartPage() {
 
                   {/* خط جداکننده و مبلغ نهایی */}
                   <div className="pt-3 border-t border-border flex items-baseline justify-between">
-                    <span className="font-black text-xs sm:text-sm text-foreground">
+                    <span className="font-black text-sm sm:text-base text-foreground">
                       مبلغ قابل پرداخت سفارش:
                     </span>
                     <div className="text-end">
-                      <span className="text-xl sm:text-2xl font-black text-primary font-mono tracking-tight">
+                      <span className="text-2xl sm:text-3xl font-black text-primary font-mono tracking-tight">
                         {finalTotal.toLocaleString("fa-IR")}
                       </span>
-                      <span className="text-xs text-muted-foreground ms-1 font-normal">تومان</span>
+                      <span className="text-sm text-muted-foreground ms-1 font-normal">تومان</span>
                     </div>
                   </div>
                 </div>
@@ -357,13 +357,13 @@ export default function CartPage() {
                 {/* دکمه اقدام جهت تسویه */}
                 <Button
                   onClick={() => router.push("/checkout")}
-                  className="w-full h-12 rounded-2xl bg-primary text-primary-foreground font-black text-xs sm:text-sm shadow-xs hover:bg-primary/90 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.98]"
+                  className="w-full h-12 rounded-2xl bg-primary text-primary-foreground font-black text-sm sm:text-base shadow-xs hover:bg-primary/90 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.98]"
                 >
                   <span>ادامه فرایند خرید و ثبت آدرس</span>
                   <ArrowLeft className="size-4" />
                 </Button>
 
-                <p className="text-[11px] text-muted-foreground text-center leading-relaxed">
+                <p className="text-xs text-muted-foreground text-center leading-relaxed">
                   روش پرداخت به صورت کارت‌به‌کارت با بررسی و تایید مستقیم رسید می‌باشد.
                 </p>
               </div>
