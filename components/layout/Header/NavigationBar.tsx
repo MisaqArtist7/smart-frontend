@@ -96,7 +96,7 @@ export function NavigationBar({
             {/* پنل بازشونده دسته‌بندی‌ها (Mega Dropdown) */}
             {isCategoriesOpen && (
               <div
-                className="absolute right-0 top-full z-50 mt-2 w-[320px] sm:w-[480px] md:w-[620px] rounded-2xl border border-border bg-card p-4 shadow-xl animate-in fade-in zoom-in-95 duration-150"
+                className="absolute right-0 top-full z-50 mt-2 w-[320px] sm:w-120 md:w-155 rounded-2xl border border-border bg-card p-4 shadow-xl animate-in fade-in zoom-in-95 duration-150"
                 role="menu"
               >
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[70vh] overflow-y-auto p-1">
