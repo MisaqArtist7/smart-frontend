@@ -8,7 +8,6 @@ import {
   Sparkles,
   Percent,
   ShoppingCart,
-  Search,
   ChevronDown,
   RotateCcw,
   CheckCircle2,
@@ -28,8 +27,7 @@ export function OffersClient() {
   const { data: serverProducts = [], isLoading } = useProducts();
   const addItemToCart = useCartStore((s) => s.addItem);
 
-  // وضعیت‌های فیلتر و جستجو
-  const [searchQuery, setSearchQuery] = useState("");
+  // وضعیت‌های فیلتر و مرتب‌سازی
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedDiscountFilter, setSelectedDiscountFilter] =
     useState<DiscountFilter>("all");
@@ -79,14 +77,6 @@ export function OffersClient() {
         };
       })
       .filter((p) => {
-        // فیلتر جستجو
-        if (searchQuery.trim()) {
-          const q = searchQuery.trim().toLowerCase();
-          const matchTitle = p.title.toLowerCase().includes(q);
-          const matchCategory = p.categoryDisplay.toLowerCase().includes(q);
-          if (!matchTitle && !matchCategory) return false;
-        }
-
         // فیلتر دسته‌بندی
         if (selectedCategory !== "all") {
           if (p.categoryDisplay !== selectedCategory) return false;
@@ -119,7 +109,6 @@ export function OffersClient() {
       });
   }, [
     serverProducts,
-    searchQuery,
     selectedCategory,
     selectedDiscountFilter,
     sortBy,
@@ -139,7 +128,6 @@ export function OffersClient() {
   };
 
   const handleResetFilters = () => {
-    setSearchQuery("");
     setSelectedCategory("all");
     setSelectedDiscountFilter("all");
     setSortBy("discount-desc");
@@ -172,26 +160,14 @@ export function OffersClient() {
       </div>
 
       {/* =========================================================================
-          ۲. نوار فیلترها، جستجو و مرتب‌سازی
+          ۲. نوار فیلترها و مرتب‌سازی
           ========================================================================= */}
       <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 shadow-xs space-y-4">
-        {/* سطر اول: جستجو و دسته‌بندی و مرتب‌سازی */}
+        {/* سطر اول: دسته‌بندی و مرتب‌سازی */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5">
-          {/* کادر جستجو */}
-          <div className="md:col-span-5 relative flex items-center">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="جستجو در میان کالاهای شگفت‌انگیز..."
-              className="w-full rounded-xl border border-input bg-muted/40 pr-10 pl-4 py-2.5 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground outline-none transition-all focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/20"
-            />
-            <Search className="pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          </div>
-
           {/* انتخاب دسته‌بندی */}
           {categories.length > 0 && (
-            <div className="md:col-span-4 relative flex items-center">
+            <div className="md:col-span-6 relative flex items-center">
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
@@ -213,7 +189,7 @@ export function OffersClient() {
           <div
             className={cn(
               "relative flex items-center",
-              categories.length > 0 ? "md:col-span-3" : "md:col-span-7"
+              categories.length > 0 ? "md:col-span-6" : "md:col-span-12"
             )}
           >
             <select
@@ -316,7 +292,7 @@ export function OffersClient() {
               کالایی با شرایط انتخابی شما یافت نشد
             </h3>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              لطفاً فیلترها یا عبارت جستجو را تغییر دهید تا سایر پیشنهادات به شما نمایش داده شوند.
+              لطفاً فیلترها را تغییر دهید تا سایر پیشنهادات به شما نمایش داده شوند.
             </p>
           </div>
           <div className="pt-2">
@@ -345,23 +321,10 @@ export function OffersClient() {
             return (
               <div
                 key={product.id}
-                className="group relative flex flex-col justify-between h-[380px] sm:h-[400px] w-full rounded-md border border-border/80 bg-card p-3.5 sm:p-4 shadow-xs transition-all duration-300 hover:border-primary/40 hover:shadow-md hover:-translate-y-1"
+                className="group relative flex flex-col h-[380px] sm:h-[400px] w-full rounded-md border border-border/80 bg-card p-3.5 sm:p-4 shadow-xs transition-all duration-300 hover:border-primary/40 hover:shadow-md hover:-translate-y-1"
               >
                 {/* برچسب‌های شناور در بالای کارت */}
-                <div className="absolute top-3 right-3 left-3 flex items-center justify-between z-10 pointer-events-none">
-                  {/* بج درصد تخفیف */}
-                  {product.isDiscounted ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-destructive text-destructive-foreground px-2 py-0.5 text-[11px] font-black shadow-xs">
-                      <Percent className="size-3" />
-                      <span>{product.discountPercent}٪ تخفیف</span>
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 text-primary px-2 py-0.5 text-[10px] font-bold">
-                      <Sparkles className="size-3" />
-                      <span>پیشنهاد روز</span>
-                    </span>
-                  )}
-
+                <div className="absolute top-3 right-3 left-3 flex items-center justify-between gap-2 z-10 pointer-events-none">
                   {/* وضعیت موجودی انبار */}
                   {isOutOfStock ? (
                     <span className="rounded-md bg-muted/80 text-muted-foreground px-1.5 py-0.5 text-[10px] font-medium">
@@ -372,21 +335,34 @@ export function OffersClient() {
                       تنها {product.stock} عدد
                     </span>
                   ) : null}
+
+                  {/* بج درصد تخفیف */}
+                  {product.isDiscounted ? (
+                    <span className="ms-auto inline-flex items-center gap-0.5 rounded-full bg-primary text-primary-foreground px-2 py-0.5 text-[11px] font-black shadow-xs">
+                      <span>{product.discountPercent.toLocaleString("fa-IR")}٪</span>
+                      <Percent className="size-2.5" />
+                    </span>
+                  ) : (
+                    <span className="ms-auto inline-flex items-center gap-1 rounded-full bg-primary/10 text-primary px-2 py-0.5 text-[10px] font-bold">
+                      <Sparkles className="size-3" />
+                      <span>پیشنهاد روز</span>
+                    </span>
+                  )}
                 </div>
 
                 {/* بخش تصویر محصول با لینک به صفحه اختصاصی */}
                 <Link
                   href={`/product/${product.slug}`}
-                  className="relative w-full h-36 sm:h-40 flex items-center justify-center p-2 mt-4 mb-2 focus:outline-none"
+                  className="relative flex-1 min-h-0 w-full flex items-center justify-center p-1 mt-3 mb-2 focus:outline-none"
                 >
                   <div className="relative size-full flex items-center justify-center">
                     <Image
                       src={imageUrl}
                       alt={product.title}
-                      width={140}
-                      height={100}
+                      width={180}
+                      height={150}
                       className={cn(
-                        "max-h-full max-w-full object-contain transition-transform duration-300 ease-out group-hover:scale-105 drop-shadow-xs",
+                        "max-h-full max-w-full object-contain transition-transform duration-300 ease-out group-hover:scale-105",
                         isOutOfStock && "opacity-50 grayscale"
                       )}
                     />
@@ -394,22 +370,22 @@ export function OffersClient() {
                 </Link>
 
                 {/* اطلاعات محصول: دسته‌بندی و عنوان */}
-                <div className="space-y-1 text-center">
+                <div className="space-y-1 text-right mb-1.5">
                   <span className="text-[11px] font-semibold text-muted-foreground block line-clamp-1">
-                    {product.categoryDisplay}
+                    دسته‌بندی: {product.categoryDisplay}
                   </span>
                   <Link
                     href={`/product/${product.slug}`}
                     className="focus:outline-none focus-visible:underline block"
                   >
-                    <h3 className="text-xs sm:text-sm font-bold text-foreground leading-snug line-clamp-2 min-h-[2.5rem] transition-colors group-hover:text-primary">
+                    <h3 className="text-xs sm:text-sm font-bold text-foreground leading-snug line-clamp-2 min-h-[2.25rem] transition-colors group-hover:text-primary">
                       {product.title}
                     </h3>
                   </Link>
                 </div>
 
                 {/* بخش قیمت و واحد تومان */}
-                <div className="mt-auto pt-3 pb-2.5 px-0.5 border-t border-border/40">
+                <div className="pt-2 pb-2 px-0.5 border-t border-border/40">
                   <div className="flex items-center justify-between">
                     <div className="flex flex-col text-right">
                       <span className="text-sm sm:text-base font-black text-foreground tracking-tight">
