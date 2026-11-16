@@ -337,11 +337,11 @@ export function ContactUsClient() {
           </div>
 
           {/* نمای نقشه */}
-          <div className="relative flex-1 min-h-[240px] w-full bg-muted/40 overflow-hidden">
+          <div className="relative flex-1 min-h-60 w-full bg-muted/40 overflow-hidden">
             <iframe
               title="موقعیت مکانی فروشگاه اسمارت الکتریک روی نقشه"
               src="https://www.openstreetmap.org/export/embed.html?bbox=52.0347%2C35.6883%2C52.0427%2C35.6943&layer=mapnik&marker=35.691306%2C52.038722"
-              className="w-full h-full border-0 grayscale-[15%] contrast-105"
+              className="w-full h-full border-0 grayscale-15 contrast-105"
               loading="lazy"
             />
           </div>
@@ -587,7 +587,7 @@ export function ContactUsClient() {
                     rows={4}
                     placeholder="پیام، سوال یا شرح درخواست خود را اینجا بنویسید..."
                     {...register("message")}
-                    className={`w-full rounded-xl border bg-muted/30 p-3 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-all resize-y min-h-[96px] focus:bg-background focus:ring-2 leading-relaxed ${
+                    className={`w-full rounded-xl border bg-muted/30 p-3 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-all resize-y min-h-24 focus:bg-background focus:ring-2 leading-relaxed ${
                       errors.message
                         ? "border-destructive focus:border-destructive focus:ring-destructive/20"
                         : "border-input focus:border-primary focus:ring-primary/20"
