@@ -116,7 +116,7 @@ export function LatestProducts({
                 >
                   <div className="group/card relative flex flex-col justify-between h-85 w-full rounded-xs border border-border/80 bg-card text-card-foreground p-3.5 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
                     {/* بج درصد تخفیف قرمز رنگ در صورت تخفیف‌دار بودن */}
-                    {discountPercent && (
+                    {discountPercent != null && discountPercent > 0 && (
                       <div className="absolute top-3 inset-e-3 z-10 flex items-center gap-0.5 bg-primary text-primary-foreground font-black text-[11px] px-2 py-0.5 rounded-full shadow-xs">
                         <span>{discountPercent.toLocaleString("fa-IR")}٪</span>
                         <Percent className="size-2.5" />
