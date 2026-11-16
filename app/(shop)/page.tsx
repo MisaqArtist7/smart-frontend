@@ -30,15 +30,15 @@ export default function HomePage() {
         {/* ۴. اسلایدر جدید ترین محصولات ما متصل به دیتابیس (Latest Products) */}
         <LatestProducts />
 
-        {/* ۵. بنرهای دوقلوی تبلیغاتی کنار هم (۷ و ۸) */}
-        <PromoBanners />
+        {/* ۷. بخش مشاوره فنی، خرید پروژه‌ای و استعلام پیش‌فاکتور رسمی B2B */}
+        <B2BConsultation />
 
         {/* ۶. برندهای معتبر و همکاران تجاری (Brand Showcase) */}
         <BrandShowcase />
 
-        {/* ۷. بخش مشاوره فنی، خرید پروژه‌ای و استعلام پیش‌فاکتور رسمی B2B */}
-        <B2BConsultation />
-
+        {/* ۵. بنرهای دوقلوی تبلیغاتی کنار هم (۷ و ۸) */}
+        <PromoBanners />
+        
         {/* ۸. سوالات متداول خریداران (FAQ Section) */}
         <FaqSection />
       </main>
