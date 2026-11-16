@@ -615,16 +615,16 @@ export default function AdminDiscountsPage() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-base font-black flex items-center gap-2">
-              <Tag className="size-4 text-primary" />
+            <DialogTitle className="text-xl font-black text-foreground flex items-center gap-2">
+              <Tag className="size-5 text-primary" />
               <span>{editingCoupon ? "ویرایش کد تخفیف" : "تعریف کد تخفیف جدید"}</span>
             </DialogTitle>
-            <DialogDescription className="text-xs">
+            <DialogDescription className="text-sm text-muted-foreground leading-relaxed mt-1">
               مشخصات کوپن، نوع تخفیف، محدودیت سفارش و سقف مصرف را تنظیم کنید.
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit(onSubmitForm)} className="space-y-4 pt-2">
+          <form onSubmit={handleSubmit(onSubmitForm)} className="space-y-5 pt-1">
             {/* کد تخفیف و نوع */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
@@ -811,21 +811,19 @@ export default function AdminDiscountsPage() {
               />
             </div>
 
-            <DialogFooter className="gap-2 sm:gap-0 pt-2">
+            <DialogFooter className="gap-3">
               <Button
                 type="button"
                 variant="outline"
-                size="sm"
                 onClick={() => setIsDialogOpen(false)}
-                className="rounded-xl text-xs cursor-pointer"
+                className="h-10 px-5 rounded-md text-sm font-semibold flex items-center justify-center leading-none cursor-pointer"
               >
                 انصراف
               </Button>
               <Button
                 type="submit"
-                size="sm"
                 disabled={createMutation.isPending || updateMutation.isPending}
-                className="rounded-xl text-xs font-bold gap-2 cursor-pointer"
+                className="h-10 px-5 rounded-md bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center gap-2 leading-none shadow-xs hover:bg-primary/90 cursor-pointer"
               >
                 {createMutation.isPending || updateMutation.isPending ? (
                   <Loader2 className="size-3.5 animate-spin" />

@@ -641,18 +641,18 @@ export default function AdminProductsPage() {
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-lg font-black text-foreground">
+            <DialogTitle className="text-xl font-black text-foreground">
               {editingProduct ? `ویرایش محصول «${editingProduct.title}»` : "افزودن محصول جدید به فروشگاه"}
             </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">
+            <DialogDescription className="text-sm text-muted-foreground leading-relaxed mt-1">
               {editingProduct
                 ? "مشخصات، قیمت و موجودی محصول را ویرایش نمایید."
                 : "مشخصات، قیمت و دسته‌بندی کالا را تکمیل نمایید. تصاویر بعد از ثبت محصول اضافه می‌شوند."}
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-2">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 pt-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
               {/* نام کالا */}
               <div className="space-y-1.5 sm:col-span-2">
                 <label className="text-xs font-bold text-foreground">
@@ -1053,12 +1053,12 @@ export default function AdminProductsPage() {
               </div>
             </div>
 
-            <DialogFooter className="gap-2 pt-4">
+            <DialogFooter className="gap-3">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setIsCreateOpen(false)}
-                className="rounded-xl text-xs sm:text-sm"
+                className="h-10 px-5 rounded-md text-sm font-semibold flex items-center justify-center leading-none cursor-pointer"
               >
                 انصراف
               </Button>
@@ -1070,7 +1070,7 @@ export default function AdminProductsPage() {
                   createProductMutation.isPending ||
                   updateProductMutation.isPending
                 }
-                className="rounded-xl bg-primary text-primary-foreground text-xs sm:text-sm font-bold shadow-xs hover:bg-primary/90"
+                className="h-10 px-5 rounded-md bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center leading-none shadow-xs hover:bg-primary/90 cursor-pointer"
               >
                 {isSubmitting ||
                 createProductMutation.isPending ||

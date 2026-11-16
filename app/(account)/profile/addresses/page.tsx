@@ -372,19 +372,19 @@ export default function ProfileAddressesPage() {
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-lg font-black text-foreground">
+            <DialogTitle className="text-xl font-black text-foreground">
               {editingAddress ? "ویرایش نشانی پستی" : "افزودن آدرس جدید"}
             </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">
+            <DialogDescription className="text-sm text-muted-foreground leading-relaxed mt-1">
               اطلاعات تحویل‌گیرنده و آدرس دقیق پستی را به همراه کدپستی ۱۰ رقمی وارد فرمایید.
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-2">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 pt-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
               {/* عنوان آدرس */}
-              <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-bold text-foreground">
+              <div className="space-y-2 sm:col-span-2">
+                <label className="block text-sm font-bold text-foreground">
                   عنوان آدرس (مثال: منزل، شرکت یا انبار) <span className="text-destructive">*</span>
                 </label>
                 <Input
@@ -393,13 +393,13 @@ export default function ProfileAddressesPage() {
                   className={errors.title ? "border-destructive" : ""}
                 />
                 {errors.title && (
-                  <p className="text-[11px] text-destructive">{errors.title.message}</p>
+                  <p className="text-xs text-destructive">{errors.title.message}</p>
                 )}
               </div>
 
               {/* نام تحویل‌گیرنده */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground">
+              <div className="space-y-2">
+                <label className="block text-sm font-bold text-foreground">
                   نام و نام خانوادگی گیرنده <span className="text-destructive">*</span>
                 </label>
                 <Input
@@ -408,13 +408,13 @@ export default function ProfileAddressesPage() {
                   className={errors.receiverName ? "border-destructive" : ""}
                 />
                 {errors.receiverName && (
-                  <p className="text-[11px] text-destructive">{errors.receiverName.message}</p>
+                  <p className="text-xs text-destructive">{errors.receiverName.message}</p>
                 )}
               </div>
 
               {/* شماره موبایل گیرنده */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground">
+              <div className="space-y-2">
+                <label className="block text-sm font-bold text-foreground">
                   شماره موبایل گیرنده <span className="text-destructive">*</span>
                 </label>
                 <Input
@@ -424,13 +424,13 @@ export default function ProfileAddressesPage() {
                   className={errors.receiverPhone ? "border-destructive text-start" : "text-start"}
                 />
                 {errors.receiverPhone && (
-                  <p className="text-[11px] text-destructive">{errors.receiverPhone.message}</p>
+                  <p className="text-xs text-destructive">{errors.receiverPhone.message}</p>
                 )}
               </div>
 
               {/* استان */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground">
+              <div className="space-y-2">
+                <label className="block text-sm font-bold text-foreground">
                   استان <span className="text-destructive">*</span>
                 </label>
                 <div className="relative">
@@ -446,13 +446,13 @@ export default function ProfileAddressesPage() {
                   </select>
                 </div>
                 {errors.province && (
-                  <p className="text-[11px] text-destructive">{errors.province.message}</p>
+                  <p className="text-xs text-destructive">{errors.province.message}</p>
                 )}
               </div>
 
               {/* شهر */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground">
+              <div className="space-y-2">
+                <label className="block text-sm font-bold text-foreground">
                   شهر <span className="text-destructive">*</span>
                 </label>
                 <Input
@@ -461,13 +461,13 @@ export default function ProfileAddressesPage() {
                   className={errors.city ? "border-destructive" : ""}
                 />
                 {errors.city && (
-                  <p className="text-[11px] text-destructive">{errors.city.message}</p>
+                  <p className="text-xs text-destructive">{errors.city.message}</p>
                 )}
               </div>
 
               {/* کد پستی */}
-              <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-bold text-foreground">
+              <div className="space-y-2 sm:col-span-2">
+                <label className="block text-sm font-bold text-foreground">
                   کد پستی ۱۰ رقمی <span className="text-destructive">*</span>
                 </label>
                 <Input
@@ -478,13 +478,13 @@ export default function ProfileAddressesPage() {
                   className={errors.postalCode ? "border-destructive text-start" : "text-start"}
                 />
                 {errors.postalCode && (
-                  <p className="text-[11px] text-destructive">{errors.postalCode.message}</p>
+                  <p className="text-xs text-destructive">{errors.postalCode.message}</p>
                 )}
               </div>
 
               {/* نشانی کامل پستی */}
-              <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-bold text-foreground">
+              <div className="space-y-2 sm:col-span-2">
+                <label className="block text-sm font-bold text-foreground">
                   نشانی کامل پستی <span className="text-destructive">*</span>
                 </label>
                 <Textarea
@@ -494,17 +494,17 @@ export default function ProfileAddressesPage() {
                   className={errors.addressLine ? "border-destructive" : ""}
                 />
                 {errors.addressLine && (
-                  <p className="text-[11px] text-destructive">{errors.addressLine.message}</p>
+                  <p className="text-xs text-destructive">{errors.addressLine.message}</p>
                 )}
               </div>
 
               {/* تعیین به عنوان آدرس پیش‌فرض */}
-              <div className="sm:col-span-2 flex items-center justify-between p-3 rounded-xl border border-border bg-muted/20">
-                <div className="space-y-0.5">
-                  <div className="text-xs font-bold text-foreground">
+              <div className="sm:col-span-2 flex items-center justify-between p-3.5 rounded-xl border border-border bg-muted/20">
+                <div className="space-y-1">
+                  <div className="text-sm font-bold text-foreground">
                     انتخاب به عنوان آدرس پیش‌فرض تحویل کالا
                   </div>
-                  <div className="text-[11px] text-muted-foreground">
+                  <div className="text-xs text-muted-foreground">
                     سفارش‌های جدید شما به طور خودکار به این نشانی فرستاده خواهند شد.
                   </div>
                 </div>
@@ -519,19 +519,19 @@ export default function ProfileAddressesPage() {
               </div>
             </div>
 
-            <DialogFooter className="gap-2 pt-3">
+            <DialogFooter className="gap-3">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setIsModalOpen(false)}
-                className="rounded-xl text-xs sm:text-sm cursor-pointer"
+                className="h-10 px-5 rounded-md text-sm font-semibold flex items-center justify-center leading-none cursor-pointer"
               >
                 انصراف
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="rounded-xl bg-primary text-primary-foreground text-xs sm:text-sm font-bold shadow-xs hover:bg-primary/90 cursor-pointer"
+                className="h-10 px-5 rounded-md bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center leading-none shadow-xs hover:bg-primary/90 cursor-pointer"
               >
                 {isSubmitting ? (
                   <span className="flex items-center gap-1.5">

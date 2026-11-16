@@ -377,15 +377,15 @@ export function ProductReviews({ productId, productTitle }: ProductReviewsProps)
           ۴. مودال ثبت دیدگاه جدید (Add Review Modal)
           ========================================================================= */}
       <Dialog open={isAddReviewOpen} onOpenChange={setIsAddReviewOpen}>
-        <DialogContent className="sm:max-w-lg rounded-3xl" dir="rtl">
-          <DialogHeader className="text-right border-b border-border/60 pb-3">
-            <DialogTitle className="text-base font-black text-foreground flex items-center gap-2">
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto" dir="rtl">
+          <DialogHeader className="text-right">
+            <DialogTitle className="text-xl font-black text-foreground flex items-center gap-2">
               <MessageSquare className="size-5 text-primary" />
               <span>ثبت دیدگاه جدید برای «{productTitle}»</span>
             </DialogTitle>
           </DialogHeader>
 
-          <form onSubmit={handleSubmitReview} className="space-y-4 py-2">
+          <form onSubmit={handleSubmitReview} className="space-y-5 pt-1">
             {formError && (
               <div className="rounded-xl bg-destructive/10 border border-destructive/20 p-3 text-xs text-destructive font-medium flex items-center gap-2">
                 <AlertCircle className="size-4 shrink-0" />
@@ -515,20 +515,20 @@ export function ProductReviews({ productId, productTitle }: ProductReviewsProps)
               />
             </div>
 
-            <DialogFooter className="flex-row gap-2 justify-end pt-2 border-t border-border/60">
+            <DialogFooter className="gap-3">
               <Button
                 type="button"
                 variant="outline"
                 disabled={submitReviewMutation.isPending}
                 onClick={() => setIsAddReviewOpen(false)}
-                className="rounded-xl text-xs font-semibold cursor-pointer"
+                className="h-10 px-5 rounded-md text-sm font-semibold flex items-center justify-center leading-none cursor-pointer"
               >
                 انصراف
               </Button>
               <Button
                 type="submit"
                 disabled={submitReviewMutation.isPending || message.trim().length < 10}
-                className="rounded-xl bg-primary text-primary-foreground font-bold text-xs sm:text-sm cursor-pointer shadow-xs"
+                className="h-10 px-5 rounded-md bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center leading-none shadow-xs hover:bg-primary/90 cursor-pointer"
               >
                 {submitReviewMutation.isPending ? (
                   <>
