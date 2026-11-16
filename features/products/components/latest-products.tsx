@@ -3,7 +3,7 @@
 import React, { useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingCart, Percent } from "lucide-react";
+import { Eye, Percent } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
@@ -166,13 +166,13 @@ export function LatestProducts({
                       </span>
                     </div>
 
-                    {/* دکمه اکشن قرمز رنگ «مشاهده و خرید» همراه با آیکون سبد خرید */}
+                    {/* دکمه اکشن قرمز رنگ «مشاهده محصول» */}
                     <Link
                       href={`/product/${product.slug}`}
                       className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs py-2 px-3 rounded-md flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-[0.98]"
                     >
-                      <ShoppingCart className="size-3.5" />
-                      <span>مشاهده و خرید</span>
+                      <Eye className="size-3.5" />
+                      <span>مشاهده محصول</span>
                     </Link>
                   </div>
                 </CarouselItem>

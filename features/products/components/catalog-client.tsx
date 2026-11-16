@@ -10,17 +10,15 @@ import {
   SlidersHorizontal,
   X,
   ChevronLeft,
-  ShoppingCart,
+  Eye,
   PackageX,
   Award,
   Layers,
   RotateCcw,
   Loader2,
 } from "lucide-react";
-import { toast } from "sonner";
-import { useProducts, useCategories, type Product } from "@/lib/api";
+import { useProducts, useCategories } from "@/lib/api";
 import { useBrands } from "@/lib/api/brands";
-import { useCartStore } from "@/lib/cart-store";
 import { BrandFilterBox } from "@/features/brands/components/brand-filter-box";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,7 +38,6 @@ export function CatalogClient() {
   const { data: serverProducts = [], isLoading: isProductsLoading } = useProducts();
   const { data: categories = [] } = useCategories();
   const { data: brands = [] } = useBrands();
-  const addItemToCart = useCartStore((s) => s.addItem);
 
   // استیت‌های فیلتر، مقداردهی اولیه هوشمند از روی URL
   const [searchQuery, setSearchQuery] = useState(
@@ -143,17 +140,6 @@ export function CatalogClient() {
     setInStockOnly(false);
     setSortBy("newest");
     router.replace("/products");
-  };
-
-  // افزودن کالا به سبد
-  const handleAddToCart = (product: Product) => {
-    addItemToCart(product, 1);
-    toast.success(`«${product.title}» به سبد خرید اضافه شد.`, {
-      action: {
-        label: "مشاهده سبد",
-        onClick: () => router.push("/cart"),
-      },
-    });
   };
 
   return (
@@ -468,15 +454,13 @@ export function CatalogClient() {
                         </div>
                       </div>
 
-                      <Button
-                        size="sm"
-                        disabled={product.stock <= 0}
-                        onClick={() => handleAddToCart(product)}
-                        className="rounded-xl text-xs font-bold gap-1.5 h-8 px-3"
+                      <Link
+                        href={`/product/${product.slug}`}
+                        className="inline-flex items-center justify-center rounded-xl text-xs font-bold gap-1.5 h-8 px-3 bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs transition-all"
                       >
-                        <ShoppingCart className="size-3.5" />
-                        <span>خرید</span>
-                      </Button>
+                        <Eye className="size-3.5" />
+                        <span>مشاهده محصول</span>
+                      </Link>
                     </div>
                   </div>
                 );

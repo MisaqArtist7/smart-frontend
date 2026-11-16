@@ -8,17 +8,15 @@ import {
   SlidersHorizontal,
   X,
   ChevronLeft,
-  ShoppingCart,
+  Eye,
   PackageX,
   RotateCcw,
   Loader2,
   FolderTree,
   Banknote,
 } from "lucide-react";
-import { toast } from "sonner";
-import { useProducts, useCategories, useCategory, type Product } from "@/lib/api";
+import { useProducts, useCategories, useCategory } from "@/lib/api";
 import { useBrands } from "@/lib/api/brands";
-import { useCartStore } from "@/lib/cart-store";
 import { BrandFilterBox } from "@/features/brands/components/brand-filter-box";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,7 +57,6 @@ export function CategoryClient({ slug }: CategoryClientProps) {
   const { data: categories = [], isLoading: isCategoriesLoading } = useCategories();
   const { data: specificCategory, isLoading: isCategoryLoading } = useCategory(slug);
   const { data: brands = [] } = useBrands();
-  const addItemToCart = useCartStore((s) => s.addItem);
 
   // استیت‌های فیلتر
   const [selectedBrandIds, setSelectedBrandIds] = useState<number[]>([]);
@@ -198,21 +195,6 @@ export function CategoryClient({ slug }: CategoryClientProps) {
         return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
       });
   }, [categoryProducts, selectedBrandIds, inStockOnly, minPrice, maxPrice, sortBy]);
-
-  // افزودن کالا به سبد خرید
-  const handleAddToCart = (e: React.MouseEvent, product: Product) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (product.stock <= 0) {
-      toast.error("متأسفانه موجودی این کالا به پایان رسیده است.");
-      return;
-    }
-
-    addItemToCart(product, 1);
-
-    toast.success(`«${product.title}» به سبد خرید افزوده شد.`);
-  };
 
   // پاک کردن تمام فیلترها
   const handleResetFilters = () => {
@@ -465,11 +447,11 @@ export function CategoryClient({ slug }: CategoryClientProps) {
         {/* گرید نمایش محصولات */}
         <section className="lg:col-span-3 xl:col-span-4 2xl:col-span-5">
           {isProductsLoading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-0">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div
                   key={i}
-                  className="rounded-md border border-border bg-card p-4 h-[320px] animate-pulse space-y-3 flex flex-col justify-between"
+                  className="rounded-xs border border-border bg-card p-4 h-[320px] animate-pulse space-y-3 flex flex-col justify-between"
                 >
                   <div className="size-full max-h-[160px] bg-muted/60 rounded-xl" />
                   <div className="space-y-2">
@@ -503,17 +485,16 @@ export function CategoryClient({ slug }: CategoryClientProps) {
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-0">
               {filteredProducts.map((product) => {
                 const hasDiscount =
                   product.discountPrice != null && product.discountPrice < product.price;
                 const finalPrice = product.discountPrice ?? product.price;
-                const isOutOfStock = product.stock <= 0;
 
                 return (
                   <div
                     key={product.id}
-                    className="group relative flex flex-col justify-between rounded-md border border-border/80 bg-card p-3 sm:p-4 shadow-xs transition-all duration-300 hover:border-primary/40 hover:shadow-md"
+                    className="group relative flex flex-col justify-between rounded-xs border border-border/80 bg-card p-3 sm:p-4 shadow-xs transition-all duration-300 hover:border-primary/40 hover:shadow-md"
                   >
                     <Link href={`/product/${product.slug}`} className="block space-y-3">
                       {/* تصویر کالا */}
@@ -566,21 +547,15 @@ export function CategoryClient({ slug }: CategoryClientProps) {
                       </div>
                     </Link>
 
-                    {/* دکمه افزودن به سبد خرید */}
+                    {/* دکمه مشاهده محصول */}
                     <div className="pt-3">
-                      <Button
-                        onClick={(e) => handleAddToCart(e, product)}
-                        disabled={isOutOfStock}
-                        variant={isOutOfStock ? "outline" : "default"}
-                        size="sm"
-                        className={cn(
-                          "w-full rounded-xl text-xs font-bold gap-1.5 h-9",
-                          !isOutOfStock && "bg-primary text-primary-foreground shadow-xs hover:bg-primary/90"
-                        )}
+                      <Link
+                        href={`/product/${product.slug}`}
+                        className="w-full rounded-xl text-xs font-bold gap-1.5 h-9 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 flex items-center justify-center transition-all"
                       >
-                        <ShoppingCart className="size-3.5" />
-                        <span>{isOutOfStock ? "ناموجود" : "افزودن به سبد"}</span>
-                      </Button>
+                        <Eye className="size-3.5" />
+                        <span>مشاهده محصول</span>
+                      </Link>
                     </div>
                   </div>
                 );

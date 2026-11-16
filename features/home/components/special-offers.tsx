@@ -3,7 +3,7 @@
 import React, { useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Flame, ArrowLeft, ShoppingCart, Percent } from "lucide-react";
+import { Flame, ArrowLeft, Eye, Percent } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
@@ -158,13 +158,13 @@ export function SpecialOffers({ className }: SpecialOffersProps) {
                           </span>
                         </div>
 
-                        {/* دکمه خرید */}
+                        {/* دکمه مشاهده محصول */}
                         <Link
                           href={`/product/${product.slug}`}
                           className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs py-2 px-3 rounded-md flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-[0.98]"
                         >
-                          <ShoppingCart className="size-3.5" />
-                          <span>خرید شگفت‌انگیز</span>
+                          <Eye className="size-3.5" />
+                          <span>مشاهده محصول</span>
                         </Link>
                       </div>
                     </CarouselItem>

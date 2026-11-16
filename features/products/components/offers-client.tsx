@@ -7,7 +7,7 @@ import {
   Flame,
   Sparkles,
   Percent,
-  ShoppingCart,
+  Eye,
   ChevronDown,
   RotateCcw,
   CheckCircle2,
@@ -15,9 +15,7 @@ import {
   ArrowUpDown,
   Tag,
 } from "lucide-react";
-import { toast } from "sonner";
-import { useProducts, type Product } from "@/lib/api";
-import { useCartStore } from "@/lib/cart-store";
+import { useProducts } from "@/lib/api";
 import { cn, normalizeImageUrl } from "@/lib/utils";
 
 type SortOption = "discount-desc" | "price-asc" | "price-desc" | "newest";
@@ -25,7 +23,6 @@ type DiscountFilter = "all" | "discounted" | "high-discount" | "in-stock";
 
 export function OffersClient() {
   const { data: serverProducts = [], isLoading } = useProducts();
-  const addItemToCart = useCartStore((s) => s.addItem);
 
   // وضعیت‌های فیلتر و مرتب‌سازی
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -113,19 +110,6 @@ export function OffersClient() {
     selectedDiscountFilter,
     sortBy,
   ]);
-
-  const handleAddToCart = (product: Product, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (product.stock <= 0) {
-      toast.error("متأسفانه موجودی این کالا در انبار به اتمام رسیده است.");
-      return;
-    }
-
-    addItemToCart(product, 1);
-    toast.success(`«${product.title}» به سبد خرید اضافه شد.`);
-  };
 
   const handleResetFilters = () => {
     setSelectedCategory("all");
@@ -403,16 +387,14 @@ export function OffersClient() {
                   </div>
                 </div>
 
-                {/* دکمه افزودن به سبد خرید */}
-                <button
-                  type="button"
-                  disabled={isOutOfStock}
-                  onClick={(e) => handleAddToCart(product, e)}
-                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs sm:text-sm py-2 px-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-xs active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                {/* دکمه مشاهده محصول */}
+                <Link
+                  href={`/product/${product.slug}`}
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs sm:text-sm py-2 px-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-xs active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                 >
-                  <ShoppingCart className="size-4 shrink-0" />
-                  <span>{isOutOfStock ? "ناموجود در انبار" : "افزودن به سبد خرید"}</span>
-                </button>
+                  <Eye className="size-4 shrink-0" />
+                  <span>مشاهده محصول</span>
+                </Link>
               </div>
             );
           })}

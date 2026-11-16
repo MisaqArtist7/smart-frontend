@@ -9,17 +9,15 @@ import {
   SlidersHorizontal,
   X,
   ChevronLeft,
-  ShoppingCart,
+  Eye,
   PackageX,
   Layers,
   RotateCcw,
   Loader2,
   ArrowRight,
 } from "lucide-react";
-import { toast } from "sonner";
-import { useProducts, useCategories, type Product } from "@/lib/api";
+import { useProducts, useCategories } from "@/lib/api";
 import { useBrands } from "@/lib/api/brands";
-import { useCartStore } from "@/lib/cart-store";
 import { BrandFilterBox } from "@/features/brands/components/brand-filter-box";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -39,7 +37,6 @@ export function SearchClient() {
   const { data: serverProducts = [], isLoading: isProductsLoading } = useProducts();
   const { data: categories = [], isLoading: isCategoriesLoading } = useCategories();
   const { data: brands = [] } = useBrands();
-  const addItemToCart = useCartStore((s) => s.addItem);
 
   const brandMap = useMemo(() => {
     const map = new Map<number, { name: string; slug: string }>();
@@ -150,17 +147,6 @@ export function SearchClient() {
     setSelectedBrandIds([]);
     setInStockOnly(false);
     setSortBy("newest");
-  };
-
-  // افزودن کالا به سبد
-  const handleAddToCart = (product: Product) => {
-    addItemToCart(product, 1);
-    toast.success(`«${product.title}» به سبد خرید اضافه شد.`, {
-      action: {
-        label: "مشاهده سبد",
-        onClick: () => router.push("/cart"),
-      },
-    });
   };
 
   const hasActiveFilters =
@@ -529,17 +515,13 @@ export function SearchClient() {
                         )}
                       </div>
 
-                      <Button
-                        size="sm"
-                        variant={isOutOfStock ? "outline" : "default"}
-                        disabled={isOutOfStock}
-                        onClick={() => handleAddToCart(product)}
-                        className="rounded-xl h-9 px-3 gap-1.5 text-xs font-bold shrink-0"
-                        aria-label="افزودن به سبد خرید"
+                      <Link
+                        href={`/product/${product.slug}`}
+                        className="inline-flex items-center justify-center rounded-xl h-9 px-3 gap-1.5 text-xs font-bold shrink-0 bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs transition-all"
                       >
-                        <ShoppingCart className="size-3.5" />
-                        <span className="hidden sm:inline">افزودن</span>
-                      </Button>
+                        <Eye className="size-3.5" />
+                        <span>مشاهده محصول</span>
+                      </Link>
                     </div>
                   </div>
                 );
