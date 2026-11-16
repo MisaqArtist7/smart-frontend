@@ -579,7 +579,7 @@ export default function CheckoutPage() {
                 <Button
                   onClick={handleFinalSubmit}
                   disabled={createOrderMutation.isPending || !effectiveAddressId || items.length === 0}
-                  className="w-full h-12 rounded-2xl bg-primary text-primary-foreground font-black text-sm sm:text-base shadow-xs hover:bg-primary/90 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.98]"
+                  className="w-full h-10 px-5 rounded-md bg-primary text-primary-foreground font-bold text-sm leading-none shadow-xs hover:bg-primary/90 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.98]"
                 >
                   {createOrderMutation.isPending ? (
                     <span className="flex items-center gap-2">

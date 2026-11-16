@@ -382,7 +382,7 @@ export function AuthCard({
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full h-11 rounded-xl text-xs sm:text-sm font-bold shadow-md hover:shadow-lg transition-all mt-2"
+                className="w-full h-10 px-5 rounded-md text-sm font-bold leading-none shadow-md hover:shadow-lg transition-all mt-2"
               >
                 {isSubmitting ? (
                   <span className="flex items-center gap-2">
@@ -538,7 +538,7 @@ export function AuthCard({
               type="button"
               onClick={() => handleVerifyOtp()}
               disabled={isSubmitting || otpCode.length !== 6 || (isNewUser && name.trim().length < 2)}
-              className="w-full h-11 rounded-xl text-xs sm:text-sm font-bold shadow-md hover:shadow-lg transition-all"
+              className="w-full h-10 px-5 rounded-md text-sm font-bold leading-none shadow-md hover:shadow-lg transition-all"
             >
               {isSubmitting ? (
                 <span className="flex items-center gap-2">

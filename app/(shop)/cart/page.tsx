@@ -144,7 +144,7 @@ export default function CartPage() {
 
             <Link
               href="/"
-              className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-bold px-6 py-3 rounded-2xl text-sm sm:text-base shadow-xs hover:bg-primary/90 transition-all active:scale-95"
+              className="inline-flex items-center justify-center gap-2 h-10 px-5 rounded-md bg-primary text-primary-foreground font-bold text-sm leading-none shadow-xs hover:bg-primary/90 transition-all active:scale-95"
             >
               <span>بازگشت به صفحه اصلی</span>
               <ArrowLeft className="size-4" />
@@ -357,7 +357,7 @@ export default function CartPage() {
                 {/* دکمه اقدام جهت تسویه */}
                 <Button
                   onClick={() => router.push("/checkout")}
-                  className="w-full h-12 rounded-2xl bg-primary text-primary-foreground font-black text-sm sm:text-base shadow-xs hover:bg-primary/90 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.98]"
+                  className="w-full h-10 px-5 rounded-md bg-primary text-primary-foreground font-bold text-sm leading-none shadow-xs hover:bg-primary/90 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.98]"
                 >
                   <span>ادامه فرایند خرید و ثبت آدرس</span>
                   <ArrowLeft className="size-4" />

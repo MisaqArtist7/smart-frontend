@@ -830,7 +830,7 @@ export default function OrderDetailsPage() {
             <div className="flex flex-col gap-2 pt-1">
               <Link
                 href="/profile/orders"
-                className="w-full h-11 rounded-xl bg-card border border-border hover:bg-muted text-foreground font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition-colors"
+                className="w-full h-10 px-5 rounded-md bg-card border border-border hover:bg-muted text-foreground font-bold text-sm leading-none flex items-center justify-center gap-2 shadow-xs transition-colors"
               >
                 <PackageCheck className="size-4 text-primary" />
                 <span>مشاهده همه سفارش‌های من</span>
@@ -838,7 +838,7 @@ export default function OrderDetailsPage() {
 
               <Link
                 href="/"
-                className="w-full h-11 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary font-bold text-xs flex items-center justify-center gap-2 transition-colors"
+                className="w-full h-10 px-5 rounded-md bg-primary/10 hover:bg-primary/20 text-primary font-bold text-sm leading-none flex items-center justify-center gap-2 transition-colors"
               >
                 <span>بازگشت به صفحه اصلی</span>
                 <ArrowRight className="size-3.5" />

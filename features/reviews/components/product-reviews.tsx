@@ -174,7 +174,7 @@ export function ProductReviews({ productId, productTitle }: ProductReviewsProps)
           <div className="md:col-span-3 flex justify-center md:justify-end">
             <Button
               onClick={handleOpenReviewModal}
-              className="w-full md:w-auto h-11 px-5 rounded-xl bg-primary text-primary-foreground font-bold text-xs sm:text-sm shadow-xs hover:bg-primary/90 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
+              className="w-full md:w-auto h-10 px-5 rounded-md bg-primary text-primary-foreground font-bold text-sm leading-none shadow-xs hover:bg-primary/90 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
             >
               <Plus className="size-4" />
               <span>ثبت دیدگاه جدید</span>

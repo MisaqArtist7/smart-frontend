@@ -523,7 +523,7 @@ export default function SingleProductPage({ params }: PageProps) {
               <Button
                 onClick={handleAddToCart}
                 disabled={product.stock === 0}
-                className="w-full h-11 rounded-2xl bg-primary text-primary-foreground font-bold text-sm sm:text-base flex items-center justify-center gap-2 shadow-xs hover:bg-primary/90 cursor-pointer"
+                className="w-full h-10 px-5 rounded-md bg-primary text-primary-foreground font-bold text-sm leading-none flex items-center justify-center gap-2 shadow-xs hover:bg-primary/90 cursor-pointer"
               >
                 <ShoppingCart className="size-4" />
                 <span>افزودن به سبد خرید</span>
@@ -533,7 +533,7 @@ export default function SingleProductPage({ params }: PageProps) {
                 onClick={handleBuyNow}
                 disabled={product.stock === 0}
                 variant="outline"
-                className="w-full h-11 rounded-2xl border-primary/30 text-primary hover:bg-primary/5 font-bold text-sm sm:text-base flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full h-10 px-5 rounded-md border-primary/30 text-primary hover:bg-primary/5 font-bold text-sm leading-none flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Zap className="size-4" />
                 <span>خرید سریع و تسویه</span>

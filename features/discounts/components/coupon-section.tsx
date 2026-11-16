@@ -126,7 +126,7 @@ export function CouponSection({ className, orderAmount }: CouponSectionProps) {
           <button
             type="submit"
             disabled={validateMutation.isPending || !inputCode.trim()}
-            className="h-11 px-4 sm:px-5 rounded-xl bg-primary text-primary-foreground font-bold text-xs sm:text-sm shadow-xs transition-all hover:bg-primary/90 active:scale-95 disabled:opacity-50 disabled:pointer-events-none cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
+            className="h-10 px-5 rounded-md bg-primary text-primary-foreground font-bold text-sm leading-none shadow-xs transition-all hover:bg-primary/90 active:scale-95 disabled:opacity-50 disabled:pointer-events-none cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
           >
             {validateMutation.isPending ? (
               <>

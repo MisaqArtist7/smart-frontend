@@ -594,7 +594,7 @@ export function ContactUsClient() {
                   <button
                     type="submit"
                     disabled={isSubmitting || submitContactMutation.isPending}
-                    className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow-md shadow-primary/20 transition-all hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 active:scale-[0.99] disabled:opacity-60 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full h-10 px-5 rounded-md bg-primary text-primary-foreground font-bold text-sm leading-none shadow-md shadow-primary/20 transition-all hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 active:scale-[0.99] disabled:opacity-60 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer"
                   >
                     {isSubmitting || submitContactMutation.isPending ? (
                       <>
