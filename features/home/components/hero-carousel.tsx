@@ -114,7 +114,7 @@ export function HeroCarousel({
     <section
       dir="rtl"
       aria-label="بنرهای تبلیغاتی اصلی"
-      className={cn("w-full relative select-none", className)}
+      className={cn("w-full max-w-[1180px] mx-auto relative select-none", className)}
     >
       <Carousel
         dir="rtl"
@@ -132,17 +132,17 @@ export function HeroCarousel({
               <Link
                 href={banner.link}
                 draggable={false}
-                className="group relative block w-full max-h-[600px] overflow-hidden outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 select-none"
+                className="group relative block w-full aspect-[2154/730] overflow-hidden outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 select-none"
               >
-                {/* تصویر خالص بنر بدون پوشش متنی */}
+                {/* تصویر اصلی بنر هم‌اندازه دقیق با عرض اسلایدر */}
                 <Image
                   src={banner.image}
                   alt={banner.alt || banner.title || `بنر ${index + 1}`}
-                  width={2089}
-                  height={753}
+                  width={2154}
+                  height={730}
                   draggable={false}
                   priority={index === 0}
-                  className="w-full h-auto max-h-[600px] object-cover transition-transform duration-500 ease-out group-hover:scale-[1.01] select-none pointer-events-none"
+                  className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.01] select-none pointer-events-none"
                 />
               </Link>
             </CarouselItem>
