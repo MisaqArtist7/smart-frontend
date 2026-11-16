@@ -174,11 +174,11 @@ export function SpecialOffers({ className }: SpecialOffersProps) {
 
               <CarouselPrevious
                 aria-label="کالای قبلی"
-                className="hidden md:flex inset-s-1 inset-e-auto top-24 translate-y-0 z-30 size-10 rounded-full bg-primary hover:bg-primary/90 text-white hover:text-white border-2 border-white/80 shadow-lg cursor-pointer transition-transform hover:scale-105"
+                className="hidden md:flex opacity-0 pointer-events-none group-hover/special:opacity-100 group-hover/special:pointer-events-auto group-hover/special:disabled:opacity-40 inset-s-2 inset-e-auto top-1/2 bottom-auto -translate-y-1/2 z-30 size-11 [&_svg]:size-5 rounded-full bg-primary hover:bg-primary/90 text-white hover:text-white border-2 border-white/80 shadow-lg cursor-pointer transition-all duration-200 hover:scale-105 disabled:pointer-events-none group-hover/special:disabled:pointer-events-auto disabled:cursor-not-allowed"
               />
               <CarouselNext
                 aria-label="کالای بعدی"
-                className="hidden md:flex inset-e-1 inset-s-auto top-24 translate-y-0 z-30 size-10 rounded-full bg-primary hover:bg-primary/90 text-white hover:text-white border-2 border-white/80 shadow-lg cursor-pointer transition-transform hover:scale-105"
+                className="hidden md:flex opacity-0 pointer-events-none group-hover/special:opacity-100 group-hover/special:pointer-events-auto group-hover/special:disabled:opacity-40 inset-e-2 inset-s-auto top-1/2 bottom-auto -translate-y-1/2 z-30 size-11 [&_svg]:size-5 rounded-full bg-primary hover:bg-primary/90 text-white hover:text-white border-2 border-white/80 shadow-lg cursor-pointer transition-all duration-200 hover:scale-105 disabled:pointer-events-none group-hover/special:disabled:pointer-events-auto disabled:cursor-not-allowed"
               />
             </Carousel>
           </div>

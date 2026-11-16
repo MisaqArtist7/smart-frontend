@@ -3,7 +3,7 @@
 import React, { useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Percent } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
@@ -60,19 +60,19 @@ export function LatestProducts({
 
       {/* وضعیت در حال بارگذاری: اسکلتون لودینگ متناسب با ۶ ستون */}
       {isLoading && products.length === 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-[3px]">
           {Array.from({ length: 6 }).map((_, index) => (
             <div
               key={index}
-              className="flex flex-col justify-between h-85 sm:h-90 w-full rounded-md border border-border/70 bg-card p-3.5 sm:p-4 shadow-xs animate-pulse"
+              className="flex flex-col justify-between h-85 w-full rounded-xs border border-border/70 bg-card p-3.5 shadow-sm animate-pulse"
             >
-              <div className="w-full h-32 sm:h-36 rounded-xl bg-muted/60 mb-2" />
+              <div className="w-full h-44 rounded-md bg-muted/60 mb-2" />
               <div className="space-y-2 my-auto">
                 <div className="h-3.5 bg-muted/60 rounded w-4/5 mx-auto" />
                 <div className="h-3 bg-muted/40 rounded w-3/5 mx-auto" />
               </div>
               <div className="h-5 bg-muted/50 rounded w-1/2 my-2" />
-              <div className="h-9 bg-muted/60 rounded-xl w-full" />
+              <div className="h-9 bg-muted/60 rounded-md w-full" />
             </div>
           ))}
         </div>
@@ -94,33 +94,47 @@ export function LatestProducts({
           }}
           className="w-full relative group/carousel"
         >
-          {/* کانتینر اسلایدها با مارجین منطقی */}
-          <CarouselContent className="-ms-3 sm:-ms-4">
+          {/* کانتینر اسلایدها با فاصله ۳ پیکسل */}
+          <CarouselContent className="-ms-[3px]">
             {products.map((product) => {
               const rawImageUrl =
                 product.images?.[0]?.url ||
                 (typeof product.images?.[0] === "string" ? product.images[0] : null);
               const imageUrl = normalizeImageUrl(rawImageUrl, "/images/products/adapter-52240.png");
               const displayPrice = product.discountPrice ?? product.price;
+              const discountPercent =
+                product.discountPrice != null &&
+                product.discountPrice > 0 &&
+                product.discountPrice < product.price
+                  ? Math.round(((product.price - product.discountPrice) / product.price) * 100)
+                  : null;
 
               return (
                 <CarouselItem
                   key={product.id}
-                  className="ps-3 sm:ps-4 basis-[72%] sm:basis-[48%] md:basis-1/3 lg:basis-1/4 xl:basis-1/6"
+                  className="ps-[3px] basis-[72%] sm:basis-[48%] md:basis-1/3 lg:basis-1/4 xl:basis-1/6"
                 >
-                  <div className="group relative flex flex-col justify-between h-[340px] w-full rounded-md border border-border/80 bg-card p-3.5 sm:p-4 shadow-xs transition-all duration-300 hover:border-border hover:shadow-md hover:-translate-y-1">
+                  <div className="group/card relative flex flex-col justify-between h-85 w-full rounded-xs border border-border/80 bg-card text-card-foreground p-3.5 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                    {/* بج درصد تخفیف قرمز رنگ در صورت تخفیف‌دار بودن */}
+                    {discountPercent && (
+                      <div className="absolute top-3 inset-e-3 z-10 flex items-center gap-0.5 bg-primary text-primary-foreground font-black text-[11px] px-2 py-0.5 rounded-full shadow-xs">
+                        <span>{discountPercent.toLocaleString("fa-IR")}٪</span>
+                        <Percent className="size-2.5" />
+                      </div>
+                    )}
+
                     {/* بخش تصویر محصول در بالا */}
                     <Link
                       href={`/product/${product.slug}`}
-                      className="relative w-full h-32 sm:h-36 flex items-center justify-center p-2 mb-2 focus:outline-none"
+                      className="relative w-full h-44 flex items-center justify-center p-2 mb-2 focus:outline-none"
                     >
                       <div className="relative size-full flex items-center justify-center">
                         <Image
                           src={imageUrl}
                           alt={product.title}
-                          width={130}
-                          height={90}
-                          className="max-h-full max-w-full object-contain transition-transform duration-300 ease-out group-hover:scale-108 "
+                          width={444}
+                          height={444}
+                          className="max-h-full max-w-full object-contain transition-transform duration-300 ease-out group-hover/card:scale-108"
                         />
                       </div>
                     </Link>
@@ -130,24 +144,24 @@ export function LatestProducts({
                       href={`/product/${product.slug}`}
                       className="focus:outline-none focus-visible:underline"
                     >
-                      <h3 className="text-xs sm:text-[13px] font-bold text-foreground text-justify leading-snug line-clamp-2 min-h-[2.5rem] transition-colors group-hover:text-primary">
+                      <h3 className="font-bold text-foreground leading-snug line-clamp-2 min-h-10 transition-colors group-hover/card:text-primary">
                         {product.title}
                       </h3>
                     </Link>
 
                     {/* بخش قیمت و واحد پولی */}
-                    <div className="flex items-center justify-between mt-auto pt-3 pb-2.5 px-0.5 border-t border-border/30">
+                    <div className="flex items-center justify-between mt-auto pt-3 pb-2 px-0.5 border-t border-border/40">
                       <div className="flex flex-col">
-                        <span className="text-sm sm:text-base font-extrabold text-foreground tracking-tight">
+                        <span className="text-sm font-black text-foreground tracking-tight">
                           {displayPrice.toLocaleString("fa-IR")}
                         </span>
-                        {product.discountPrice != null && (
+                        {discountPercent != null && (
                           <span className="text-[11px] text-muted-foreground line-through">
                             {product.price.toLocaleString("fa-IR")}
                           </span>
                         )}
                       </div>
-                      <span className="text-xs text-muted-foreground font-medium">
+                      <span className="text-[11px] text-muted-foreground font-medium">
                         تومان
                       </span>
                     </div>
@@ -155,9 +169,9 @@ export function LatestProducts({
                     {/* دکمه اکشن قرمز رنگ «مشاهده و خرید» همراه با آیکون سبد خرید */}
                     <Link
                       href={`/product/${product.slug}`}
-                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs sm:text-sm py-2 px-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-xs active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs py-2 px-3 rounded-md flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-[0.98]"
                     >
-                      <ShoppingCart className="size-4 shrink-0" />
+                      <ShoppingCart className="size-3.5" />
                       <span>مشاهده و خرید</span>
                     </Link>
                   </div>
@@ -169,11 +183,11 @@ export function LatestProducts({
           {/* دکمه‌های ناوبری چپ و راست روی هاور دسکتاپ */}
           <CarouselPrevious
             aria-label="محصول قبلی"
-            className="hidden md:flex opacity-0 group-hover/carousel:opacity-100 transition-opacity start-2 end-auto top-1/2 -translate-y-1/2 z-20 size-9 rounded-full bg-background/90 hover:bg-background text-foreground border border-border shadow-md"
+            className="hidden md:flex opacity-0 pointer-events-none group-hover/carousel:opacity-100 group-hover/carousel:pointer-events-auto group-hover/carousel:disabled:opacity-40 inset-s-2 inset-e-auto top-1/2 bottom-auto -translate-y-1/2 z-30 size-11 [&_svg]:size-5 rounded-full bg-primary hover:bg-primary/90 text-white hover:text-white border-2 border-white/80 shadow-lg cursor-pointer transition-all duration-200 hover:scale-105 disabled:pointer-events-none group-hover/carousel:disabled:pointer-events-auto disabled:cursor-not-allowed"
           />
           <CarouselNext
             aria-label="محصول بعدی"
-            className="hidden md:flex opacity-0 group-hover/carousel:opacity-100 transition-opacity end-2 start-auto top-1/2 -translate-y-1/2 z-20 size-9 rounded-full bg-background/90 hover:bg-background text-foreground border border-border shadow-md"
+            className="hidden md:flex opacity-0 pointer-events-none group-hover/carousel:opacity-100 group-hover/carousel:pointer-events-auto group-hover/carousel:disabled:opacity-40 inset-e-2 inset-s-auto top-1/2 bottom-auto -translate-y-1/2 z-30 size-11 [&_svg]:size-5 rounded-full bg-primary hover:bg-primary/90 text-white hover:text-white border-2 border-white/80 shadow-lg cursor-pointer transition-all duration-200 hover:scale-105 disabled:pointer-events-none group-hover/carousel:disabled:pointer-events-auto disabled:cursor-not-allowed"
           />
         </Carousel>
       )}
