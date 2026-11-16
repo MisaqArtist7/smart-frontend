@@ -114,7 +114,7 @@ export function HeroCarousel({
     <section
       dir="rtl"
       aria-label="بنرهای تبلیغاتی اصلی"
-      className={cn("w-full max-w-[1180px] mx-auto relative select-none", className)}
+      className={cn("w-full max-w-[1280px] mx-auto mt-4 sm:mt-6 px-4 sm:px-6 xl:px-0 relative select-none", className)}
     >
       <Carousel
         dir="rtl"
@@ -132,7 +132,7 @@ export function HeroCarousel({
               <Link
                 href={banner.link}
                 draggable={false}
-                className="group relative block w-full aspect-[2154/730] overflow-hidden outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 select-none"
+                className="group relative block w-full aspect-[2154/730] rounded-2xl border border-border/80 shadow-xs overflow-hidden outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 select-none"
               >
                 {/* تصویر اصلی بنر هم‌اندازه دقیق با عرض اسلایدر */}
                 <Image
