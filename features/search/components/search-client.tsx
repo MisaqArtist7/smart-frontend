@@ -522,9 +522,9 @@ export function SearchClient() {
                 return (
                   <div
                     key={product.id}
-                    className="group relative flex flex-col justify-between rounded-xs border border-border/80 bg-card p-3 sm:p-4 shadow-xs transition-all duration-300 hover:border-primary/40 hover:shadow-md"
+                    className="group relative flex flex-col justify-between h-full rounded-xs border border-border/80 bg-card p-3 sm:p-4 shadow-xs transition-all duration-300 hover:border-primary/40 hover:shadow-md"
                   >
-                    <Link href={`/product/${product.slug}`} className="block space-y-3">
+                    <Link href={`/product/${product.slug}`} className="flex flex-col flex-1 justify-between space-y-3">
                       {/* تصویر کالا */}
                       <div className="relative aspect-square w-full rounded-xl bg-muted/20 p-2 flex items-center justify-center overflow-hidden">
                         <Image
@@ -555,12 +555,12 @@ export function SearchClient() {
                       </div>
 
                       {/* عنوان و قیمت */}
-                      <div className="space-y-2">
-                        <h3 className="text-xs sm:text-sm font-bold text-foreground line-clamp-2 min-h-[2.5rem] leading-snug group-hover:text-primary transition-colors">
+                      <div className="space-y-2 mt-auto">
+                        <h3 className="text-xs sm:text-sm font-bold text-foreground line-clamp-2 h-[2.75rem] leading-snug group-hover:text-primary transition-colors">
                           {product.title}
                         </h3>
 
-                        <div className="pt-1 border-t border-border/40 flex flex-col items-end">
+                        <div className="pt-1.5 border-t border-border/40 flex flex-col items-end justify-end min-h-[3.25rem]">
                           {hasDiscount && (
                             <span className="text-[11px] text-muted-foreground line-through">
                               {product.price.toLocaleString("fa-IR")}
