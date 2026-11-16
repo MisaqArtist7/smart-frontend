@@ -13,7 +13,9 @@ export default function AdminSettingsPage() {
   const [supportPhone, setSupportPhone] = useState("۰۹۱۲۲۱۹۳۵۵۱");
   const [supportEmail, setSupportEmail] = useState("info@smart-electric.ir");
   const [shippingLimit, setShippingLimit] = useState("۵,۰۰۰,۰۰۰");
-  const [address, setAddress] = useState("تهران، لاله زار جنوبی، کوچه بوشهری، پاساژ نیرو الکتریک، پلاک ۱۲");
+  const [address, setAddress] = useState(
+    "شعبه ۱: تهران، لاله‌زار نو، نبش منوچهری | شعبه ۲: تهران، شهرستان دماوند، بلوار شهید بهشتی، جنب اداره ثبت اسناد"
+  );
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();

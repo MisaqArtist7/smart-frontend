@@ -124,7 +124,10 @@ export function ContactUsClient() {
     "۰۹۳۰ ۲۳۴ ۰۲۷۹";
   const shopAddress =
     process.env.NEXT_PUBLIC_SHOP_ADDRESS?.trim() ||
-    "تهران، خیابان لاله‌زار جنوبی، کوچه باربد، پاساژ ادیسون، طبقه همکف، پلاک ۱۲";
+    "تهران، لاله‌زار نو، نبش منوچهری";
+  const branch2Address =
+    process.env.NEXT_PUBLIC_SHOP_BRANCH2_ADDRESS?.trim() ||
+    "تهران، شهرستان دماوند، بلوار شهید بهشتی، جنب اداره ثبت اسناد";
   const shopWorkingHours =
     process.env.NEXT_PUBLIC_SHOP_WORKING_HOURS?.trim() ||
     "شنبه تا چهارشنبه ۹ الی ۱۸ | پنجشنبه‌ها ۹ الی ۱۴";
@@ -214,13 +217,20 @@ export function ContactUsClient() {
             <div className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">
               <Building2 className="size-5" />
             </div>
-            <div className="space-y-1.5 flex-1 text-right">
+            <div className="space-y-2 flex-1 text-right">
               <span className="block text-xs font-bold text-muted-foreground">
-                آدرس دفتر مرکزی و فروشگاه حضوری
+                آدرس شعب و فروشگاه‌های حضوری
               </span>
-              <p className="text-xs sm:text-sm font-semibold text-foreground leading-relaxed">
-                {shopAddress}
-              </p>
+              <div className="space-y-1.5 text-xs sm:text-sm font-semibold text-foreground leading-relaxed">
+                <p>
+                  <span className="text-primary font-bold">شعبه ۱: </span>
+                  {shopAddress}
+                </p>
+                <p>
+                  <span className="text-primary font-bold">شعبه ۲: </span>
+                  {branch2Address}
+                </p>
+              </div>
               <span className="block text-[11px] text-muted-foreground">
                 امکان مراجعه حضوری و دریافت کالا در ساعات کاری رسمی
               </span>
@@ -321,7 +331,7 @@ export function ContactUsClient() {
             </div>
             <span className="text-[11px] text-muted-foreground flex items-center gap-1 font-medium">
               <MapPin className="size-3 text-primary" />
-              لاله‌زار جنوبی
+              لاله‌زار نو، نبش منوچهری
             </span>
           </div>
 

@@ -274,7 +274,10 @@ export default function Footer() {
 
               <div className="flex items-start gap-2 leading-relaxed">
                 <MapPin className="size-4 text-primary shrink-0 mt-0.5" />
-                <span>تهران، خیابان لاله‌زار جنوبی، پاساژ صنعت، پلاک ۲۴</span>
+                <div className="space-y-1">
+                  <p>شعبه ۱: تهران، لاله‌زار نو، نبش منوچهری</p>
+                  <p>شعبه ۲: تهران، شهرستان دماوند، بلوار شهید بهشتی، جنب اداره ثبت اسناد</p>
+                </div>
               </div>
             </div>
           </div>
