@@ -18,7 +18,6 @@ import {
   Layers,
 } from "lucide-react";
 import { useProducts, useCategories, useCategory } from "@/lib/api";
-import { useBrands } from "@/lib/api/brands";
 import { BrandFilterBox } from "@/features/brands/components/brand-filter-box";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,7 +59,6 @@ export function CategoryClient({ slug }: CategoryClientProps) {
   const { data: serverProducts = [], isLoading: isProductsLoading } = useProducts();
   const { data: categories = [], isLoading: isCategoriesLoading } = useCategories();
   const { data: specificCategory, isLoading: isCategoryLoading } = useCategory(slug);
-  const { data: brands = [] } = useBrands();
 
   // استیت‌های فیلتر
   const [selectedBrandIds, setSelectedBrandIds] = useState<number[]>([]);
@@ -401,7 +399,7 @@ export function CategoryClient({ slug }: CategoryClientProps) {
       <div className="grid grid-cols-1 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6 items-start">
         {/* سایدبار فیلترهای دسکتاپ */}
         <aside className="hidden lg:block lg:col-span-1 space-y-4 sticky top-24">
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-xs space-y-5">
+          <div className="rounded-xs border border-border bg-card p-5 shadow-xs space-y-5">
             <div className="flex items-center justify-between pb-3 border-b border-border">
               <div className="flex items-center gap-2 font-black text-sm text-foreground">
                 <Filter className="size-4 text-primary" />
