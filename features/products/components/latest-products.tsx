@@ -59,10 +59,10 @@ export function LatestProducts({
         </div>
       </div>
 
-      {/* وضعیت در حال بارگذاری: اسکلتون لودینگ متناسب با ۵ ستون */}
+      {/* وضعیت در حال بارگذاری: اسکلتون لودینگ متناسب با ۶ ستون */}
       {isLoading && products.length === 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-[3px]">
-          {Array.from({ length: 5 }).map((_, index) => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-[3px]">
+          {Array.from({ length: 6 }).map((_, index) => (
             <div
               key={index}
               className="flex flex-col justify-between h-72 sm:h-80 rounded-xs border border-border/70 bg-card p-3 sm:p-4 shadow-xs animate-pulse space-y-2.5"
@@ -114,7 +114,7 @@ export function LatestProducts({
               return (
                 <CarouselItem
                   key={product.id}
-                  className="ps-[3px] basis-[72%] sm:basis-[48%] md:basis-1/3 lg:basis-1/4 xl:basis-1/5"
+                  className="ps-[3px] basis-[72%] sm:basis-[48%] md:basis-1/3 lg:basis-1/4 xl:basis-1/6"
                 >
                   <div className="group relative flex flex-col justify-between h-full rounded-xs border border-border/80 bg-card p-3 sm:p-4 shadow-xs transition-all duration-300 hover:border-primary/40 hover:shadow-md">
                     <Link href={`/product/${product.slug}`} className="flex flex-col flex-1 justify-between space-y-3">
