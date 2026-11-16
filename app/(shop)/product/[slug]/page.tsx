@@ -21,15 +21,14 @@ import {
   AlertCircle,
   Plus,
   Minus,
-  Award,
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/footer";
 import { useProduct } from "@/lib/api";
+import { useBrands } from "@/lib/api/brands";
 import { useProductReviews } from "@/lib/api/reviews";
 import { useCartStore } from "@/lib/cart-store";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LatestProducts from "@/components/home/latest-products";
 import { ProductReviews } from "@/components/product/product-reviews";
@@ -45,9 +44,18 @@ export default function SingleProductPage({ params }: PageProps) {
 
   // دریافت اطلاعات محصول از هوک
   const { data: product, isLoading, isError } = useProduct(slug);
+  const { data: brands = [] } = useBrands();
   const { data: reviewsData } = useProductReviews(product?.id);
   const reviewsSummary = reviewsData?.summary;
   const addItemToCart = useCartStore((s) => s.addItem);
+
+  const resolvedBrand = useMemo(() => {
+    if (product?.brand) return product.brand;
+    if (product?.brandId && brands.length > 0) {
+      return brands.find((b) => b.id === product.brandId) || null;
+    }
+    return null;
+  }, [product, brands]);
 
   // استیت‌های صفحه
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -287,49 +295,10 @@ export default function SingleProductPage({ params }: PageProps) {
           {/* ستون وسط: اطلاعات، مشخصات اجمالی و امتیاز محصول */}
           <div className="lg:col-span-5 space-y-5">
             <div>
-              {/* دسته‌بندی، برند و کد کالا */}
-              <div className="flex flex-wrap items-center gap-2 mb-2">
-                <Badge variant="outline" className="text-sm font-semibold border-border">
-                  {product.category?.name || product.categoryName || "تجهیزات صنعتی"}
-                </Badge>
-
-                {product.brand && (
-                  <Link
-                    href={`/search?q=${encodeURIComponent(product.brand.name)}`}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-sm font-bold bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 transition-colors"
-                  >
-                    {product.brand.logo ? (
-                      <span className="relative size-4 rounded-full overflow-hidden bg-background shrink-0 inline-block">
-                        <Image
-                          src={product.brand.logo}
-                          alt={product.brand.name}
-                          fill
-                          className="object-contain"
-                        />
-                      </span>
-                    ) : (
-                      <Award className="size-3.5" />
-                    )}
-                    <span>برند: {product.brand.name}</span>
-                  </Link>
-                )}
-
-                {product.sku && (
-                  <span className="font-mono text-sm text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-md">
-                    SKU: {product.sku}
-                  </span>
-                )}
-              </div>
-
               {/* عنوان کالا */}
               <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight leading-snug">
                 {product.title}
               </h1>
-
-              {/* نامک انگلیسی */}
-              <p className="text-sm font-mono text-muted-foreground mt-1">
-                {product.slug}
-              </p>
             </div>
 
             {/* امتیاز و ارزیابی خریداران */}
@@ -613,16 +582,7 @@ export default function SingleProductPage({ params }: PageProps) {
                     <tr className="border-b border-border/60 bg-muted/10">
                       <td className="p-3.5 font-bold text-foreground">برند سازنده</td>
                       <td className="p-3.5 text-muted-foreground">
-                        {product.brand ? (
-                          <Link
-                            href={`/search?q=${encodeURIComponent(product.brand.name)}`}
-                            className="inline-flex items-center gap-1.5 text-primary hover:underline font-bold"
-                          >
-                            <span>{product.brand.name}</span>
-                          </Link>
-                        ) : (
-                          "متفرقه / بدون برند"
-                        )}
+                        {resolvedBrand ? resolvedBrand.name : "متفرقه / بدون برند"}
                       </td>
                     </tr>
                     <tr className="border-b border-border/60">
