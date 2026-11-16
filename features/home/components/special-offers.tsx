@@ -53,28 +53,28 @@ export function SpecialOffers({ className }: SpecialOffersProps) {
         <div className="absolute -inset-e-10 -top-10 size-60 rounded-full bg-black/10 blur-3xl pointer-events-none" />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-center">
-          {/* ستون راست (در دسکتاپ): عنوان شگفت‌انگیز + تایمر معکوس */}
+          {/* ستون راست (در دسکتاپ): عنوان شگفت‌انگیز */}
           <div className="lg:col-span-3 flex flex-col items-center lg:items-start text-center lg:text-start space-y-4">
-            <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-xs px-3.5 py-1.5 rounded-full text-xs font-bold shadow-xs">
-              <Flame className="size-4 text-amber-300 animate-pulse" />
+            <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-xs px-4 py-1.5 rounded-full text-sm font-bold shadow-xs">
+              <Flame className="size-4.5 text-amber-300 animate-pulse" />
               <span>پیشنهاد شگفت‌انگیز</span>
             </div>
 
             <div>
-              <h2 className="text-xl sm:text-2xl font-black tracking-tight leading-tight">
+              <h2 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight">
                 تخفیف‌های ویژه امروز
               </h2>
-              <p className="text-xs text-primary-foreground/80 mt-1.5 leading-relaxed">
+              <p className="text-sm sm:text-base text-primary-foreground/90 mt-2 leading-relaxed">
                 فرصت خرید تجهیزات برق و شبکه با تخفیف طلایی
               </p>
             </div>
 
             <Link
               href="/offers"
-              className="inline-flex items-center gap-2 text-xs font-bold text-primary-foreground/90 hover:text-white transition-colors group pt-2"
+              className="inline-flex items-center gap-2 text-sm font-bold text-primary-foreground/95 hover:text-white transition-colors group pt-2"
             >
               <span>مشاهده تمام تخفیف‌ها</span>
-              <ArrowLeft className="size-3.5 transition-transform group-hover:-translate-x-1" />
+              <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-1" />
             </Link>
           </div>
 
@@ -89,7 +89,7 @@ export function SpecialOffers({ className }: SpecialOffersProps) {
               }}
               className="w-full relative group/special"
             >
-              <CarouselContent>
+              <CarouselContent className="-ms-[3px]">
                 {discountedProducts.map((product) => {
                   const rawImageUrl =
                     product.images?.[0]?.url ||
@@ -104,9 +104,9 @@ export function SpecialOffers({ className }: SpecialOffersProps) {
                   return (
                     <CarouselItem
                       key={product.id}
-                      className="ps-3 basis-[70%] sm:basis-[45%] md:basis-1/3 xl:basis-1/4"
+                      className="ps-[3px] basis-[70%] sm:basis-[45%] md:basis-1/3 xl:basis-1/4"
                     >
-                      <div className="group/card relative flex flex-col justify-between h-85 w-full rounded-md bg-card text-card-foreground p-3.5 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                      <div className="group/card relative flex flex-col justify-between h-85 w-full rounded-xs bg-card text-card-foreground p-3.5 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
                         {/* بج درصد تخفیف قرمز رنگ */}
                         {discountPercent && (
                           <div className="absolute top-3 inset-e-3 z-10 flex items-center gap-0.5 bg-primary text-primary-foreground font-black text-[11px] px-2 py-0.5 rounded-full shadow-xs">
@@ -174,11 +174,11 @@ export function SpecialOffers({ className }: SpecialOffersProps) {
 
               <CarouselPrevious
                 aria-label="کالای قبلی"
-                className="hidden md:flex opacity-0 group-hover/special:opacity-100 transition-opacity inset-s-2 inset-e-auto top-1/2 -translate-y-1/2 z-20 size-8 rounded-full bg-background/90 text-foreground border border-border shadow-md"
+                className="hidden md:flex inset-s-1 inset-e-auto top-24 translate-y-0 z-30 size-10 rounded-full bg-primary hover:bg-primary/90 text-white hover:text-white border-2 border-white/80 shadow-lg cursor-pointer transition-transform hover:scale-105"
               />
               <CarouselNext
                 aria-label="کالای بعدی"
-                className="hidden md:flex opacity-0 group-hover/special:opacity-100 transition-opacity inset-e-2 inset-s-auto top-1/2 -translate-y-1/2 z-20 size-8 rounded-full bg-background/90 text-foreground border border-border shadow-md"
+                className="hidden md:flex inset-e-1 inset-s-auto top-24 translate-y-0 z-30 size-10 rounded-full bg-primary hover:bg-primary/90 text-white hover:text-white border-2 border-white/80 shadow-lg cursor-pointer transition-transform hover:scale-105"
               />
             </Carousel>
           </div>
