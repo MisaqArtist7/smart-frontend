@@ -13,20 +13,39 @@ import {
   PackageX,
   Layers,
   RotateCcw,
-  Loader2,
-  ArrowRight,
+  Banknote,
 } from "lucide-react";
 import { useProducts, useCategories } from "@/lib/api";
 import { useBrands } from "@/lib/api/brands";
 import { BrandFilterBox } from "@/features/brands/components/brand-filter-box";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Select } from "@/components/ui/select";
 import { formatToman } from "@/lib/order-utils";
+import { toEnglishDigits } from "@/lib/auth-api";
 import { cn, normalizeImageUrl } from "@/lib/utils";
 
-type SortOption = "newest" | "price-asc" | "price-desc" | "discount-desc";
+type SortOption = "newest" | "discount-desc" | "price-desc" | "price-asc";
+
+const PRICE_MIN = 0;
+const PRICE_MAX = 500_000_000;
+const PRICE_STEP = 500_000;
+
+/** تبدیل رشته عددی فارسی یا انگلیسی (با یا بدون کاما) به عدد معتبر */
+function parsePriceInput(val: string): number | null {
+  const digits = toEnglishDigits(val).replace(/[^0-9]/g, "");
+  if (!digits) return null;
+  const num = Number(digits);
+  return Number.isFinite(num) ? num : null;
+}
+
+/** فرمت‌دهی عدد قیمت به ارقام فارسی با جداکننده هزارگان */
+function formatPriceInput(num: number): string {
+  return num.toLocaleString("fa-IR");
+}
 
 const FALLBACK_PRODUCT_IMAGE = "/images/products/adapter-52240.png";
 
@@ -44,12 +63,14 @@ export function SearchClient() {
     return map;
   }, [brands]);
 
-  // استخراج عبارت جستجو مستقیماً و به صورت واکنشی از URL
+  // استخراج عبارت جستجو یا برند مستقیماً و به صورت واکنشی از URL
   const activeQuery = searchParams.get("q") || searchParams.get("search") || "";
 
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedBrandIds, setSelectedBrandIds] = useState<number[]>([]);
   const [inStockOnly, setInStockOnly] = useState(false);
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
@@ -57,8 +78,45 @@ export function SearchClient() {
     router.push("/search");
   };
 
+  // مقادیر اسلایدر خطی در بازه ثابت ۰ تا ۵۰۰ میلیون تومان
+  const sliderMinVal = useMemo(() => {
+    const parsed = parsePriceInput(minPrice);
+    if (parsed === null) return PRICE_MIN;
+    return Math.max(PRICE_MIN, Math.min(parsed, PRICE_MAX));
+  }, [minPrice]);
+
+  const sliderMaxVal = useMemo(() => {
+    const parsed = parsePriceInput(maxPrice);
+    if (parsed === null) return PRICE_MAX;
+    return Math.min(PRICE_MAX, Math.max(parsed, sliderMinVal));
+  }, [maxPrice, sliderMinVal]);
+
+  const handleSliderChange = (newValue: number | readonly number[]) => {
+    if (Array.isArray(newValue) && newValue.length === 2) {
+      const [low, high] = newValue;
+      setMinPrice(low <= PRICE_MIN ? "" : formatPriceInput(low));
+      setMaxPrice(high >= PRICE_MAX ? "" : formatPriceInput(high));
+    }
+  };
+
+  const handlePriceTextChange = (
+    raw: string,
+    setter: React.Dispatch<React.SetStateAction<string>>
+  ) => {
+    const parsed = parsePriceInput(raw);
+    if (parsed === null) {
+      setter("");
+      return;
+    }
+    const clamped = Math.min(PRICE_MAX, Math.max(PRICE_MIN, parsed));
+    setter(formatPriceInput(clamped));
+  };
+
   // فیلتر و جستجوی چندبعدی روی محصولات
   const filteredProducts = useMemo(() => {
+    const minPriceVal = parsePriceInput(minPrice);
+    const maxPriceVal = parsePriceInput(maxPrice);
+
     return serverProducts
       .filter((p) => p.isActive !== false)
       .filter((p) => {
@@ -98,6 +156,11 @@ export function SearchClient() {
           return false;
         }
 
+        // ۵. فیلتر محدوده قیمت
+        const finalPrice = p.discountPrice ?? p.price;
+        if (minPriceVal !== null && finalPrice < minPriceVal) return false;
+        if (maxPriceVal !== null && finalPrice > maxPriceVal) return false;
+
         return true;
       })
       .sort((a, b) => {
@@ -111,10 +174,19 @@ export function SearchClient() {
           const discB = b.discountPrice ? b.price - b.discountPrice : 0;
           return discB - discA;
         }
-        // newest
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       });
-  }, [serverProducts, brandMap, activeQuery, selectedCategory, selectedBrandIds, inStockOnly, sortBy]);
+  }, [
+    serverProducts,
+    brandMap,
+    activeQuery,
+    selectedCategory,
+    selectedBrandIds,
+    inStockOnly,
+    minPrice,
+    maxPrice,
+    sortBy,
+  ]);
 
   // محاسبه تعداد محصولات هر برند برای نتایج جاری
   const brandCounts = useMemo(() => {
@@ -146,378 +218,368 @@ export function SearchClient() {
     setSelectedCategory("all");
     setSelectedBrandIds([]);
     setInStockOnly(false);
+    setMinPrice("");
+    setMaxPrice("");
     setSortBy("newest");
   };
 
   const hasActiveFilters =
-    selectedCategory !== "all" || selectedBrandIds.length > 0 || inStockOnly;
+    selectedCategory !== "all" ||
+    selectedBrandIds.length > 0 ||
+    inStockOnly ||
+    minPrice.trim() !== "" ||
+    maxPrice.trim() !== "";
+
+  // بخش فیلتر محدوده قیمت (اشتراکی بین دسکتاپ و موبایل)
+  const priceFilterSection = (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+          <Banknote className="size-4 text-primary" />
+          <span>محدوده قیمت (تومان)</span>
+        </div>
+        {(minPrice || maxPrice) && (
+          <button
+            type="button"
+            onClick={() => {
+              setMinPrice("");
+              setMaxPrice("");
+            }}
+            className="text-[11px] text-primary hover:underline cursor-pointer flex items-center gap-0.5"
+          >
+            <span>حذف</span>
+            <X className="size-3" />
+          </button>
+        )}
+      </div>
+
+      <div className="grid grid-cols-2 gap-2.5">
+        <div className="space-y-1">
+          <label className="text-[11px] font-medium text-muted-foreground block">
+            تا قیمت
+          </label>
+          <Input
+            type="text"
+            inputMode="numeric"
+            dir="ltr"
+            value={maxPrice}
+            onChange={(e) => handlePriceTextChange(e.target.value, setMaxPrice)}
+            placeholder={formatPriceInput(PRICE_MAX)}
+            className="h-8.5 text-xs rounded-xl bg-muted/40 border-border/80 text-start font-semibold"
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="text-[11px] font-medium text-muted-foreground block">
+            از قیمت
+          </label>
+          <Input
+            type="text"
+            inputMode="numeric"
+            dir="ltr"
+            value={minPrice}
+            onChange={(e) => handlePriceTextChange(e.target.value, setMinPrice)}
+            placeholder={formatPriceInput(PRICE_MIN)}
+            className="h-8.5 text-xs rounded-xl bg-muted/40 border-border/80 text-start font-semibold"
+          />
+        </div>
+      </div>
+
+      {/* اهرم خطی دوپوزیشنی (Range Slider) */}
+      <div className="pt-1 space-y-1.5" dir="ltr">
+        <Slider
+          min={PRICE_MIN}
+          max={PRICE_MAX}
+          step={PRICE_STEP}
+          value={[sliderMinVal, sliderMaxVal]}
+          onValueChange={handleSliderChange}
+        />
+        <div
+          className="flex items-center justify-between text-[10px] text-muted-foreground font-medium"
+          dir="rtl"
+        >
+          <span>تا {formatToman(sliderMaxVal)}</span>
+          <span>از {formatToman(sliderMinVal)}</span>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="space-y-6">
-      {/* نوار مسیر (Breadcrumbs) */}
+    <div className="space-y-6 sm:space-y-8 select-none">
+      {/* بردکرامب (Breadcrumb) ناوبری */}
       <nav
-        aria-label="مسیر صفحه"
-        className="flex items-center gap-1.5 text-xs text-muted-foreground"
+        aria-label="Breadcrumb"
+        className="flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap"
       >
         <Link href="/" className="hover:text-primary transition-colors">
           خانه
         </Link>
         <ChevronLeft className="size-3 text-muted-foreground/60" />
-        <span className="text-foreground font-bold">
-          {activeQuery ? `جستجوی «${activeQuery}»` : "جستجوی محصولات"}
+        <span className="font-bold text-foreground">
+          {activeQuery ? `محصولات «${activeQuery}»` : "محصولات و برندها"}
         </span>
       </nav>
 
-      {/* دکمه فیلتر در موبایل */}
-      <div className="flex items-center justify-between lg:hidden border-b border-border/80 pb-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setIsMobileFilterOpen(true)}
-          className="rounded-xl text-xs font-bold gap-2"
-        >
-          <Filter className="size-4 text-primary" />
-          <span>فیلترها و دسته‌بندی</span>
-          {(hasActiveFilters || selectedBrandIds.length > 0) && (
-            <Badge className="bg-primary text-primary-foreground text-[10px] h-4.5 px-1.5 rounded-full">
-              {selectedBrandIds.length + (selectedCategory !== "all" ? 1 : 0) + (inStockOnly ? 1 : 0)}
-            </Badge>
-          )}
-        </Button>
-
-        <span className="text-xs text-muted-foreground font-medium">
-          {filteredProducts.length.toLocaleString("fa-IR")} محصول
-        </span>
-      </div>
-
-      {/* ساختار ستونی: سایدبار فیلترها + گرید نتایج */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6 items-start">
-        {/* سایدبار فیلترها (دسکتاپ + دراور موبایل) */}
-        <aside
-          className={cn(
-            "space-y-4 lg:block",
-            isMobileFilterOpen
-              ? "fixed inset-0 z-50 bg-background/95 backdrop-blur-md p-6 overflow-y-auto block"
-              : "hidden"
-          )}
-        >
-          {/* هدر دراور موبایل */}
-          <div className="flex items-center justify-between lg:hidden mb-4 pb-3 border-b border-border">
-            <div className="flex items-center gap-2 font-black text-sm">
-              <Filter className="size-4 text-primary" />
-              <span>فیلترهای نتایج جستجو</span>
-            </div>
-            <button
-              onClick={() => setIsMobileFilterOpen(false)}
-              className="p-1 rounded-lg text-muted-foreground hover:bg-muted"
-            >
-              <X className="size-5" />
-            </button>
+      {/* نوار مرتب‌سازی (سمت راست) و تعداد کل کالاها (سمت چپ) */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-3 sm:px-5 sm:py-3.5 rounded-2xl border border-border shadow-xs">
+        {/* سمت راست (RTL): گزینه‌های مرتب‌سازی به صورت دکمه‌ای */}
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-foreground shrink-0">
+            <SlidersHorizontal className="size-4 text-primary hidden sm:inline" />
+            <span>مرتب‌سازی:</span>
           </div>
 
-          {/* فیلتر دسته‌بندی کالا */}
-          <div className="rounded-2xl border border-border bg-card p-4 space-y-3">
-            <div className="flex items-center gap-2">
-              <Layers className="size-4 text-primary" />
-              <label className="text-xs font-bold text-foreground">دسته‌بندی محصولات</label>
-            </div>
-            <Select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="text-xs rounded-xl h-9 w-full"
-            >
-              <option value="all">همه دسته‌بندی‌ها</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </Select>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {[
+              { id: "newest" as const, label: "جدیدترین" },
+              { id: "discount-desc" as const, label: "بیشترین تخفیف" },
+              { id: "price-desc" as const, label: "گران‌ترین" },
+              { id: "price-asc" as const, label: "ارزان‌ترین" },
+            ].map((option) => {
+              const isSelected = sortBy === option.id;
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => setSortBy(option.id)}
+                  className={cn(
+                    "px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer",
+                    isSelected
+                      ? "bg-primary/10 text-primary font-bold"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                  )}
+                >
+                  {option.label}
+                </button>
+              );
+            })}
           </div>
+        </div>
 
-          {/* فیلتر برند کالا */}
-          <BrandFilterBox
-            selectedBrandIds={selectedBrandIds}
-            onChange={setSelectedBrandIds}
-            brandCounts={brandCounts}
-          />
-
-          {/* فقط کالاهای موجود */}
-          <div className="rounded-2xl border border-border bg-card p-4 flex items-center justify-between">
-            <div className="space-y-0.5">
-              <div className="text-xs font-bold text-foreground">فقط کالاهای موجود</div>
-              <div className="text-[10px] text-muted-foreground">حذف کالاهای ناموجود از نتایج</div>
-            </div>
-            <Switch checked={inStockOnly} onCheckedChange={setInStockOnly} />
-          </div>
-
-          {/* بازنشانی فیلترها */}
-          {hasActiveFilters && (
+        {/* سمت چپ (RTL): فیلتر فعال + دکمه فیلتر موبایل + تعداد کل کالاها */}
+        <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 border-t sm:border-t-0 pt-2.5 sm:pt-0 border-border/60">
+          <div className="flex items-center gap-2">
             <Button
               variant="outline"
-              onClick={handleResetFilters}
-              className="w-full rounded-xl text-xs font-bold gap-2 text-muted-foreground hover:text-foreground"
+              onClick={() => setIsMobileFilterOpen(true)}
+              className="lg:hidden h-9 px-3 gap-1.5 rounded-xl text-xs font-bold"
             >
-              <RotateCcw className="size-3.5" />
-              <span>بازنشانی فیلترها</span>
+              <SlidersHorizontal className="size-3.5 text-primary" />
+              <span>فیلترها</span>
+              {hasActiveFilters && <span className="size-2 rounded-full bg-primary" />}
             </Button>
-          )}
 
-          {isMobileFilterOpen && (
-            <Button
-              onClick={() => setIsMobileFilterOpen(false)}
-              className="w-full rounded-xl text-xs font-bold mt-2"
-            >
-              مشاهده ({filteredProducts.length.toLocaleString("fa-IR")}) نتیجه
-            </Button>
-          )}
-        </aside>
-
-        {/* گرید و لیست محصولات نتایج جستجو */}
-        <div className="lg:col-span-3 xl:col-span-4 2xl:col-span-5 space-y-5">
-          {/* نوار بالای گرید: مرتب‌سازی و آمار */}
-          <div className="rounded-2xl border border-border/80 bg-card p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex flex-wrap items-center gap-2 text-xs">
-              <span className="font-bold text-foreground">
-                تعداد نتایج:{" "}
-                <span className="text-primary font-black">
-                  {filteredProducts.length.toLocaleString("fa-IR")}
-                </span>{" "}
-                کالا
-              </span>
-
-              {/* نشانگر فیلترهای فعال */}
-              {activeQuery && (
-                <Badge
-                  variant="secondary"
-                  className="rounded-lg text-[10px] gap-1 px-2 py-0.5"
+            {activeQuery && (
+              <Badge variant="secondary" className="rounded-lg text-[11px] gap-1 px-2.5 py-1">
+                <span>«{activeQuery}»</span>
+                <button
+                  type="button"
+                  onClick={handleClearSearch}
+                  className="hover:text-destructive cursor-pointer"
+                  aria-label="حذف فیلتر عنوان"
                 >
-                  عبارت: «{activeQuery}»
-                  <button
-                    onClick={handleClearSearch}
-                    className="hover:text-destructive"
-                  >
-                    <X className="size-2.5" />
-                  </button>
-                </Badge>
-              )}
-
-              {selectedCategory !== "all" && (
-                <Badge
-                  variant="secondary"
-                  className="rounded-lg text-[10px] gap-1 px-2 py-0.5"
-                >
-                  دسته: {categories.find((c) => String(c.id) === selectedCategory)?.name}
-                  <button
-                    onClick={() => setSelectedCategory("all")}
-                    className="hover:text-destructive"
-                  >
-                    <X className="size-2.5" />
-                  </button>
-                </Badge>
-              )}
-
-              {selectedBrandIds.length > 0 && (
-                <Badge
-                  variant="secondary"
-                  className="rounded-lg text-[10px] gap-1 px-2 py-0.5"
-                >
-                  {selectedBrandIds.length.toLocaleString("fa-IR")} برند انتخابی
-                  <button
-                    onClick={() => setSelectedBrandIds([])}
-                    className="hover:text-destructive"
-                  >
-                    <X className="size-2.5" />
-                  </button>
-                </Badge>
-              )}
-
-              {inStockOnly && (
-                <Badge
-                  variant="secondary"
-                  className="rounded-lg text-[10px] gap-1 px-2 py-0.5"
-                >
-                  فقط کالاهای موجود
-                  <button
-                    onClick={() => setInStockOnly(false)}
-                    className="hover:text-destructive"
-                  >
-                    <X className="size-2.5" />
-                  </button>
-                </Badge>
-              )}
-            </div>
-
-            {/* مرتب‌سازی */}
-            <div className="flex items-center gap-2 self-end sm:self-auto">
-              <SlidersHorizontal className="size-3.5 text-muted-foreground hidden sm:block" />
-              <span className="text-xs text-muted-foreground whitespace-nowrap">مرتب‌سازی:</span>
-              <Select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="text-xs rounded-xl h-8 w-36"
-              >
-                <option value="newest">جدیدترین</option>
-                <option value="price-asc">ارزان‌ترین</option>
-                <option value="price-desc">گران‌ترین</option>
-                <option value="discount-desc">بیشترین تخفیف</option>
-              </Select>
-            </div>
+                  <X className="size-3" />
+                </button>
+              </Badge>
+            )}
           </div>
 
-          {/* حالت لودینگ */}
+          <span className="text-xs font-bold text-muted-foreground whitespace-nowrap">
+            {filteredProducts.length.toLocaleString("fa-IR")} کالا
+          </span>
+        </div>
+      </div>
+
+      {/* بدنه دو ستونه: سایدبار فیلترها + گرید محصولات */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6 items-start">
+        {/* سایدبار فیلترهای دسکتاپ */}
+        <aside className="hidden lg:block lg:col-span-1 space-y-4 sticky top-24">
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-xs space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
+              <div className="flex items-center gap-2 font-black text-sm text-foreground">
+                <Filter className="size-4 text-primary" />
+                <span>فیلترهای پیشرفته</span>
+              </div>
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={handleResetFilters}
+                  className="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                  <RotateCcw className="size-3" />
+                  <span>حذف فیلترها</span>
+                </button>
+              )}
+            </div>
+
+            {/* سوئیچ کالاهای موجود */}
+            <div className="flex items-center justify-between py-1">
+              <label
+                htmlFor="inStockSearchDesktop"
+                className="text-xs font-bold text-foreground cursor-pointer"
+              >
+                فقط کالاهای موجود
+              </label>
+              <Switch
+                id="inStockSearchDesktop"
+                checked={inStockOnly}
+                onCheckedChange={setInStockOnly}
+              />
+            </div>
+
+            {/* محدوده قیمت */}
+            <div className="pt-2 border-t border-border">{priceFilterSection}</div>
+
+            {/* فیلتر دسته‌بندی کالا */}
+            <div className="pt-2 border-t border-border space-y-2.5">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+                <Layers className="size-4 text-primary" />
+                <span>دسته‌بندی محصولات</span>
+              </div>
+              <Select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="text-xs rounded-xl h-9 w-full"
+              >
+                <option value="all">همه دسته‌بندی‌ها</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </Select>
+            </div>
+
+            {/* فیلتر برند کالا */}
+            <div className="pt-2 border-t border-border">
+              <BrandFilterBox
+                selectedBrandIds={selectedBrandIds}
+                onChange={setSelectedBrandIds}
+                brandCounts={brandCounts}
+              />
+            </div>
+          </div>
+        </aside>
+
+        {/* گرید نمایش محصولات */}
+        <section className="lg:col-span-3 xl:col-span-4 2xl:col-span-5">
           {isProductsLoading || isCategoriesLoading ? (
-            <div className="py-24 flex flex-col items-center justify-center gap-3 text-muted-foreground">
-              <Loader2 className="size-8 animate-spin text-primary" />
-              <span className="text-xs font-bold">در حال جستجو و بارگذاری محصولات...</span>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-0">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="rounded-xs border border-border bg-card p-4 h-[320px] animate-pulse space-y-3 flex flex-col justify-between"
+                >
+                  <div className="size-full max-h-[160px] bg-muted/60 rounded-xl" />
+                  <div className="space-y-2">
+                    <div className="h-4 bg-muted/60 rounded w-3/4" />
+                    <div className="h-3 bg-muted/40 rounded w-1/2" />
+                  </div>
+                  <div className="h-9 bg-muted/60 rounded-xl" />
+                </div>
+              ))}
             </div>
           ) : filteredProducts.length === 0 ? (
-            /* حالت بدون نتیجه */
-            <div className="rounded-3xl border border-dashed border-border p-8 sm:p-14 text-center space-y-4 bg-card/50">
-              <div className="inline-flex items-center justify-center size-16 rounded-3xl bg-muted/70 text-muted-foreground">
+            <div className="rounded-2xl border border-border/80 bg-card p-12 text-center flex flex-col items-center justify-center space-y-3">
+              <div className="size-16 rounded-full bg-muted/60 flex items-center justify-center text-muted-foreground">
                 <PackageX className="size-8" />
               </div>
-
-              <div className="space-y-1.5 max-w-md mx-auto">
-                <h3 className="text-base sm:text-lg font-black text-foreground">
-                  {activeQuery
-                    ? `کالایی منطبق با «${activeQuery}» پیدا نشد`
-                    : "هیچ کالایی یافت نشد"}
-                </h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  پیشنهاد می‌کنیم املای کلمه مورد نظر را بررسی کنید، از عبارات عمومی‌تر استفاده
-                  کنید یا فیلترهای اعمال‌شده را بازنشانی نمایید.
-                </p>
-              </div>
-
-              <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
+              <h3 className="font-bold text-base text-foreground">
+                کالایی با این مشخصات یافت نشد
+              </h3>
+              <p className="text-xs text-muted-foreground max-w-sm">
+                متأسفانه با فیلترهای انتخابی یا عبارت جستجوی شما محصولی یافت نشد. می‌توانید فیلترها را تغییر دهید.
+              </p>
+              <div className="flex items-center gap-2.5 pt-2">
                 {hasActiveFilters && (
                   <Button
                     variant="outline"
                     onClick={handleResetFilters}
-                    className="rounded-xl text-xs font-bold gap-2"
+                    className="rounded-xl text-xs font-bold gap-1.5"
                   >
                     <RotateCcw className="size-3.5" />
-                    <span>بازنشانی فیلترها</span>
+                    <span>حذف فیلترها</span>
                   </Button>
                 )}
-
-                <Link href="/">
-                  <Button className="rounded-xl text-xs font-bold gap-2">
-                    <span>بازگشت به صفحه اصلی</span>
-                    <ArrowRight className="size-3.5" />
+                {activeQuery && (
+                  <Button
+                    onClick={handleClearSearch}
+                    className="rounded-xl text-xs font-bold"
+                  >
+                    نمایش همه محصولات
                   </Button>
-                </Link>
+                )}
               </div>
             </div>
           ) : (
-            /* گرید کارت‌های محصول */
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-0">
               {filteredProducts.map((product) => {
                 const hasDiscount =
-                  product.discountPrice !== null &&
-                  product.discountPrice !== undefined &&
-                  product.discountPrice < product.price;
-
-                const discountPercent = hasDiscount
-                  ? Math.round(
-                      ((product.price - (product.discountPrice as number)) / product.price) * 100
-                    )
-                  : 0;
-
-                const primaryImage =
-                  normalizeImageUrl(product.images?.[0]?.url, FALLBACK_PRODUCT_IMAGE);
-
+                  product.discountPrice != null && product.discountPrice < product.price;
+                const finalPrice = product.discountPrice ?? product.price;
                 const isOutOfStock = product.stock <= 0;
 
                 return (
                   <div
                     key={product.id}
-                    className="group relative flex flex-col justify-between rounded-md border border-border/80 bg-card p-4 transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5"
+                    className="group relative flex flex-col justify-between rounded-xs border border-border/80 bg-card p-3 sm:p-4 shadow-xs transition-all duration-300 hover:border-primary/40 hover:shadow-md"
                   >
-                    <div>
-                      {/* تصویر کالا و بج‌های شناور */}
-                      <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-muted/40 mb-3">
-                        <Link href={`/product/${product.slug || product.id}`} className="block w-full h-full">
-                          <Image
-                            src={primaryImage}
-                            alt={product.title}
-                            fill
-                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                            className="object-contain p-3 transition-transform duration-300 group-hover:scale-105"
-                          />
-                        </Link>
-
-                        {/* بج درصد تخفیف */}
+                    <Link href={`/product/${product.slug}`} className="block space-y-3">
+                      {/* تصویر کالا */}
+                      <div className="relative aspect-square w-full rounded-xl bg-muted/20 p-2 flex items-center justify-center overflow-hidden">
+                        <Image
+                          src={normalizeImageUrl(product.images?.[0]?.url, FALLBACK_PRODUCT_IMAGE)}
+                          alt={product.title}
+                          fill
+                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                          className={cn(
+                            "object-contain p-2 transition-transform duration-300 group-hover:scale-105",
+                            isOutOfStock && "opacity-50 grayscale"
+                          )}
+                        />
                         {hasDiscount && (
-                          <span className="absolute top-2 right-2 rounded-full bg-destructive px-2 py-0.5 text-[11px] font-black text-white shadow">
-                            %{discountPercent}
+                          <span className="absolute top-1.5 end-1.5 -rotate-12 bg-primary text-primary-foreground text-xs sm:text-sm font-black px-2.5 py-1 rounded-lg shadow-sm">
+                            {Math.round(
+                              ((product.price - product.discountPrice!) / product.price) * 100
+                            ).toLocaleString("fa-IR")}
+                            ٪
                           </span>
                         )}
-
-                        {/* نشانگر ناموجودی */}
                         {isOutOfStock && (
-                          <div className="absolute inset-0 bg-background/80 backdrop-blur-[2px] flex items-center justify-center">
-                            <span className="rounded-xl bg-muted px-3 py-1 text-xs font-black text-muted-foreground border border-border">
+                          <div className="absolute inset-0 bg-background/50 backdrop-blur-[1px] flex items-center justify-center">
+                            <span className="bg-background/90 text-foreground text-xs font-black px-3 py-1 rounded-lg border border-border shadow-xs">
                               ناموجود
                             </span>
                           </div>
                         )}
                       </div>
 
-                      {/* متادیتای برند و کد فنی کالا */}
-                      <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1.5">
-                        {product.brand ? (
-                          <span className="font-bold text-primary truncate">
-                            {product.brand.name}
-                          </span>
-                        ) : (
-                          <span className="truncate">اسمارت الکتریک</span>
-                        )}
-
-                        {product.sku && (
-                          <span className="font-mono text-[10px] text-muted-foreground/80">
-                            کد: {product.sku}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* عنوان کالا */}
-                      <Link href={`/product/${product.slug || product.id}`}>
-                        <h2 className="text-xs sm:text-sm font-bold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors min-h-[2.5rem]">
+                      {/* عنوان و قیمت */}
+                      <div className="space-y-2">
+                        <h3 className="text-xs sm:text-sm font-bold text-foreground line-clamp-2 min-h-[2.5rem] leading-snug group-hover:text-primary transition-colors">
                           {product.title}
-                        </h2>
-                      </Link>
-                    </div>
+                        </h3>
 
-                    {/* قیمت و دکمه افزودن به سبد */}
-                    <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between gap-2">
-                      <div className="flex flex-col">
-                        {hasDiscount ? (
-                          <>
+                        <div className="pt-1 border-t border-border/40 flex flex-col items-end">
+                          {hasDiscount && (
                             <span className="text-[11px] text-muted-foreground line-through">
-                              {formatToman(product.price)}
+                              {product.price.toLocaleString("fa-IR")}
                             </span>
-                            <span className="text-sm sm:text-base font-black text-destructive">
-                              {formatToman(product.discountPrice as number)}{" "}
-                              <span className="text-[10px] font-normal text-muted-foreground">
-                                تومان
-                              </span>
+                          )}
+                          <div className="flex items-center gap-1">
+                            <span className="text-sm sm:text-base font-black text-foreground">
+                              {formatToman(finalPrice)}
                             </span>
-                          </>
-                        ) : (
-                          <span className="text-sm sm:text-base font-black text-foreground">
-                            {formatToman(product.price)}{" "}
-                            <span className="text-[10px] font-normal text-muted-foreground">
-                              تومان
-                            </span>
-                          </span>
-                        )}
+                          </div>
+                        </div>
                       </div>
+                    </Link>
 
+                    {/* دکمه مشاهده محصول */}
+                    <div className="pt-3">
                       <Link
                         href={`/product/${product.slug}`}
-                        className="inline-flex items-center justify-center rounded-xl h-9 px-3 gap-1.5 text-xs font-bold shrink-0 bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs transition-all"
+                        className="w-full rounded-sm text-xs font-bold gap-1.5 h-9 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 flex items-center justify-center transition-all"
                       >
                         <Eye className="size-3.5" />
                         <span>مشاهده محصول</span>
@@ -528,8 +590,90 @@ export function SearchClient() {
               })}
             </div>
           )}
-        </div>
+        </section>
       </div>
+
+      {/* مدال فیلترهای موبایل */}
+      {isMobileFilterOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden flex flex-col justify-end bg-black/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-card w-full max-h-[85vh] rounded-t-3xl border-t border-border flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b border-border">
+              <div className="flex items-center gap-2 font-black text-sm">
+                <Filter className="size-4 text-primary" />
+                <span>فیلترهای پیشرفته</span>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => setIsMobileFilterOpen(false)}
+              >
+                <X className="size-4" />
+              </Button>
+            </div>
+
+            <div className="p-4 overflow-y-auto space-y-5 flex-1">
+              <div className="flex items-center justify-between">
+                <label htmlFor="inStockSearchMobile" className="text-xs font-bold">
+                  فقط کالاهای موجود
+                </label>
+                <Switch
+                  id="inStockSearchMobile"
+                  checked={inStockOnly}
+                  onCheckedChange={setInStockOnly}
+                />
+              </div>
+
+              <div className="pt-3 border-t border-border">{priceFilterSection}</div>
+
+              <div className="pt-3 border-t border-border space-y-2.5">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+                  <Layers className="size-4 text-primary" />
+                  <span>دسته‌بندی محصولات</span>
+                </div>
+                <Select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="text-xs rounded-xl h-9 w-full"
+                >
+                  <option value="all">همه دسته‌بندی‌ها</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+
+              <div className="pt-3 border-t border-border">
+                <BrandFilterBox
+                  selectedBrandIds={selectedBrandIds}
+                  onChange={setSelectedBrandIds}
+                  brandCounts={brandCounts}
+                />
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-border flex items-center gap-2 bg-muted/20">
+              {hasActiveFilters && (
+                <Button
+                  variant="outline"
+                  onClick={handleResetFilters}
+                  className="rounded-xl text-xs font-bold"
+                >
+                  حذف همه
+                </Button>
+              )}
+              <Button
+                onClick={() => setIsMobileFilterOpen(false)}
+                className="flex-1 rounded-xl bg-primary text-primary-foreground font-bold text-xs"
+              >
+                مشاهده ({filteredProducts.length.toLocaleString("fa-IR")}) کالا
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+export default SearchClient;

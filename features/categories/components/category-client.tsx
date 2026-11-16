@@ -490,6 +490,7 @@ export function CategoryClient({ slug }: CategoryClientProps) {
                 const hasDiscount =
                   product.discountPrice != null && product.discountPrice < product.price;
                 const finalPrice = product.discountPrice ?? product.price;
+                const isOutOfStock = product.stock <= 0;
 
                 return (
                   <div
@@ -504,45 +505,45 @@ export function CategoryClient({ slug }: CategoryClientProps) {
                           alt={product.title}
                           fill
                           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                          className="object-contain p-2 transition-transform duration-300 group-hover:scale-105"
+                          className={cn(
+                            "object-contain p-2 transition-transform duration-300 group-hover:scale-105",
+                            isOutOfStock && "opacity-50 grayscale"
+                          )}
                         />
 
                         {/* بج تخفیف */}
                         {hasDiscount && (
-                          <span className="absolute top-2 start-2 bg-primary text-primary-foreground text-[10px] sm:text-xs font-black px-2 py-0.5 rounded-lg shadow-xs">
-                            {Math.round(((product.price - product.discountPrice!) / product.price) * 100)}٪
+                          <span className="absolute top-1.5 end-1.5 -rotate-12 bg-primary text-primary-foreground text-xs sm:text-sm font-black px-2.5 py-1 rounded-lg shadow-sm">
+                            {Math.round(((product.price - product.discountPrice!) / product.price) * 100).toLocaleString("fa-IR")}٪
                           </span>
                         )}
 
-                        {/* برچسب برند */}
-                        {product.brand && (
-                          <span className="absolute bottom-2 start-2 bg-background/90 text-foreground border border-border/60 text-[10px] font-semibold px-2 py-0.5 rounded-md backdrop-blur-xs">
-                            {product.brand.name}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* عنوان و مشخصات */}
-                      <div className="space-y-1">
-                        <h3 className="font-bold text-xs sm:text-sm text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">
-                          {product.title}
-                        </h3>
-                        {product.sku && (
-                          <span className="text-[10px] font-mono text-muted-foreground block">
-                            کد: {product.sku}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* قیمت */}
-                      <div className="pt-2">
-                        {hasDiscount && (
-                          <div className="text-[11px] text-muted-foreground line-through">
-                            {formatToman(product.price)}
+                        {isOutOfStock && (
+                          <div className="absolute inset-0 bg-background/50 backdrop-blur-[1px] flex items-center justify-center">
+                            <span className="bg-background/90 text-foreground text-xs font-black px-3 py-1 rounded-lg border border-border shadow-xs">
+                              ناموجود
+                            </span>
                           </div>
                         )}
-                        <div className="font-black text-xs sm:text-sm md:text-base text-foreground">
-                          {formatToman(finalPrice)}
+                      </div>
+
+                      {/* عنوان و قیمت */}
+                      <div className="space-y-2">
+                        <h3 className="text-xs sm:text-sm font-bold text-foreground line-clamp-2 min-h-[2.5rem] leading-snug group-hover:text-primary transition-colors">
+                          {product.title}
+                        </h3>
+
+                        <div className="pt-1 border-t border-border/40 flex flex-col items-end">
+                          {hasDiscount && (
+                            <span className="text-[11px] text-muted-foreground line-through">
+                              {product.price.toLocaleString("fa-IR")}
+                            </span>
+                          )}
+                          <div className="flex items-center gap-1">
+                            <span className="text-sm sm:text-base font-black text-foreground">
+                              {formatToman(finalPrice)}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </Link>
@@ -551,7 +552,7 @@ export function CategoryClient({ slug }: CategoryClientProps) {
                     <div className="pt-3">
                       <Link
                         href={`/product/${product.slug}`}
-                        className="w-full rounded-xl text-xs font-bold gap-1.5 h-9 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 flex items-center justify-center transition-all"
+                        className="w-full rounded-sm text-xs font-bold gap-1.5 h-9 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 flex items-center justify-center transition-all"
                       >
                         <Eye className="size-3.5" />
                         <span>مشاهده محصول</span>
