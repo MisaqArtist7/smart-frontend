@@ -31,39 +31,32 @@ export interface BannerItem {
  */
 export const DEFAULT_BANNERS: BannerItem[] = [
   {
-    id: "banner-electric",
-    image: "/images/carousel/بنر تبلیغاتی هوشمند الکتریک.png",
-    link: "/offers",
-    alt: "جشنواره فروش اسمارت الکتریک",
-    title: "جشنواره فروش اسمارت الکتریک",
+    id: "banner-security",
+    image: "/images/carousel/امنیت هوشمند خانه و محل کار.png",
+    link: "/category/security",
+    alt: "امنیت هوشمند خانه و محل کار",
+    title: "امنیت هوشمند خانه و محل کار",
   },
   {
     id: "banner-lighting",
-    image: "/images/carousel/روشنایی هوشمند در دکوراسیون مدرن.png",
+    image: "/images/carousel/لوستر و لامپ؛ زیبایی و روشنایی.png",
     link: "/category/lighting",
-    alt: "روشنایی هوشمند در دکوراسیون مدرن",
-    title: "روشنایی هوشمند در دکوراسیون مدرن",
+    alt: "لوستر و لامپ؛ زیبایی و روشنایی",
+    title: "لوستر و لامپ؛ زیبایی و روشنایی",
   },
   {
-    id: "banner-network",
-    image: "/images/carousel/راهکارهای هوشمند شبکه و تجهیزات حرفه_ای.png",
-    link: "/category/industrial",
-    alt: "راهکارهای هوشمند شبکه و تجهیزات حرفه‌ای",
-    title: "راهکارهای هوشمند شبکه و تجهیزات حرفه‌ای",
+    id: "banner-solar",
+    image: "/images/carousel/پنل خورشیدی؛ انرژی پاک، آینده روشن.png",
+    link: "/offers",
+    alt: "پنل خورشیدی؛ انرژی پاک، آینده روشن",
+    title: "پنل خورشیدی؛ انرژی پاک، آینده روشن",
   },
   {
-    id: "banner-security",
-    image: "/images/carousel/امنیت هوشمند برای آرامش بیشتر.png",
-    link: "/category/security",
-    alt: "امنیت هوشمند برای آرامش بیشتر",
-    title: "امنیت هوشمند برای آرامش بیشتر",
-  },
-  {
-    id: "banner-intercom",
-    image: "/images/carousel/آیفون تصویری هوشمند اسمارت الکتریک.png",
+    id: "banner-intercom-modern",
+    image: "/images/carousel/ایفون تصویری و صوتی مدرن.png",
     link: "/category/smart-home",
-    alt: "آیفون تصویری هوشمند اسمارت الکتریک",
-    title: "آیفون تصویری هوشمند اسمارت الکتریک",
+    alt: "آیفون تصویری و صوتی مدرن",
+    title: "آیفون تصویری و صوتی مدرن",
   },
 ];
 
@@ -138,7 +131,8 @@ export function HeroCarousel({
             <CarouselItem key={banner.id} className="ps-0">
               <Link
                 href={banner.link}
-                className="group relative block w-full max-h-[600px] rounded-2xl overflow-hidden border border-border/80 shadow-xs focus:outline-none focus:ring-2 focus:ring-primary"
+                draggable={false}
+                className="group relative block w-full max-h-[600px] overflow-hidden outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 select-none"
               >
                 {/* تصویر خالص بنر بدون پوشش متنی */}
                 <Image
@@ -146,8 +140,9 @@ export function HeroCarousel({
                   alt={banner.alt || banner.title || `بنر ${index + 1}`}
                   width={2089}
                   height={753}
+                  draggable={false}
                   priority={index === 0}
-                  className="w-full h-auto max-h-[600px] object-cover transition-transform duration-500 ease-out group-hover:scale-[1.01]"
+                  className="w-full h-auto max-h-[600px] object-cover transition-transform duration-500 ease-out group-hover:scale-[1.01] select-none pointer-events-none"
                 />
               </Link>
             </CarouselItem>
@@ -157,11 +152,11 @@ export function HeroCarousel({
         {/* دکمه‌های ناوبری دسکتاپ */}
         <CarouselPrevious
           aria-label="اسلاید قبلی"
-          className="hidden sm:flex start-4 end-auto top-1/2 -translate-y-1/2 z-20 size-10 rounded-full bg-background/80 hover:bg-background text-foreground backdrop-blur-sm border border-border shadow-md transition-all hover:scale-105"
+          className="hidden sm:flex start-4 end-auto top-1/2 -translate-y-1/2 z-20 size-10 rounded-full bg-background/80 hover:bg-background text-foreground backdrop-blur-sm border border-border shadow-md transition-all hover:scale-105 outline-none focus:outline-none focus-visible:outline-none focus-visible:ring-0"
         />
         <CarouselNext
           aria-label="اسلاید بعدی"
-          className="hidden sm:flex end-4 start-auto top-1/2 -translate-y-1/2 z-20 size-10 rounded-full bg-background/80 hover:bg-background text-foreground backdrop-blur-sm border border-border shadow-md transition-all hover:scale-105"
+          className="hidden sm:flex end-4 start-auto top-1/2 -translate-y-1/2 z-20 size-10 rounded-full bg-background/80 hover:bg-background text-foreground backdrop-blur-sm border border-border shadow-md transition-all hover:scale-105 outline-none focus:outline-none focus-visible:outline-none focus-visible:ring-0"
         />
 
         {/* نشانگرهای زیر اسلایدر (Pagination Dots) */}
@@ -174,7 +169,7 @@ export function HeroCarousel({
                 onClick={() => api?.scrollTo(index)}
                 aria-label={`رفتن به اسلاید ${index + 1}`}
                 className={cn(
-                  "h-2 rounded-full transition-all duration-300 cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary",
+                  "h-2 rounded-full transition-all duration-300 cursor-pointer outline-none focus:outline-none focus-visible:outline-none",
                   current === index
                     ? "w-6 bg-primary shadow-xs"
                     : "w-2 bg-primary/30 hover:bg-primary/50"
