@@ -21,48 +21,26 @@ import Footer from "@/components/layout/footer";
 import { useCartStore } from "@/lib/cart-store";
 import {
   useAddresses,
-  useCreateAddress,
   useCreateOrder,
+  useMyOrders,
   useProducts,
   ApiError,
 } from "@/lib/api";
+import { formatAddressSummary } from "@/lib/address-utils";
+import { toPersianDigits } from "@/lib/account-data";
+import { AddressFormDialog } from "@/components/address/address-form-dialog";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { CouponSection } from "@/components/cart/coupon-section";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription,
-} from "@/components/ui/dialog";
-
-const IRAN_PROVINCES = [
-  "تهران",
-  "اصفهان",
-  "فارس",
-  "خراسان رضوی",
-  "البرز",
-  "آذربایجان شرقی",
-  "خوزستان",
-  "مازندران",
-  "گیلان",
-  "کرمان",
-  "قم",
-  "یزد",
-  "هرمزگان",
-  "کرمانشاه",
-];
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const createOrderMutation = useCreateOrder();
-  const createAddressMutation = useCreateAddress();
+  const { data: myOrders = [] } = useMyOrders();
   const { data: addresses = [], isLoading: isAddressesLoading } = useAddresses();
   const { data: freshProducts } = useProducts();
 
@@ -108,108 +86,17 @@ export default function CheckoutPage() {
   const effectiveAddressId =
     selectedAddressId ??
     (addresses.find((a) => a.isDefault)?.id || addresses[0]?.id || null);
+  const selectedAddress = addresses.find((a) => a.id === effectiveAddressId) || null;
 
   // فرم ایجاد آدرس درون‌خطی
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
-  const [addressForm, setAddressForm] = useState({
-    title: "",
-    receiverName: "",
-    receiverPhone: "",
-    province: "تهران",
-    city: "تهران",
-    addressLine: "",
-    postalCode: "",
-    isDefault: false,
-  });
-  const [isSubmittingAddress, setIsSubmittingAddress] = useState(false);
 
   const handleOpenNewAddressModal = () => {
     if (addresses.length >= 10) {
       toast.error("امکان ثبت بیش از ۱۰ آدرس وجود ندارد (حداکثر سقف مجاز تکمیل است).");
       return;
     }
-    setAddressForm({
-      title: "",
-      receiverName: user?.name || "",
-      receiverPhone: user?.phone || "",
-      province: "تهران",
-      city: "تهران",
-      addressLine: "",
-      postalCode: "",
-      isDefault: addresses.length === 0,
-    });
     setIsAddressModalOpen(true);
-  };
-
-  const handleSaveInlineAddress = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const title = addressForm.title.trim();
-    const receiverName = addressForm.receiverName.trim();
-    const receiverPhone = addressForm.receiverPhone.trim();
-    const province = addressForm.province.trim();
-    const city = addressForm.city.trim();
-    const addressLine = addressForm.addressLine.trim();
-    const postalCode = addressForm.postalCode.trim();
-
-    if (title.length < 2 || title.length > 50) {
-      toast.error("عنوان آدرس باید بین ۲ تا ۵۰ کاراکتر باشد.");
-      return;
-    }
-    if (receiverName.length < 2 || receiverName.length > 100) {
-      toast.error("نام تحویل‌گیرنده باید بین ۲ تا ۱۰۰ کاراکتر باشد.");
-      return;
-    }
-    if (!/^09\d{9}$/.test(receiverPhone)) {
-      toast.error("شماره تماس تحویل‌گیرنده باید شماره موبایل معتبر ۱۱ رقمی باشد (مثال: ۰۹۱۲۳۴۵۶۷۸۹).");
-      return;
-    }
-    if (province.length < 2 || province.length > 50) {
-      toast.error("نام استان نامعتبر است.");
-      return;
-    }
-    if (city.length < 2 || city.length > 50) {
-      toast.error("نام شهر نامعتبر است.");
-      return;
-    }
-    if (addressLine.length < 5 || addressLine.length > 500) {
-      toast.error("نشانی پستی باید حداقل ۵ و حداکثر ۵۰۰ کاراکتر باشد.");
-      return;
-    }
-    if (!/^\d{10}$/.test(postalCode)) {
-      toast.error("کد پستی باید دقیقاً ۱۰ رقم عددی باشد.");
-      return;
-    }
-
-    setIsSubmittingAddress(true);
-    try {
-      const newAddr = await createAddressMutation.mutateAsync({
-        title,
-        receiverName,
-        receiverPhone,
-        province,
-        city,
-        addressLine,
-        postalCode,
-        isDefault: addressForm.isDefault,
-      });
-
-      setSelectedAddressId(newAddr.id);
-      setIsAddressModalOpen(false);
-      toast.success("آدرس تحویل با موفقیت ثبت و انتخاب شد.");
-    } catch (err) {
-      if (err instanceof ApiError) {
-        if (err.status === 409) {
-          toast.error("امکان ثبت بیش از ۱۰ آدرس وجود ندارد (خطای ۴۰۹).");
-          return;
-        }
-        toast.error(err.message);
-      } else {
-        toast.error("خطا در ذخیره‌سازی آدرس تحویل.");
-      }
-    } finally {
-      setIsSubmittingAddress(false);
-    }
   };
 
   // ثبت نهایی سفارش
@@ -247,7 +134,24 @@ export default function CheckoutPage() {
           if (lower.includes("stock") || lower.includes("موجودی")) {
             toast.error("موجودی برخی از کالاها در انبار تغییر یافته است. لطفاً سبد خرید خود را بازبینی فرمایید.");
           } else if (lower.includes("unpaid") || lower.includes("پرداخت")) {
-            toast.error("شما سفارش پرداخت‌نشده‌ی فعالی دارید. لطفاً ابتدا سفارش قبلی را تکمیل یا لغو فرمایید.");
+            const unpaidOrder = myOrders.find(
+              (o) =>
+                o.status === "PENDING" &&
+                (o.paymentStatus === "PENDING" || o.paymentStatus === "FAILED")
+            );
+            toast.error(
+              "شما سفارش پرداخت‌نشده‌ی فعالی دارید. لطفاً ابتدا سفارش قبلی را تکمیل یا لغو فرمایید.",
+              {
+                duration: 8000,
+                action: {
+                  label: unpaidOrder ? "مشاهده و مدیریت سفارش" : "مشاهده سفارش‌ها",
+                  onClick: () =>
+                    router.push(
+                      unpaidOrder ? `/orders/${unpaidOrder.id}` : "/profile/orders"
+                    ),
+                },
+              }
+            );
           } else {
             toast.error(err.message);
           }
@@ -404,32 +308,62 @@ export default function CheckoutPage() {
                           </div>
 
                           <p className="text-muted-foreground line-clamp-2 leading-relaxed">
-                            {addr.province}، {addr.city}، {addr.addressLine}
+                            {formatAddressSummary(addr)}
                           </p>
 
-                          <div className="flex items-center justify-between text-xs text-muted-foreground font-mono pt-1 border-t border-border/40">
+                          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground font-mono pt-1 border-t border-border/40">
                             <span>گیرنده: {addr.receiverName}</span>
-                            <span>{addr.receiverPhone}</span>
+                            <span>
+                              {toPersianDigits(addr.receiverPhone)}
+                              {addr.secondaryPhone ? ` / ${toPersianDigits(addr.secondaryPhone)}` : ""}
+                            </span>
                           </div>
                         </div>
                       );
                     })}
                   </div>
                 )}
+
+                {selectedAddress && (
+                  <div className="mt-3 rounded-xl border border-primary/20 bg-primary/[0.03] p-3.5 text-xs space-y-1.5">
+                    <div className="font-bold text-foreground">
+                      نشانی انتخاب‌شده برای ارسال ({selectedAddress.title}):
+                    </div>
+                    <p className="text-muted-foreground leading-relaxed">
+                      {formatAddressSummary(selectedAddress)}
+                      {selectedAddress.postalCode
+                        ? ` — کد پستی: ${toPersianDigits(selectedAddress.postalCode)}`
+                        : ""}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-muted-foreground font-mono">
+                      <span>تحویل‌گیرنده: {selectedAddress.receiverName}</span>
+                      <span>تماس اصلی: {toPersianDigits(selectedAddress.receiverPhone)}</span>
+                      {selectedAddress.secondaryPhone && (
+                        <span>تماس دوم: {toPersianDigits(selectedAddress.secondaryPhone)}</span>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {/* بخش ۲: روش پرداخت ثابت (کارت‌به‌کارت) و اطلاعیه پس‌کرایه */}
+              {/* بخش ۲: روش پرداخت و تسویه حساب */}
               <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-xs space-y-4">
                 <div className="flex items-center gap-2 pb-2 border-b border-border/60">
                   <CreditCard className="size-5 text-primary" />
                   <h2 className="font-black text-lg text-foreground">روش پرداخت و تسویه حساب</h2>
                 </div>
 
+                {/* گزینه ۱: پرداخت کارت‌به‌کارت (فعال و انتخاب‌شده) */}
                 <div className="p-4 rounded-xl border border-primary/40 bg-primary/[0.03] flex items-start gap-3">
                   <CheckCircle2 className="size-5 text-primary shrink-0 mt-0.5" />
-                  <div className="space-y-1">
-                    <div className="font-bold text-base text-foreground">
-                      پرداخت از طریق کارت‌به‌کارت (انتقال بانکی و بارگذاری رسید)
+                  <div className="space-y-1 flex-1">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <span className="font-bold text-base text-foreground">
+                        پرداخت از طریق کارت‌به‌کارت (انتقال بانکی و بارگذاری رسید)
+                      </span>
+                      <Badge className="text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20">
+                        فعال
+                      </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground leading-relaxed">
                       پس از ثبت نهایی سفارش، شماره کارت فروشگاه و دستورالعمل واریز همراه با فاکتور به شما نمایش داده می‌شود و می‌توانید فیش واریزی خود را ثبت نمایید تا بلافاصله تایید و پردازش گردد.
@@ -437,17 +371,38 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
-                {/* اطلاعیه رسمی عدم دریافت هزینه پست در زمان ثبت */}
-                <div className="p-4 rounded-xl border border-border bg-muted/20 flex items-start gap-3 text-sm leading-relaxed">
-                  <Truck className="size-5 text-primary shrink-0 mt-0.5" />
-                  <div className="space-y-1 text-muted-foreground">
-                    <strong className="text-foreground block">
-                      هزینه ارسال به صورت پس‌کرایه (پرداخت در مقصد):
-                    </strong>
-                    <span>
-                      هزینه بسته‌بندی و ارسال سفارش در این فاکتور <strong>۰ تومان</strong> لحاظ شده است؛ زیرا هزینه کرایه پستی یا باربری به صورت مستقیم توسط خریدار به مامور محترم پست در هنگام تحویل کالا پرداخت می‌شود.
-                    </span>
+                {/* گزینه ۲: درگاه پرداخت اینترنتی (غیرفعال) */}
+                <div
+                  aria-disabled="true"
+                  className="p-4 rounded-xl border border-border bg-muted/30 flex items-start gap-3 opacity-70 cursor-not-allowed select-none"
+                >
+                  <div className="size-5 rounded-full border-2 border-muted-foreground/40 shrink-0 mt-0.5" />
+                  <div className="space-y-1 flex-1">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <span className="font-bold text-base text-muted-foreground">
+                        درگاه پرداخت اینترنتی
+                      </span>
+                      <Badge variant="outline" className="text-xs text-destructive border-destructive/30 bg-destructive/5">
+                        غیرفعال
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      به دلیل اینکه قیمت‌ها مدام در حال تغییر هستند و ثبات ندارند، درگاه پرداخت آنلاین فعلاً غیرفعال می‌باشد.
+                    </p>
                   </div>
+                </div>
+              </div>
+
+              {/* اطلاعیه رسمی نحوه ارسال و پس‌کرایه (بخش مجزا) */}
+              <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-xs flex items-start gap-3 text-sm leading-relaxed">
+                <Truck className="size-5 text-primary shrink-0 mt-0.5" />
+                <div className="space-y-1 text-muted-foreground">
+                  <strong className="text-foreground block text-base">
+                    هزینه ارسال به صورت پس‌کرایه (پرداخت در مقصد):
+                  </strong>
+                  <span>
+                    هزینه بسته‌بندی و ارسال سفارش در این فاکتور <strong>۰ تومان</strong> لحاظ شده است؛ زیرا هزینه کرایه پستی یا باربری به صورت مستقیم توسط خریدار به مامور محترم پست در هنگام تحویل کالا پرداخت می‌شود.
+                  </span>
                 </div>
               </div>
 
@@ -607,142 +562,11 @@ export default function CheckoutPage() {
       </main>
 
       {/* مدال افزودن آدرس جدید به صورت درون‌خطی در چک‌اوت */}
-      <Dialog open={isAddressModalOpen} onOpenChange={setIsAddressModalOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-black text-foreground">
-              افزودن آدرس جدید تحویل
-            </DialogTitle>
-            <DialogDescription className="text-sm text-muted-foreground leading-relaxed mt-1">
-              لطفاً نشانی کامل پستی و مشخصات تحویل‌گیرنده را جهت ارسال سفارش وارد فرمایید.
-            </DialogDescription>
-          </DialogHeader>
-
-          <form onSubmit={handleSaveInlineAddress} className="space-y-5 pt-1">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
-              <div className="space-y-2 sm:col-span-2">
-                <label className="block text-sm font-bold text-foreground">
-                  عنوان آدرس (مثال: شرکت، منزل، کارگاه) <span className="text-destructive">*</span>
-                </label>
-                <Input
-                  value={addressForm.title}
-                  onChange={(e) => setAddressForm({ ...addressForm, title: e.target.value })}
-                  placeholder="منزل، شرکت، انبار..."
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="block text-sm font-bold text-foreground">
-                  نام و نام خانوادگی گیرنده <span className="text-destructive">*</span>
-                </label>
-                <Input
-                  value={addressForm.receiverName}
-                  onChange={(e) => setAddressForm({ ...addressForm, receiverName: e.target.value })}
-                  placeholder="نام کامل تحویل‌گیرنده"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="block text-sm font-bold text-foreground">
-                  شماره موبایل گیرنده <span className="text-destructive">*</span>
-                </label>
-                <Input
-                  value={addressForm.receiverPhone}
-                  onChange={(e) => setAddressForm({ ...addressForm, receiverPhone: e.target.value })}
-                  placeholder="09121234567"
-                  dir="ltr"
-                  className="text-start"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="block text-sm font-bold text-foreground">
-                  استان <span className="text-destructive">*</span>
-                </label>
-                <select
-                  value={addressForm.province}
-                  onChange={(e) => setAddressForm({ ...addressForm, province: e.target.value })}
-                  className="flex h-9 w-full appearance-none rounded-lg border border-input bg-transparent px-3 py-1.5 text-sm shadow-xs transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-                >
-                  {IRAN_PROVINCES.map((p) => (
-                    <option key={p} value={p}>
-                      {p}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-2">
-                <label className="block text-sm font-bold text-foreground">
-                  شهر <span className="text-destructive">*</span>
-                </label>
-                <Input
-                  value={addressForm.city}
-                  onChange={(e) => setAddressForm({ ...addressForm, city: e.target.value })}
-                  placeholder="تهران"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2 sm:col-span-2">
-                <label className="block text-sm font-bold text-foreground">
-                  کد پستی ۱۰ رقمی <span className="text-destructive">*</span>
-                </label>
-                <Input
-                  value={addressForm.postalCode}
-                  onChange={(e) => setAddressForm({ ...addressForm, postalCode: e.target.value })}
-                  placeholder="1144893456"
-                  maxLength={10}
-                  dir="ltr"
-                  className="text-start"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2 sm:col-span-2">
-                <label className="block text-sm font-bold text-foreground">
-                  نشانی کامل پستی <span className="text-destructive">*</span>
-                </label>
-                <Textarea
-                  value={addressForm.addressLine}
-                  onChange={(e) => setAddressForm({ ...addressForm, addressLine: e.target.value })}
-                  placeholder="خیابان، کوچه، پلاک، طبقه و واحد..."
-                  rows={3}
-                  required
-                />
-              </div>
-            </div>
-
-            <DialogFooter className="gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsAddressModalOpen(false)}
-                className="h-10 px-5 rounded-md text-sm font-semibold flex items-center justify-center leading-none cursor-pointer"
-              >
-                انصراف
-              </Button>
-              <Button
-                type="submit"
-                disabled={isSubmittingAddress}
-                className="h-10 px-5 rounded-md bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center leading-none shadow-xs hover:bg-primary/90 cursor-pointer"
-              >
-                {isSubmittingAddress ? (
-                  <span className="flex items-center gap-1.5">
-                    <Loader2 className="size-3.5 animate-spin" />
-                    در حال ذخیره...
-                  </span>
-                ) : (
-                  "ذخیره و انتخاب آدرس"
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <AddressFormDialog
+        open={isAddressModalOpen}
+        onOpenChange={setIsAddressModalOpen}
+        onSuccess={(newAddr) => setSelectedAddressId(newAddr.id)}
+      />
 
       <Footer />
     </div>

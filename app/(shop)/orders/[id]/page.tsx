@@ -22,6 +22,9 @@ import {
   ArrowRight,
   PackageCheck,
   ShieldAlert,
+  Phone,
+  User,
+  HelpCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import Header from "@/components/layout/Header";
@@ -35,6 +38,7 @@ import {
   ApiError,
 } from "@/lib/api";
 import { useAuth } from "@/components/providers/auth-provider";
+import { formatAddressSummary } from "@/lib/address-utils";
 import {
   ORDER_STATUS_CONFIG,
   PAYMENT_STATUS_CONFIG,
@@ -54,6 +58,20 @@ import {
 } from "@/components/ui/dialog";
 
 export default function OrderDetailsPage() {
+  return (
+    <React.Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <Loader2 className="size-8 animate-spin text-primary" />
+        </div>
+      }
+    >
+      <OrderDetailsContent />
+    </React.Suspense>
+  );
+}
+
+function OrderDetailsContent() {
   const params = useParams();
   const searchParams = useSearchParams();
   const orderId = params?.id as string;
@@ -457,15 +475,15 @@ export default function OrderDetailsPage() {
            ========================================================================= */}
         {shouldShowPaymentPanel && (
           <div className="rounded-3xl border border-amber-500/40 bg-amber-500/[0.07] p-5 sm:p-7 shadow-xs space-y-5">
-            <div className="flex items-center gap-2.5 text-amber-900 dark:text-amber-200">
-              <div className="size-10 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-700 dark:text-amber-300">
-                <CreditCard className="size-5" />
+            <div className="flex items-center gap-3 text-amber-900 dark:text-amber-200">
+              <div className="size-11 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-700 dark:text-amber-300 shrink-0">
+                <CreditCard className="size-6" />
               </div>
               <div>
-                <h2 className="font-black text-base text-foreground">
+                <h2 className="font-black text-lg sm:text-xl text-foreground">
                   راهنمای پرداخت کارت‌به‌کارت
                 </h2>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm text-muted-foreground mt-0.5">
                   اقلام سفارش تا بارگذاری فیش پرداختی در انبار رزرو شده‌اند.
                 </p>
               </div>
@@ -473,13 +491,13 @@ export default function OrderDetailsPage() {
 
             {/* در صورت رد شدن فیش قبلی */}
             {order.paymentStatus === "FAILED" && (
-              <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3.5 text-xs text-rose-800 dark:text-rose-200 flex items-start gap-2.5">
-                <AlertCircle className="size-4.5 text-rose-600 shrink-0 mt-0.5" />
+              <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-800 dark:text-rose-200 flex items-start gap-2.5">
+                <AlertCircle className="size-5 text-rose-600 shrink-0 mt-0.5" />
                 <div className="space-y-1">
                   <div className="font-bold">
                     رسید پرداخت قبلی توسط مدیریت رد شد.
                   </div>
-                  <div className="text-[11px] leading-relaxed">
+                  <div className="text-xs sm:text-sm leading-relaxed">
                     لطفاً تصویر فیش واریزی معتبر و جدید با اطلاعات کامل را مجدداً بارگذاری نمایید.
                   </div>
                 </div>
@@ -487,14 +505,14 @@ export default function OrderDetailsPage() {
             )}
 
             {/* کارت مشخصات حساب و مبلغ */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               {/* شماره کارت */}
-              <div className="p-4 rounded-2xl border border-border bg-card space-y-2">
-                <span className="text-muted-foreground block text-[11px]">
+              <div className="p-4 sm:p-5 rounded-2xl border border-border bg-card space-y-2.5">
+                <span className="text-muted-foreground block text-xs sm:text-sm font-medium">
                   شماره کارت واریز:
                 </span>
-                <div className="flex items-center justify-between">
-                  <span className="font-mono font-black text-base tracking-widest text-foreground">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-mono font-black text-lg sm:text-xl tracking-widest text-foreground">
                     {paymentInfo?.cardNumber || "۶۰۳۷-۹۹۷۵-۱۲۳۴-۵۶۷۸"}
                   </span>
                   <button
@@ -505,29 +523,29 @@ export default function OrderDetailsPage() {
                         "شماره کارت"
                       )
                     }
-                    className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
+                    className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
                     title="کپی شماره کارت"
                   >
                     {copiedLabel === "شماره کارت" ? (
-                      <Check className="size-4 text-emerald-600" />
+                      <Check className="size-4.5 text-emerald-600" />
                     ) : (
-                      <Copy className="size-4" />
+                      <Copy className="size-4.5" />
                     )}
                   </button>
                 </div>
-                <div className="flex items-center justify-between pt-1 border-t border-border/50 text-[11px] text-muted-foreground">
+                <div className="flex items-center justify-between pt-2 border-t border-border/50 text-xs sm:text-sm text-muted-foreground">
                   <span>به نام: <strong className="text-foreground">{paymentInfo?.cardHolder || "فروشگاه اسمارت الکتریک"}</strong></span>
                   {paymentInfo?.bankName && <span>{paymentInfo.bankName}</span>}
                 </div>
               </div>
 
               {/* مبلغ دقیق واریز */}
-              <div className="p-4 rounded-2xl border border-border bg-card space-y-2">
-                <span className="text-muted-foreground block text-[11px]">
+              <div className="p-4 sm:p-5 rounded-2xl border border-border bg-card space-y-2.5">
+                <span className="text-muted-foreground block text-xs sm:text-sm font-medium">
                   مبلغ دقیق پرداختی:
                 </span>
-                <div className="flex items-center justify-between">
-                  <span className="font-mono font-black text-lg text-primary">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-mono font-black text-xl sm:text-2xl text-primary">
                     {formatToman(order.totalPrice)}
                   </span>
                   <button
@@ -535,43 +553,70 @@ export default function OrderDetailsPage() {
                     onClick={() =>
                       copyToClipboard(String(order.totalPrice), "مبلغ فاکتور")
                     }
-                    className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
+                    className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
                     title="کپی مبلغ عددی جهت واریز در اپ بانکی"
                   >
                     {copiedLabel === "مبلغ فاکتور" ? (
-                      <Check className="size-4 text-emerald-600" />
+                      <Check className="size-4.5 text-emerald-600" />
                     ) : (
-                      <Copy className="size-4" />
+                      <Copy className="size-4.5" />
                     )}
                   </button>
                 </div>
-                <div className="pt-1 border-t border-border/50 text-[11px] text-muted-foreground">
+                <div className="pt-2 border-t border-border/50 text-xs sm:text-sm text-muted-foreground leading-relaxed">
                   هزینه پست به صورت پس‌کرایه هنگام تحویل به مامور پست پرداخت می‌شود و شامل این مبلغ نیست.
                 </div>
               </div>
             </div>
 
+            {/* دکمه‌های دسترسی سریع زیر شماره کارت */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              <Link
+                href="/profile"
+                className="w-full h-10 px-5 rounded-md bg-card border border-border hover:bg-muted text-foreground font-bold text-sm leading-none flex items-center justify-center gap-2 shadow-xs transition-colors"
+              >
+                <User className="size-4 text-primary" />
+                <span>پنل پروفایل کاربری</span>
+              </Link>
+
+              <Link
+                href="/profile/orders"
+                className="w-full h-10 px-5 rounded-md bg-card border border-border hover:bg-muted text-foreground font-bold text-sm leading-none flex items-center justify-center gap-2 shadow-xs transition-colors"
+              >
+                <PackageCheck className="size-4 text-primary" />
+                <span>سفارش‌های من</span>
+              </Link>
+
+              <Link
+                href="/"
+                className="w-full h-10 px-5 rounded-md bg-primary/10 hover:bg-primary/20 text-primary font-bold text-sm leading-none flex items-center justify-center gap-2 transition-colors"
+              >
+                <span>بازگشت به صفحه اصلی</span>
+                <ArrowRight className="size-4" />
+              </Link>
+            </div>
+
             {/* بخش آپلود فیش */}
-            <div className="p-4 sm:p-5 rounded-2xl border border-border bg-card space-y-3.5">
+            <div className="p-4 sm:p-5 rounded-2xl border border-border bg-card space-y-4">
               <div className="flex items-center gap-2">
-                <Upload className="size-4 text-primary" />
-                <h4 className="font-bold text-xs sm:text-sm text-foreground">
+                <Upload className="size-5 text-primary" />
+                <h4 className="font-bold text-sm sm:text-base text-foreground">
                   بارگذاری تصویر فیش واریزی
                 </h4>
               </div>
 
-              <p className="text-[11px] text-muted-foreground leading-relaxed">
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                 فرمت‌های مجاز: JPG, PNG, WEBP — حداکثر حجم فایل: ۵ مگابایت
               </p>
 
               {/* فیلد انتخاب فایل یا پیش‌نمایش */}
               {!previewUrl ? (
                 <label className="border-2 border-dashed border-border hover:border-primary/60 rounded-2xl p-6 flex flex-col items-center justify-center cursor-pointer transition-colors bg-muted/20 hover:bg-muted/30">
-                  <Upload className="size-8 text-muted-foreground mb-2" />
-                  <span className="text-xs font-bold text-foreground">
+                  <Upload className="size-9 text-muted-foreground mb-2.5" />
+                  <span className="text-sm sm:text-base font-bold text-foreground">
                     انتخاب تصویر فیش واریز
                   </span>
-                  <span className="text-[11px] text-muted-foreground mt-1">
+                  <span className="text-xs sm:text-sm text-muted-foreground mt-1">
                     برای انتخاب تصویر از دستگاه کلیک کنید
                   </span>
                   <input
@@ -582,7 +627,7 @@ export default function OrderDetailsPage() {
                   />
                 </label>
               ) : (
-                <div className="flex flex-col sm:flex-row items-center gap-4 p-3 rounded-2xl border border-border bg-muted/20">
+                <div className="flex flex-col sm:flex-row items-center gap-4 p-3.5 rounded-2xl border border-border bg-muted/20">
                   <div className="relative size-24 rounded-xl overflow-hidden border border-border bg-background shrink-0">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -593,41 +638,39 @@ export default function OrderDetailsPage() {
                   </div>
 
                   <div className="flex-1 min-w-0 space-y-1 text-center sm:text-start">
-                    <span className="text-xs font-bold text-foreground truncate block">
+                    <span className="text-sm font-bold text-foreground truncate block">
                       {selectedFile?.name}
                     </span>
-                    <span className="text-[11px] font-mono text-muted-foreground block">
+                    <span className="text-xs font-mono text-muted-foreground block">
                       {((selectedFile?.size || 0) / (1024 * 1024)).toFixed(2)} مگابایت
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-2.5 shrink-0">
                     <Button
                       type="button"
                       variant="outline"
-                      size="sm"
                       onClick={handleRemoveFile}
-                      className="rounded-xl text-xs gap-1"
+                      className="h-10 px-4 rounded-md text-sm gap-1.5"
                     >
-                      <X className="size-3.5" />
+                      <X className="size-4" />
                       <span>تغییر فایل</span>
                     </Button>
 
                     <Button
                       type="button"
-                      size="sm"
                       onClick={handleUploadReceipt}
                       disabled={uploadReceiptMutation.isPending}
-                      className="rounded-xl text-xs font-bold gap-1.5"
+                      className="h-10 px-5 rounded-md text-sm font-bold gap-1.5"
                     >
                       {uploadReceiptMutation.isPending ? (
                         <>
-                          <Loader2 className="size-3.5 animate-spin" />
+                          <Loader2 className="size-4 animate-spin" />
                           <span>در حال ارسال رسید...</span>
                         </>
                       ) : (
                         <>
-                          <Check className="size-3.5" />
+                          <Check className="size-4" />
                           <span>ارسال و ثبت فیش</span>
                         </>
                       )}
@@ -635,6 +678,40 @@ export default function OrderDetailsPage() {
                   </div>
                 </div>
               )}
+            </div>
+
+            {/* راهنمای کامل پرداخت و شماره تماس پشتیبانی */}
+            <div className="p-4 sm:p-5 rounded-2xl border border-border bg-card space-y-3.5">
+              <div className="flex items-center gap-2 font-bold text-sm sm:text-base text-foreground">
+                <HelpCircle className="size-5 text-primary shrink-0" />
+                <span>راهنمای کامل پرداخت و تماس با پشتیبانی</span>
+              </div>
+
+              <ul className="space-y-1.5 text-xs sm:text-sm text-muted-foreground list-disc list-inside leading-relaxed">
+                <li>مبلغ دقیق فاکتور را به شماره کارت درج‌شده در بالا واریز نمایید و از تطابق نام دارنده حساب اطمینان حاصل کنید.</li>
+                <li>تصویر واضح یا اسکرین‌شات رسید بانکی (دارای شماره پیگیری و ساعت تراکنش) را در کادر بالا بارگذاری و دکمه «ارسال و ثبت فیش» را بزنید.</li>
+                <li>پس از ثبت رسید، تیم مالی و پشتیبانی سفارش شما را بررسی و تأیید کرده و کالا آماده ارسال خواهد شد.</li>
+                <li>در صورت بروز هرگونه مشکل یا نیاز به پیگیری سریع، می‌توانید با شماره‌های پشتیبانی زیر تماس بگیرید:</li>
+              </ul>
+
+              <div className="flex flex-wrap items-center gap-3 pt-1">
+                <a
+                  href="tel:09122193551"
+                  className="inline-flex items-center gap-2 h-10 px-4 rounded-md border border-border bg-muted/30 hover:bg-muted text-sm font-bold text-foreground transition-colors"
+                >
+                  <Phone className="size-4 text-primary" />
+                  <span>مدیریت و پیگیری سفارش:</span>
+                  <span dir="ltr" className="font-mono">۰۹۱۲ ۲۱۹ ۳۵۵۱</span>
+                </a>
+                <a
+                  href="tel:09302340279"
+                  className="inline-flex items-center gap-2 h-10 px-4 rounded-md border border-border bg-muted/30 hover:bg-muted text-sm font-bold text-foreground transition-colors"
+                >
+                  <Phone className="size-4 text-primary" />
+                  <span>پشتیبانی فنی:</span>
+                  <span dir="ltr" className="font-mono">۰۹۳۰ ۲۳۴ ۰۲۷۹</span>
+                </a>
+              </div>
             </div>
           </div>
         )}
@@ -645,7 +722,7 @@ export default function OrderDetailsPage() {
             <div className="flex items-center gap-3 text-blue-900 dark:text-blue-200">
               <Loader2 className="size-5 text-blue-600 animate-spin shrink-0" />
               <div>
-                <span className="font-bold text-xs sm:text-sm block">
+                <span className="font-bold text-sm sm:text-base block">
                   رسید پرداخت شما دریافت شد و در انتظار بررسی و تأیید مدیریت است.
                 </span>
                 <span className="text-[11px] text-blue-800 dark:text-blue-300">
@@ -812,16 +889,22 @@ export default function OrderDetailsPage() {
                     <span className="font-mono">
                       {order.receiverPhone || order.address?.receiverPhone}
                     </span>
+                    {order.secondaryPhone && (
+                      <>
+                        {" / "}
+                        <span className="font-mono">{order.secondaryPhone}</span>
+                      </>
+                    )}
                     )
                   </div>
                   <div>
-                    {order.province || order.address?.province}،{" "}
-                    {order.city || order.address?.city}،{" "}
-                    {order.addressLine || order.address?.addressLine}
+                    {formatAddressSummary(order.streetAddress ? order : order.address ?? order)}
                   </div>
-                  <div className="font-mono text-[11px]">
-                    کد پستی: {order.postalCode || order.address?.postalCode}
-                  </div>
+                  {(order.postalCode || order.address?.postalCode) && (
+                    <div className="font-mono text-[11px]">
+                      کد پستی: {order.postalCode || order.address?.postalCode}
+                    </div>
+                  )}
                 </div>
               </div>
             )}

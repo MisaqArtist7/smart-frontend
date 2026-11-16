@@ -20,6 +20,7 @@ import {
 import { useAuth } from "@/components/providers/auth-provider";
 import { useMyOrders, useAddresses, type OrderStatus } from "@/lib/api";
 import { formatPrice, toPersianDigits } from "@/lib/account-data";
+import { formatAddressSummary } from "@/lib/address-utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -408,17 +409,23 @@ export default function ProfileDashboardPage() {
                   )}
                 </span>
                 <span className="text-xs text-muted-foreground font-mono">
-                  تحویل‌گیرنده: {defaultAddress.receiverName} ({toPersianDigits(defaultAddress.receiverPhone)})
+                  تحویل‌گیرنده: {defaultAddress.receiverName} ({toPersianDigits(defaultAddress.receiverPhone)}
+                  {defaultAddress.secondaryPhone
+                    ? ` / ${toPersianDigits(defaultAddress.secondaryPhone)}`
+                    : ""}
+                  )
                 </span>
               </div>
 
               <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                {defaultAddress.province}، {defaultAddress.city}، {defaultAddress.addressLine}
+                {formatAddressSummary(defaultAddress)}
               </p>
 
-              <div className="text-xs text-muted-foreground font-mono pt-1">
-                کد پستی: {toPersianDigits(defaultAddress.postalCode)}
-              </div>
+              {defaultAddress.postalCode && (
+                <div className="text-xs text-muted-foreground font-mono pt-1">
+                  کد پستی: {toPersianDigits(defaultAddress.postalCode)}
+                </div>
+              )}
             </div>
           ) : (
             <div className="text-center py-6 text-xs text-muted-foreground">

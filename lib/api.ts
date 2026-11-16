@@ -26,6 +26,11 @@ import type {
 } from "./types";
 
 export * from "./types";
+export * from "./api/locations";
+import {
+  normalizePhoneInput,
+  normalizePostalCodeInput,
+} from "./address-utils";
 
 export const API_BASE_URL = (
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"
@@ -715,30 +720,36 @@ export function useCreateAddress() {
       const payload: Record<string, unknown> = {
         title: input.title.trim(),
         receiverName: input.receiverName.trim(),
-        receiverPhone: input.receiverPhone.trim(),
-        province: input.province.trim(),
-        city: input.city.trim(),
-        addressLine: input.addressLine.trim(),
-        postalCode: input.postalCode.trim(),
+        receiverPhone: normalizePhoneInput(input.receiverPhone),
+        provinceId: Number(input.provinceId),
+        cityId: Number(input.cityId),
+        streetAddress: input.streetAddress.trim(),
+        plaque: input.plaque.trim(),
       };
-      if (input.isDefault !== undefined) {
-        payload.isDefault = Boolean(input.isDefault);
-      }
 
-      try {
-        return await apiFetch<Address>("/addresses", {
-          method: "POST",
-          body: payload,
-        });
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          return await apiFetch<Address>("/address", {
-            method: "POST",
-            body: payload,
-          });
-        }
-        throw err;
-      }
+      const secondaryPhone = input.secondaryPhone
+        ? normalizePhoneInput(input.secondaryPhone)
+        : "";
+      if (secondaryPhone) payload.secondaryPhone = secondaryPhone;
+
+      const neighborhood = input.neighborhood?.trim();
+      if (neighborhood) payload.neighborhood = neighborhood;
+
+      const unit = input.unit?.trim();
+      if (unit) payload.unit = unit;
+
+      const floor = input.floor?.trim();
+      if (floor) payload.floor = floor;
+
+      const postalCode = input.postalCode
+        ? normalizePostalCodeInput(input.postalCode)
+        : "";
+      if (postalCode) payload.postalCode = postalCode;
+
+      return await apiFetch<Address>("/addresses", {
+        method: "POST",
+        body: payload,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["addresses"] });
@@ -757,28 +768,41 @@ export function useUpdateAddress() {
       const payload: Record<string, unknown> = {};
 
       if (input.title !== undefined) payload.title = input.title.trim();
-      if (input.receiverName !== undefined) payload.receiverName = input.receiverName.trim();
-      if (input.receiverPhone !== undefined) payload.receiverPhone = input.receiverPhone.trim();
-      if (input.province !== undefined) payload.province = input.province.trim();
-      if (input.city !== undefined) payload.city = input.city.trim();
-      if (input.addressLine !== undefined) payload.addressLine = input.addressLine.trim();
-      if (input.postalCode !== undefined) payload.postalCode = input.postalCode.trim();
-      if (input.isDefault !== undefined) payload.isDefault = Boolean(input.isDefault);
-
-      try {
-        return await apiFetch<Address>(`/addresses/${id}`, {
-          method: "PATCH",
-          body: payload,
-        });
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          return await apiFetch<Address>(`/address/${id}`, {
-            method: "PATCH",
-            body: payload,
-          });
-        }
-        throw err;
+      if (input.receiverName !== undefined)
+        payload.receiverName = input.receiverName.trim();
+      if (input.receiverPhone !== undefined)
+        payload.receiverPhone = normalizePhoneInput(input.receiverPhone);
+      if (input.secondaryPhone !== undefined) {
+        const normalized = normalizePhoneInput(input.secondaryPhone);
+        if (normalized) payload.secondaryPhone = normalized;
       }
+      if (input.provinceId !== undefined)
+        payload.provinceId = Number(input.provinceId);
+      if (input.cityId !== undefined) payload.cityId = Number(input.cityId);
+      if (input.neighborhood !== undefined) {
+        const val = input.neighborhood.trim();
+        if (val) payload.neighborhood = val;
+      }
+      if (input.streetAddress !== undefined)
+        payload.streetAddress = input.streetAddress.trim();
+      if (input.plaque !== undefined) payload.plaque = input.plaque.trim();
+      if (input.unit !== undefined) {
+        const val = input.unit.trim();
+        if (val) payload.unit = val;
+      }
+      if (input.floor !== undefined) {
+        const val = input.floor.trim();
+        if (val) payload.floor = val;
+      }
+      if (input.postalCode !== undefined) {
+        const val = normalizePostalCodeInput(input.postalCode);
+        if (val) payload.postalCode = val;
+      }
+
+      return await apiFetch<Address>(`/addresses/${id}`, {
+        method: "PATCH",
+        body: payload,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["addresses"] });

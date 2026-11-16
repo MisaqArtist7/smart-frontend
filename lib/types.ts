@@ -124,16 +124,36 @@ export interface Category {
 // Addresses & Shipping Types
 // ----------------------------------------------------
 
+export interface Province {
+  id: number;
+  name: string;
+  slug: string;
+}
+
+export interface City {
+  id: number;
+  name: string;
+  slug: string;
+  provinceId: number;
+}
+
 export interface Address {
   id: number;
-  userId: number;
+  userId?: number;
   title: string;
   receiverName: string;
   receiverPhone: string;
-  province: string;
-  city: string;
-  addressLine: string;
-  postalCode: string;
+  secondaryPhone?: string | null;
+  provinceId: number;
+  cityId: number;
+  province: Province;
+  city: City;
+  neighborhood?: string | null;
+  streetAddress: string;
+  plaque: string;
+  unit?: string | null;
+  floor?: string | null;
+  postalCode?: string | null;
   isDefault: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -143,11 +163,15 @@ export interface CreateAddressInput {
   title: string;
   receiverName: string;
   receiverPhone: string;
-  province: string;
-  city: string;
-  addressLine: string;
-  postalCode: string;
-  isDefault?: boolean;
+  secondaryPhone?: string;
+  provinceId: number;
+  cityId: number;
+  neighborhood?: string;
+  streetAddress: string;
+  plaque: string;
+  unit?: string;
+  floor?: string;
+  postalCode?: string;
 }
 
 export interface UpdateAddressInput extends Partial<CreateAddressInput> {
@@ -197,10 +221,18 @@ export interface Order {
   totalPrice: number;
   receiverName: string;
   receiverPhone: string;
+  secondaryPhone?: string | null;
   province: string;
   city: string;
+  provinceId?: number | null;
+  cityId?: number | null;
+  neighborhood?: string | null;
+  streetAddress?: string | null;
+  plaque?: string | null;
+  unit?: string | null;
+  floor?: string | null;
   addressLine: string;
-  postalCode: string;
+  postalCode?: string | null;
   note: string | null;
   trackingCode?: string | null;
   adminNote: string | null;

@@ -980,24 +980,77 @@ export default function AdminOrdersPage() {
 
             <div className="space-y-4 py-2 text-xs">
               {/* مشخصات گیرنده و نشانی */}
-              <div className="p-4 rounded-xl border border-border bg-muted/20 space-y-2">
-                <div className="font-bold text-foreground flex items-center gap-1.5">
-                  <MapPin className="size-4 text-primary" />
-                  <span>نشانی کامل تحویل گیرنده:</span>
+              <div className="p-4 rounded-xl border border-border bg-muted/20 space-y-2.5">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="font-bold text-foreground flex items-center gap-1.5">
+                    <MapPin className="size-4 text-primary" />
+                    <span>نشانی کامل تحویل گیرنده:</span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-7 px-2.5 text-[11px] cursor-pointer"
+                    onClick={() => {
+                      const fullText = [
+                        `${selectedOrderDetails.receiverName}`,
+                        `تلفن: ${selectedOrderDetails.receiverPhone}${selectedOrderDetails.secondaryPhone ? ` / ${selectedOrderDetails.secondaryPhone}` : ""}`,
+                        selectedOrderDetails.addressLine ||
+                          `${selectedOrderDetails.province}، ${selectedOrderDetails.city}`,
+                        selectedOrderDetails.postalCode
+                          ? `کد پستی: ${selectedOrderDetails.postalCode}`
+                          : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" | ");
+                      navigator.clipboard?.writeText(fullText);
+                      toast.success("نشانی و شماره تماس کپی شد");
+                    }}
+                  >
+                    کپی نشانی
+                  </Button>
                 </div>
-                <div className="text-muted-foreground leading-relaxed">
-                  {selectedOrderDetails.province}، {selectedOrderDetails.city}، {selectedOrderDetails.addressLine}
+                <div className="text-muted-foreground leading-relaxed select-text">
+                  {selectedOrderDetails.addressLine
+                    ? selectedOrderDetails.addressLine
+                    : `${selectedOrderDetails.province}، ${selectedOrderDetails.city}`}
                 </div>
-                <div className="flex flex-wrap items-center gap-4 text-muted-foreground pt-1 border-t border-border/50 text-[11px]">
+                {selectedOrderDetails.streetAddress && (
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
+                    <span>استان: <strong className="text-foreground">{selectedOrderDetails.province}</strong></span>
+                    <span>شهر: <strong className="text-foreground">{selectedOrderDetails.city}</strong></span>
+                    {selectedOrderDetails.neighborhood && (
+                      <span>محله: <strong className="text-foreground">{selectedOrderDetails.neighborhood}</strong></span>
+                    )}
+                    <span>خیابان: <strong className="text-foreground">{selectedOrderDetails.streetAddress}</strong></span>
+                    {selectedOrderDetails.plaque && (
+                      <span>پلاک: <strong className="text-foreground">{selectedOrderDetails.plaque}</strong></span>
+                    )}
+                    {selectedOrderDetails.floor && (
+                      <span>طبقه: <strong className="text-foreground">{selectedOrderDetails.floor}</strong></span>
+                    )}
+                    {selectedOrderDetails.unit && (
+                      <span>واحد: <strong className="text-foreground">{selectedOrderDetails.unit}</strong></span>
+                    )}
+                  </div>
+                )}
+                <div className="flex flex-wrap items-center gap-4 text-muted-foreground pt-1.5 border-t border-border/50 text-[11px]">
                   <span>
                     تحویل‌گیرنده: <strong className="text-foreground">{selectedOrderDetails.receiverName}</strong>
                   </span>
                   <span>
-                    تلفن تماس: <strong className="font-mono text-foreground">{selectedOrderDetails.receiverPhone}</strong>
+                    تلفن اصلی: <strong className="font-mono text-foreground">{selectedOrderDetails.receiverPhone}</strong>
                   </span>
-                  <span>
-                    کد پستی: <strong className="font-mono text-foreground">{selectedOrderDetails.postalCode}</strong>
-                  </span>
+                  {selectedOrderDetails.secondaryPhone && (
+                    <span>
+                      تلفن دوم: <strong className="font-mono text-foreground">{selectedOrderDetails.secondaryPhone}</strong>
+                    </span>
+                  )}
+                  {selectedOrderDetails.postalCode && (
+                    <span>
+                      کد پستی: <strong className="font-mono text-foreground">{selectedOrderDetails.postalCode}</strong>
+                    </span>
+                  )}
                 </div>
               </div>
 
