@@ -114,7 +114,7 @@ export function HeroCarousel({
     <section
       dir="rtl"
       aria-label="بنرهای تبلیغاتی اصلی"
-      className={cn("w-full max-w-[1380px] mx-auto mt-4 sm:mt-6 px-4 sm:px-6 xl:px-0 relative select-none", className)}
+      className={cn("w-full max-w-8xl mx-auto mt-4 sm:mt-6 px-4 sm:px-6 lg:px-8 relative select-none", className)}
     >
       <Carousel
         dir="rtl"
