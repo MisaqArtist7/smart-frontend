@@ -5,7 +5,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
-  Search,
   Filter,
   SlidersHorizontal,
   X,
@@ -15,15 +14,14 @@ import {
   Layers,
   RotateCcw,
   Loader2,
-  Sparkles,
   ArrowRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useProducts, useCategories, type Product } from "@/lib/api";
+import { useBrands } from "@/lib/api/brands";
 import { useCartStore } from "@/lib/cart-store";
 import { BrandFilterBox } from "@/features/brands/components/brand-filter-box";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Select } from "@/components/ui/select";
@@ -40,12 +38,17 @@ export function SearchClient() {
 
   const { data: serverProducts = [], isLoading: isProductsLoading } = useProducts();
   const { data: categories = [], isLoading: isCategoriesLoading } = useCategories();
+  const { data: brands = [] } = useBrands();
   const addItemToCart = useCartStore((s) => s.addItem);
+
+  const brandMap = useMemo(() => {
+    const map = new Map<number, { name: string; slug: string }>();
+    brands.forEach((b) => map.set(b.id, { name: b.name, slug: b.slug }));
+    return map;
+  }, [brands]);
 
   // استخراج عبارت جستجو مستقیماً و به صورت واکنشی از URL
   const activeQuery = searchParams.get("q") || searchParams.get("search") || "";
-  const [typedInput, setTypedInput] = useState<string | null>(null);
-  const searchInput = typedInput !== null ? typedInput : activeQuery;
 
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedBrandIds, setSelectedBrandIds] = useState<number[]>([]);
@@ -53,20 +56,7 @@ export function SearchClient() {
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
-  // ثبت و اجرای جستجو
-  const handleSearchSubmit = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    const clean = searchInput.trim();
-    setTypedInput(null);
-    if (clean) {
-      router.push(`/search?q=${encodeURIComponent(clean)}`);
-    } else {
-      router.push("/search");
-    }
-  };
-
   const handleClearSearch = () => {
-    setTypedInput(null);
     router.push("/search");
   };
 
@@ -75,13 +65,17 @@ export function SearchClient() {
     return serverProducts
       .filter((p) => p.isActive !== false)
       .filter((p) => {
-        // ۱. فیلتر عبارت جستجو روی عنوان، توضیحات، SKU و نام برند
+        // ۱. فیلتر عبارت جستجو روی عنوان، توضیحات، SKU و نام/اسلاگ برند
         if (activeQuery.trim()) {
           const q = activeQuery.trim().toLowerCase();
           const matchTitle = p.title ? p.title.toLowerCase().includes(q) : false;
           const matchSku = p.sku ? p.sku.toLowerCase().includes(q) : false;
           const matchDesc = p.description ? p.description.toLowerCase().includes(q) : false;
-          const matchBrand = p.brand ? p.brand.name.toLowerCase().includes(q) : false;
+          const resolvedBrand = p.brand ?? (p.brandId ? brandMap.get(p.brandId) : undefined);
+          const matchBrand = resolvedBrand
+            ? resolvedBrand.name.toLowerCase().includes(q) ||
+              (resolvedBrand.slug ? resolvedBrand.slug.toLowerCase().includes(q) : false)
+            : false;
           if (!matchTitle && !matchSku && !matchDesc && !matchBrand) {
             return false;
           }
@@ -123,7 +117,7 @@ export function SearchClient() {
         // newest
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       });
-  }, [serverProducts, activeQuery, selectedCategory, selectedBrandIds, inStockOnly, sortBy]);
+  }, [serverProducts, brandMap, activeQuery, selectedCategory, selectedBrandIds, inStockOnly, sortBy]);
 
   // محاسبه تعداد محصولات هر برند برای نتایج جاری
   const brandCounts = useMemo(() => {
@@ -132,17 +126,23 @@ export function SearchClient() {
       if (p.brandId && p.isActive !== false) {
         if (activeQuery.trim()) {
           const q = activeQuery.trim().toLowerCase();
+          const resolvedBrand = p.brand ?? brandMap.get(p.brandId);
+          const matchBrand = resolvedBrand
+            ? resolvedBrand.name.toLowerCase().includes(q) ||
+              (resolvedBrand.slug ? resolvedBrand.slug.toLowerCase().includes(q) : false)
+            : false;
           const match =
             (p.title && p.title.toLowerCase().includes(q)) ||
             (p.sku && p.sku.toLowerCase().includes(q)) ||
-            (p.description && p.description.toLowerCase().includes(q));
+            (p.description && p.description.toLowerCase().includes(q)) ||
+            matchBrand;
           if (!match) return;
         }
         counts[p.brandId] = (counts[p.brandId] || 0) + 1;
       }
     });
     return counts;
-  }, [serverProducts, activeQuery]);
+  }, [serverProducts, brandMap, activeQuery]);
 
   // ریست همه فیلترها به جز متن جستجو
   const handleResetFilters = () => {
@@ -181,68 +181,6 @@ export function SearchClient() {
           {activeQuery ? `جستجوی «${activeQuery}»` : "جستجوی محصولات"}
         </span>
       </nav>
-
-      {/* سربرگ اختصاصی صفحه جستجو */}
-      <div className="rounded-3xl border border-border/80 bg-gradient-to-l from-primary/5 via-card to-card p-5 sm:p-7 shadow-sm">
-        <div className="max-w-3xl space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-black">
-            <Sparkles className="size-3.5" />
-            <span>جستجوی هوشمند در کاتالوگ تجهیزات برقی</span>
-          </div>
-
-          <div>
-            <h1 className="text-xl sm:text-2xl font-black text-foreground">
-              {activeQuery ? (
-                <>
-                  نتایج جستجو برای:{" "}
-                  <span className="text-primary font-black">«{activeQuery}»</span>
-                </>
-              ) : (
-                "جستجوی پیشرفته محصولات"
-              )}
-            </h1>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 leading-relaxed">
-              {activeQuery
-                ? `تعداد ${filteredProducts.length.toLocaleString("fa-IR")} محصول متناسب با عبارت جستجوی شما یافت شد.`
-                : "نام کالا، مدل، کد محصول یا برند مورد نظر خود را وارد کنید تا نتایج به صورت زنده نمایش داده شوند."}
-            </p>
-          </div>
-
-          {/* فیلد جستجوی مستقیم داخل سربرگ */}
-          <form
-            onSubmit={handleSearchSubmit}
-            className="relative flex items-center w-full max-w-xl"
-          >
-            <div className="relative w-full">
-              <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 size-4 sm:size-5 text-muted-foreground pointer-events-none" />
-              <Input
-                type="text"
-                placeholder="عنوان کالا، برند یا کد فنی را تایپ کنید..."
-                value={searchInput}
-                onChange={(e) => setTypedInput(e.target.value)}
-                className="pr-10 pl-24 h-11 sm:h-12 text-xs sm:text-sm rounded-2xl bg-background border-border/80 shadow-inner focus-visible:ring-primary"
-              />
-              {searchInput && (
-                <button
-                  type="button"
-                  onClick={handleClearSearch}
-                  aria-label="پاک کردن جستجو"
-                  className="absolute left-16 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground rounded-full hover:bg-muted transition-colors"
-                >
-                  <X className="size-4" />
-                </button>
-              )}
-              <Button
-                type="submit"
-                size="sm"
-                className="absolute left-1.5 top-1/2 -translate-y-1/2 h-8 sm:h-9 px-3.5 rounded-xl text-xs font-bold"
-              >
-                جستجو
-              </Button>
-            </div>
-          </form>
-        </div>
-      </div>
 
       {/* دکمه فیلتر در موبایل */}
       <div className="flex items-center justify-between lg:hidden border-b border-border/80 pb-4">
