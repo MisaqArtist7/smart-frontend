@@ -17,6 +17,8 @@ import {
   MessageSquare,
   Tag,
   Award,
+  Mail,
+  MapPin,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -59,9 +61,19 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
     icon: MessageSquare,
   },
   {
+    title: "پیام‌های تماس",
+    href: "/admin/contact",
+    icon: Mail,
+  },
+  {
     title: "کدهای تخفیف",
     href: "/admin/discounts",
     icon: Tag,
+  },
+  {
+    title: "استان‌ها و شهرها",
+    href: "/admin/locations",
+    icon: MapPin,
   },
   {
     title: "آدرس‌ها و کاربران",

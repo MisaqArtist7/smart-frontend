@@ -137,6 +137,17 @@ export interface City {
   provinceId: number;
 }
 
+export interface AdminProvince extends Province {
+  isActive: boolean;
+  _count?: {
+    cities: number;
+  };
+}
+
+export interface AdminCity extends City {
+  isActive: boolean;
+}
+
 export interface Address {
   id: number;
   userId?: number;

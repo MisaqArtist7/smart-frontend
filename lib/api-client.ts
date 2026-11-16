@@ -2,6 +2,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 export async function apiClient<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE_URL}${endpoint}`, {
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
       // اگر توکن ادمین داری اینجا اضافه می‌شود:
