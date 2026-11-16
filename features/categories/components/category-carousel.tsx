@@ -134,7 +134,7 @@ export function CategoryCarousel({
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              className="h-45 sm:h-50 md:h-55 w-full rounded-2xl border border-border/70 bg-muted/40 shadow-xs animate-pulse"
+              className="h-36 sm:h-40 md:h-44 w-full rounded-2xl border border-border/70 bg-muted/40 shadow-xs animate-pulse"
             />
           ))}
         </div>

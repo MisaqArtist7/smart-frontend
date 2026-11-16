@@ -3,7 +3,7 @@
 import React, { useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Eye, Percent } from "lucide-react";
+import { Eye } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
@@ -12,6 +12,7 @@ import {
   CarouselNext,
 } from "@/components/ui/carousel";
 import { useProducts, type Product } from "@/lib/api";
+import { formatToman } from "@/lib/order-utils";
 import { cn, normalizeImageUrl } from "@/lib/utils";
 
 export interface LatestProductsProps {
@@ -58,21 +59,20 @@ export function LatestProducts({
         </div>
       </div>
 
-      {/* وضعیت در حال بارگذاری: اسکلتون لودینگ متناسب با ۶ ستون */}
+      {/* وضعیت در حال بارگذاری: اسکلتون لودینگ متناسب با ۵ ستون */}
       {isLoading && products.length === 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-[3px]">
-          {Array.from({ length: 6 }).map((_, index) => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-[3px]">
+          {Array.from({ length: 5 }).map((_, index) => (
             <div
               key={index}
-              className="flex flex-col justify-between h-85 w-full rounded-xs border border-border/70 bg-card p-3.5 shadow-sm animate-pulse"
+              className="flex flex-col justify-between h-72 sm:h-80 rounded-xs border border-border/70 bg-card p-3 sm:p-4 shadow-xs animate-pulse space-y-2.5"
             >
-              <div className="w-full h-44 rounded-md bg-muted/60 mb-2" />
-              <div className="space-y-2 my-auto">
-                <div className="h-3.5 bg-muted/60 rounded w-4/5 mx-auto" />
-                <div className="h-3 bg-muted/40 rounded w-3/5 mx-auto" />
+              <div className="w-full h-36 sm:h-40 rounded-xl bg-muted/60" />
+              <div className="space-y-2">
+                <div className="h-4 bg-muted/60 rounded w-3/4" />
+                <div className="h-3 bg-muted/40 rounded w-1/2" />
               </div>
-              <div className="h-5 bg-muted/50 rounded w-1/2 my-2" />
-              <div className="h-9 bg-muted/60 rounded-md w-full" />
+              <div className="h-9 bg-muted/60 rounded-sm w-full" />
             </div>
           ))}
         </div>
@@ -101,79 +101,83 @@ export function LatestProducts({
                 product.images?.[0]?.url ||
                 (typeof product.images?.[0] === "string" ? product.images[0] : null);
               const imageUrl = normalizeImageUrl(rawImageUrl, "/images/products/adapter-52240.png");
-              const displayPrice = product.discountPrice ?? product.price;
-              const discountPercent =
+              const hasDiscount =
                 product.discountPrice != null &&
                 product.discountPrice > 0 &&
-                product.discountPrice < product.price
-                  ? Math.round(((product.price - product.discountPrice) / product.price) * 100)
-                  : null;
+                product.discountPrice < product.price;
+              const displayPrice = product.discountPrice ?? product.price;
+              const discountPercent = hasDiscount
+                ? Math.round(((product.price - product.discountPrice!) / product.price) * 100)
+                : 0;
+              const isOutOfStock = product.stock <= 0;
 
               return (
                 <CarouselItem
                   key={product.id}
-                  className="ps-[3px] basis-[72%] sm:basis-[48%] md:basis-1/3 lg:basis-1/4 xl:basis-1/6"
+                  className="ps-[3px] basis-[72%] sm:basis-[48%] md:basis-1/3 lg:basis-1/4 xl:basis-1/5"
                 >
-                  <div className="group/card relative flex flex-col justify-between h-85 w-full rounded-xs border border-border/80 bg-card text-card-foreground p-3.5 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-                    {/* بج درصد تخفیف قرمز رنگ در صورت تخفیف‌دار بودن */}
-                    {discountPercent != null && discountPercent > 0 && (
-                      <div className="absolute top-3 inset-e-3 z-10 flex items-center gap-0.5 bg-primary text-primary-foreground font-black text-[11px] px-2 py-0.5 rounded-full shadow-xs">
-                        <span>{discountPercent.toLocaleString("fa-IR")}٪</span>
-                        <Percent className="size-2.5" />
-                      </div>
-                    )}
-
-                    {/* بخش تصویر محصول در بالا */}
-                    <Link
-                      href={`/product/${product.slug}`}
-                      className="relative w-full h-44 flex items-center justify-center p-2 mb-2 focus:outline-none"
-                    >
-                      <div className="relative size-full flex items-center justify-center">
+                  <div className="group relative flex flex-col justify-between rounded-xs border border-border/80 bg-card p-3 sm:p-4 shadow-xs transition-all duration-300 hover:border-primary/40 hover:shadow-md">
+                    <Link href={`/product/${product.slug}`} className="block space-y-3">
+                      {/* تصویر کالا */}
+                      <div className="relative aspect-square w-full rounded-xl bg-muted/20 p-2 flex items-center justify-center overflow-hidden">
                         <Image
                           src={imageUrl}
                           alt={product.title}
-                          width={444}
-                          height={444}
-                          className="max-h-full max-w-full object-contain transition-transform duration-300 ease-out group-hover/card:scale-108"
+                          fill
+                          sizes="(max-width: 640px) 72vw, (max-width: 1024px) 33vw, 20vw"
+                          className={cn(
+                            "object-contain p-2 transition-transform duration-300 group-hover:scale-105",
+                            isOutOfStock && "opacity-50 grayscale"
+                          )}
                         />
-                      </div>
-                    </Link>
 
-                    {/* عنوان و مدل محصول در میانه */}
-                    <Link
-                      href={`/product/${product.slug}`}
-                      className="focus:outline-none focus-visible:underline"
-                    >
-                      <h3 className="font-bold text-foreground leading-snug line-clamp-2 min-h-10 transition-colors group-hover/card:text-primary">
-                        {product.title}
-                      </h3>
-                    </Link>
-
-                    {/* بخش قیمت و واحد پولی */}
-                    <div className="flex items-center justify-between mt-auto pt-3 pb-2 px-0.5 border-t border-border/40">
-                      <div className="flex flex-col">
-                        <span className="text-sm font-black text-foreground tracking-tight">
-                          {displayPrice.toLocaleString("fa-IR")}
-                        </span>
-                        {discountPercent != null && (
-                          <span className="text-[11px] text-muted-foreground line-through">
-                            {product.price.toLocaleString("fa-IR")}
+                        {/* بج درصد تخفیف کج و فارسی */}
+                        {discountPercent > 0 && (
+                          <span className="absolute top-1.5 end-1.5 -rotate-12 bg-primary text-primary-foreground text-xs sm:text-sm font-black px-2.5 py-1 rounded-lg shadow-sm">
+                            {discountPercent.toLocaleString("fa-IR")}٪
                           </span>
                         )}
-                      </div>
-                      <span className="text-[11px] text-muted-foreground font-medium">
-                        تومان
-                      </span>
-                    </div>
 
-                    {/* دکمه اکشن قرمز رنگ «مشاهده محصول» */}
-                    <Link
-                      href={`/product/${product.slug}`}
-                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs py-2 px-3 rounded-md flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-[0.98]"
-                    >
-                      <Eye className="size-3.5" />
-                      <span>مشاهده محصول</span>
+                        {isOutOfStock && (
+                          <div className="absolute inset-0 bg-background/50 backdrop-blur-[1px] flex items-center justify-center">
+                            <span className="bg-background/90 text-foreground text-xs font-black px-3 py-1 rounded-lg border border-border shadow-xs">
+                              ناموجود
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* عنوان و قیمت */}
+                      <div className="space-y-2">
+                        <h3 className="text-xs sm:text-sm font-bold text-foreground line-clamp-2 min-h-[2.5rem] leading-snug group-hover:text-primary transition-colors">
+                          {product.title}
+                        </h3>
+
+                        <div className="pt-1 border-t border-border/40 flex flex-col items-end">
+                          {hasDiscount && (
+                            <span className="text-[11px] text-muted-foreground line-through">
+                              {product.price.toLocaleString("fa-IR")}
+                            </span>
+                          )}
+                          <div className="flex items-center gap-1">
+                            <span className="text-sm sm:text-base font-black text-foreground">
+                              {formatToman(displayPrice)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
                     </Link>
+
+                    {/* دکمه اکشن «مشاهده محصول» */}
+                    <div className="pt-3">
+                      <Link
+                        href={`/product/${product.slug}`}
+                        className="w-full rounded-sm text-xs font-bold gap-1.5 h-9 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 flex items-center justify-center transition-all"
+                      >
+                        <Eye className="size-3.5" />
+                        <span>مشاهده محصول</span>
+                      </Link>
+                    </div>
                   </div>
                 </CarouselItem>
               );
