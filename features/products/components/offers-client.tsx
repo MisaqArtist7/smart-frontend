@@ -6,7 +6,6 @@ import Image from "next/image";
 import {
   Flame,
   Sparkles,
-  Percent,
   Eye,
   ChevronDown,
   RotateCcw,
@@ -16,6 +15,7 @@ import {
   Tag,
 } from "lucide-react";
 import { useProducts } from "@/lib/api";
+import { formatToman } from "@/lib/order-utils";
 import { cn, normalizeImageUrl } from "@/lib/utils";
 
 type SortOption = "discount-desc" | "price-asc" | "price-desc" | "newest";
@@ -249,19 +249,18 @@ export function OffersClient() {
           ========================================================================= */}
       {isLoading ? (
         /* اسکلتون لودینگ هنگام دریافت اطلاعات */
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-5">
-          {Array.from({ length: 8 }).map((_, index) => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-0">
+          {Array.from({ length: 6 }).map((_, index) => (
             <div
               key={index}
-              className="flex flex-col justify-between h-[370px] w-full rounded-md border border-border/70 bg-card p-4 shadow-xs animate-pulse"
+              className="rounded-xs border border-border bg-card p-4 h-[320px] animate-pulse space-y-3 flex flex-col justify-between"
             >
-              <div className="w-full h-40 rounded-xl bg-muted/60 mb-3" />
-              <div className="space-y-2 my-auto">
-                <div className="h-4 bg-muted/60 rounded w-4/5 mx-auto" />
-                <div className="h-3 bg-muted/40 rounded w-2/3 mx-auto" />
+              <div className="size-full max-h-[160px] bg-muted/60 rounded-xl" />
+              <div className="space-y-2">
+                <div className="h-4 bg-muted/60 rounded w-3/4" />
+                <div className="h-3 bg-muted/40 rounded w-1/2" />
               </div>
-              <div className="h-6 bg-muted/50 rounded w-1/2 my-3" />
-              <div className="h-10 bg-muted/60 rounded-xl w-full" />
+              <div className="h-9 bg-muted/60 rounded-sm" />
             </div>
           ))}
         </div>
@@ -292,7 +291,7 @@ export function OffersClient() {
         </div>
       ) : (
         /* لیست محصولات تخفیف‌دار و پیشنهادات شگفت‌انگیز */
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-0">
           {processedProducts.map((product) => {
             const rawImageUrl =
               product.images?.[0]?.url ||
@@ -300,101 +299,70 @@ export function OffersClient() {
             const imageUrl = normalizeImageUrl(rawImageUrl, "/images/products/adapter-52240.png");
 
             const isOutOfStock = product.stock <= 0;
-            const isLowStock = product.stock > 0 && product.stock <= 3;
 
             return (
               <div
                 key={product.id}
-                className="group relative flex flex-col h-[380px] sm:h-[400px] w-full rounded-md border border-border/80 bg-card p-3.5 sm:p-4 shadow-xs transition-all duration-300 hover:border-primary/40 hover:shadow-md hover:-translate-y-1"
+                className="group relative flex flex-col justify-between rounded-xs border border-border/80 bg-card p-3 sm:p-4 shadow-xs transition-all duration-300 hover:border-primary/40 hover:shadow-md"
               >
-                {/* برچسب‌های شناور در بالای کارت */}
-                <div className="absolute top-3 right-3 left-3 flex items-center justify-between gap-2 z-10 pointer-events-none">
-                  {/* وضعیت موجودی انبار */}
-                  {isOutOfStock ? (
-                    <span className="rounded-md bg-muted/80 text-muted-foreground px-1.5 py-0.5 text-[10px] font-medium">
-                      ناموجود
-                    </span>
-                  ) : isLowStock ? (
-                    <span className="rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 text-[10px] font-bold">
-                      تنها {product.stock} عدد
-                    </span>
-                  ) : null}
-
-                  {/* بج درصد تخفیف */}
-                  {product.isDiscounted ? (
-                    <span className="ms-auto inline-flex items-center gap-0.5 rounded-full bg-primary text-primary-foreground px-2 py-0.5 text-[11px] font-black shadow-xs">
-                      <span>{product.discountPercent.toLocaleString("fa-IR")}٪</span>
-                      <Percent className="size-2.5" />
-                    </span>
-                  ) : (
-                    <span className="ms-auto inline-flex items-center gap-1 rounded-full bg-primary/10 text-primary px-2 py-0.5 text-[10px] font-bold">
-                      <Sparkles className="size-3" />
-                      <span>پیشنهاد روز</span>
-                    </span>
-                  )}
-                </div>
-
-                {/* بخش تصویر محصول با لینک به صفحه اختصاصی */}
-                <Link
-                  href={`/product/${product.slug}`}
-                  className="relative flex-1 min-h-0 w-full flex items-center justify-center p-1 mt-3 mb-2 focus:outline-none"
-                >
-                  <div className="relative size-full flex items-center justify-center">
+                <Link href={`/product/${product.slug}`} className="block space-y-3">
+                  {/* تصویر کالا */}
+                  <div className="relative aspect-square w-full rounded-xl bg-muted/20 p-2 flex items-center justify-center overflow-hidden">
                     <Image
                       src={imageUrl}
                       alt={product.title}
-                      width={180}
-                      height={150}
+                      fill
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
                       className={cn(
-                        "max-h-full max-w-full object-contain transition-transform duration-300 ease-out group-hover:scale-105",
+                        "object-contain p-2 transition-transform duration-300 group-hover:scale-105",
                         isOutOfStock && "opacity-50 grayscale"
                       )}
                     />
+                    {product.isDiscounted && product.discountPercent > 0 && (
+                      <span className="absolute top-1.5 end-1.5 -rotate-12 bg-primary text-primary-foreground text-xs sm:text-sm font-black px-2.5 py-1 rounded-lg shadow-sm">
+                        {product.discountPercent.toLocaleString("fa-IR")}٪
+                      </span>
+                    )}
+                    {isOutOfStock && (
+                      <div className="absolute inset-0 bg-background/50 backdrop-blur-[1px] flex items-center justify-center">
+                        <span className="bg-background/90 text-foreground text-xs font-black px-3 py-1 rounded-lg border border-border shadow-xs">
+                          ناموجود
+                        </span>
+                      </div>
+                    )}
                   </div>
-                </Link>
 
-                {/* اطلاعات محصول: دسته‌بندی و عنوان */}
-                <div className="space-y-1 text-right mb-1.5">
-                  <span className="text-[11px] font-semibold text-muted-foreground block line-clamp-1">
-                    دسته‌بندی: {product.categoryDisplay}
-                  </span>
-                  <Link
-                    href={`/product/${product.slug}`}
-                    className="focus:outline-none focus-visible:underline block"
-                  >
-                    <h3 className="text-xs sm:text-sm font-bold text-foreground leading-snug line-clamp-2 min-h-[2.25rem] transition-colors group-hover:text-primary">
+                  {/* عنوان و قیمت */}
+                  <div className="space-y-2">
+                    <h3 className="text-xs sm:text-sm font-bold text-foreground line-clamp-2 min-h-[2.5rem] leading-snug group-hover:text-primary transition-colors">
                       {product.title}
                     </h3>
-                  </Link>
-                </div>
 
-                {/* بخش قیمت و واحد تومان */}
-                <div className="pt-2 pb-2 px-0.5 border-t border-border/40">
-                  <div className="flex items-center justify-between">
-                    <div className="flex flex-col text-right">
-                      <span className="text-sm sm:text-base font-black text-foreground tracking-tight">
-                        {product.finalPrice.toLocaleString("fa-IR")}
-                      </span>
+                    <div className="pt-1 border-t border-border/40 flex flex-col items-end">
                       {product.isDiscounted && (
                         <span className="text-[11px] text-muted-foreground line-through">
                           {product.price.toLocaleString("fa-IR")}
                         </span>
                       )}
+                      <div className="flex items-center gap-1">
+                        <span className="text-sm sm:text-base font-black text-foreground">
+                          {formatToman(product.finalPrice)}
+                        </span>
+                      </div>
                     </div>
-                    <span className="text-xs text-muted-foreground font-semibold">
-                      تومان
-                    </span>
                   </div>
-                </div>
+                </Link>
 
                 {/* دکمه مشاهده محصول */}
-                <Link
-                  href={`/product/${product.slug}`}
-                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs sm:text-sm py-2 px-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-xs active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                >
-                  <Eye className="size-4 shrink-0" />
-                  <span>مشاهده محصول</span>
-                </Link>
+                <div className="pt-3">
+                  <Link
+                    href={`/product/${product.slug}`}
+                    className="w-full rounded-sm text-xs font-bold gap-1.5 h-9 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 flex items-center justify-center transition-all"
+                  >
+                    <Eye className="size-3.5" />
+                    <span>مشاهده محصول</span>
+                  </Link>
+                </div>
               </div>
             );
           })}
