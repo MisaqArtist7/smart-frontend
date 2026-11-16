@@ -159,7 +159,6 @@ export interface Address {
   cityId: number;
   province: Province;
   city: City;
-  neighborhood?: string | null;
   streetAddress: string;
   plaque: string;
   unit?: string | null;
@@ -177,7 +176,6 @@ export interface CreateAddressInput {
   secondaryPhone?: string;
   provinceId: number;
   cityId: number;
-  neighborhood?: string;
   streetAddress: string;
   plaque: string;
   unit?: string;
@@ -237,7 +235,6 @@ export interface Order {
   city: string;
   provinceId?: number | null;
   cityId?: number | null;
-  neighborhood?: string | null;
   streetAddress?: string | null;
   plaque?: string | null;
   unit?: string | null;

@@ -68,13 +68,6 @@ const addressFormSchema = z
       .number({ message: "انتخاب شهر الزامی است" })
       .int()
       .min(1, "انتخاب شهر الزامی است"),
-    neighborhood: z
-      .string()
-      .trim()
-      .optional()
-      .refine((val) => !val || (val.length >= 2 && val.length <= 80), {
-        message: "نام محله باید بین ۲ تا ۸۰ کاراکتر باشد",
-      }),
     streetAddress: z
       .string()
       .trim()
@@ -155,7 +148,6 @@ export function AddressFormDialog({
       secondaryPhone: "",
       provinceId: 0,
       cityId: 0,
-      neighborhood: "",
       streetAddress: "",
       plaque: "",
       floor: "",
@@ -200,7 +192,6 @@ export function AddressFormDialog({
         secondaryPhone: editingAddress.secondaryPhone || "",
         provinceId: editingAddress.provinceId,
         cityId: editingAddress.cityId,
-        neighborhood: editingAddress.neighborhood || "",
         streetAddress: editingAddress.streetAddress,
         plaque: editingAddress.plaque,
         floor: editingAddress.floor || "",
@@ -216,7 +207,6 @@ export function AddressFormDialog({
         secondaryPhone: "",
         provinceId: 0,
         cityId: 0,
-        neighborhood: "",
         streetAddress: "",
         plaque: "",
         floor: "",
@@ -245,7 +235,6 @@ export function AddressFormDialog({
         streetAddress: values.streetAddress,
         plaque: values.plaque,
         ...(values.secondaryPhone ? { secondaryPhone: values.secondaryPhone } : {}),
-        ...(values.neighborhood ? { neighborhood: values.neighborhood } : {}),
         ...(values.floor ? { floor: values.floor } : {}),
         ...(values.unit ? { unit: values.unit } : {}),
         ...(values.postalCode ? { postalCode: values.postalCode } : {}),
@@ -424,19 +413,6 @@ export function AddressFormDialog({
                 <p className="text-xs text-destructive">{errors.cityId.message}</p>
               )}
             </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-foreground">
-              محله (اختیاری)
-            </label>
-            <Input
-              placeholder="مثال: ونک، سعادت‌آباد، لاله‌زار"
-              {...register("neighborhood")}
-            />
-            {errors.neighborhood && (
-              <p className="text-xs text-destructive">{errors.neighborhood.message}</p>
-            )}
           </div>
 
           <div className="space-y-1.5">

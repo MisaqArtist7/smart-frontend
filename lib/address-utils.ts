@@ -19,7 +19,6 @@ export function normalizePostalCodeInput(input: string): string {
 export interface StructuredAddressLike {
   province?: string | { name: string } | null;
   city?: string | { name: string } | null;
-  neighborhood?: string | null;
   streetAddress?: string | null;
   plaque?: string | null;
   floor?: string | null;
@@ -47,7 +46,6 @@ export function formatAddressSummary(addr: StructuredAddressLike): string {
     return [
       provinceName,
       cityName,
-      addr.neighborhood ? `محله ${addr.neighborhood}` : null,
       addr.streetAddress,
       `پلاک ${addr.plaque}`,
       addr.floor ? `طبقه ${addr.floor}` : null,

@@ -732,9 +732,6 @@ export function useCreateAddress() {
         : "";
       if (secondaryPhone) payload.secondaryPhone = secondaryPhone;
 
-      const neighborhood = input.neighborhood?.trim();
-      if (neighborhood) payload.neighborhood = neighborhood;
-
       const unit = input.unit?.trim();
       if (unit) payload.unit = unit;
 
@@ -779,10 +776,6 @@ export function useUpdateAddress() {
       if (input.provinceId !== undefined)
         payload.provinceId = Number(input.provinceId);
       if (input.cityId !== undefined) payload.cityId = Number(input.cityId);
-      if (input.neighborhood !== undefined) {
-        const val = input.neighborhood.trim();
-        if (val) payload.neighborhood = val;
-      }
       if (input.streetAddress !== undefined)
         payload.streetAddress = input.streetAddress.trim();
       if (input.plaque !== undefined) payload.plaque = input.plaque.trim();

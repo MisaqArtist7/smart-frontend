@@ -1019,9 +1019,6 @@ export default function AdminOrdersPage() {
                   <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
                     <span>استان: <strong className="text-foreground">{selectedOrderDetails.province}</strong></span>
                     <span>شهر: <strong className="text-foreground">{selectedOrderDetails.city}</strong></span>
-                    {selectedOrderDetails.neighborhood && (
-                      <span>محله: <strong className="text-foreground">{selectedOrderDetails.neighborhood}</strong></span>
-                    )}
                     <span>خیابان: <strong className="text-foreground">{selectedOrderDetails.streetAddress}</strong></span>
                     {selectedOrderDetails.plaque && (
                       <span>پلاک: <strong className="text-foreground">{selectedOrderDetails.plaque}</strong></span>
