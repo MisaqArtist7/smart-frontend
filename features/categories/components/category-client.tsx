@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   Filter,
   SlidersHorizontal,
@@ -14,6 +15,7 @@ import {
   Loader2,
   FolderTree,
   Banknote,
+  Layers,
 } from "lucide-react";
 import { useProducts, useCategories, useCategory } from "@/lib/api";
 import { useBrands } from "@/lib/api/brands";
@@ -22,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
+import { Select } from "@/components/ui/select";
 import { formatToman } from "@/lib/order-utils";
 import { toEnglishDigits } from "@/lib/auth-api";
 import { cn, normalizeImageUrl } from "@/lib/utils";
@@ -53,6 +56,7 @@ export interface CategoryClientProps {
 }
 
 export function CategoryClient({ slug }: CategoryClientProps) {
+  const router = useRouter();
   const { data: serverProducts = [], isLoading: isProductsLoading } = useProducts();
   const { data: categories = [], isLoading: isCategoriesLoading } = useCategories();
   const { data: specificCategory, isLoading: isCategoryLoading } = useCategory(slug);
@@ -388,7 +392,7 @@ export function CategoryClient({ slug }: CategoryClientProps) {
           </Button>
 
           <span className="text-xs font-bold text-muted-foreground whitespace-nowrap">
-            {filteredProducts.length} کالا
+            {filteredProducts.length.toLocaleString("fa-IR")} کالا
           </span>
         </div>
       </div>
@@ -405,8 +409,9 @@ export function CategoryClient({ slug }: CategoryClientProps) {
               </div>
               {hasActiveFilters && (
                 <button
+                  type="button"
                   onClick={handleResetFilters}
-                  className="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1"
+                  className="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer"
                 >
                   <RotateCcw className="size-3" />
                   <span>حذف فیلترها</span>
@@ -431,16 +436,43 @@ export function CategoryClient({ slug }: CategoryClientProps) {
               {priceFilterSection}
             </div>
 
-            {/* فیلتر برندهای موجود در این دسته‌بندی */}
-            {brands.length > 0 && (
-              <div className="pt-2 border-t border-border">
-                <BrandFilterBox
-                  selectedBrandIds={selectedBrandIds}
-                  onChange={setSelectedBrandIds}
-                  brandCounts={brandCounts}
-                />
+            {/* فیلتر دسته‌بندی کالا */}
+            <div className="pt-2 border-t border-border space-y-2.5">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+                <Layers className="size-4 text-primary" />
+                <span>دسته‌بندی محصولات</span>
               </div>
-            )}
+              <Select
+                value={currentCategory.slug}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === "all") {
+                    router.push("/products");
+                  } else {
+                    router.push(`/category/${val}`);
+                  }
+                }}
+                className="text-xs rounded-xl h-9 w-full"
+              >
+                <option value="all">همه دسته‌بندی‌ها</option>
+                {categories
+                  .filter((c) => c.isActive !== false)
+                  .map((c) => (
+                    <option key={c.id} value={c.slug}>
+                      {c.name}
+                    </option>
+                  ))}
+              </Select>
+            </div>
+
+            {/* فیلتر برندهای موجود در این دسته‌بندی */}
+            <div className="pt-2 border-t border-border">
+              <BrandFilterBox
+                selectedBrandIds={selectedBrandIds}
+                onChange={setSelectedBrandIds}
+                brandCounts={brandCounts}
+              />
+            </div>
           </div>
         </aside>
 
@@ -586,7 +618,7 @@ export function CategoryClient({ slug }: CategoryClientProps) {
 
             {/* بدنه فیلترهای موبایل */}
             <div className="p-4 overflow-y-auto space-y-5 flex-1">
-              <div className="flex items-center justify-between py-2 border-b border-border">
+              <div className="flex items-center justify-between">
                 <label htmlFor="inStockSwitchMobile" className="text-xs font-bold">
                   فقط کالاهای موجود
                 </label>
@@ -597,17 +629,44 @@ export function CategoryClient({ slug }: CategoryClientProps) {
                 />
               </div>
 
-              {priceFilterSection}
+              <div className="pt-3 border-t border-border">{priceFilterSection}</div>
 
-              {brands.length > 0 && (
-                <div>
-                  <BrandFilterBox
-                    selectedBrandIds={selectedBrandIds}
-                    onChange={setSelectedBrandIds}
-                    brandCounts={brandCounts}
-                  />
+              <div className="pt-3 border-t border-border space-y-2.5">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+                  <Layers className="size-4 text-primary" />
+                  <span>دسته‌بندی محصولات</span>
                 </div>
-              )}
+                <Select
+                  value={currentCategory.slug}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setIsMobileFilterOpen(false);
+                    if (val === "all") {
+                      router.push("/products");
+                    } else {
+                      router.push(`/category/${val}`);
+                    }
+                  }}
+                  className="text-xs rounded-xl h-9 w-full"
+                >
+                  <option value="all">همه دسته‌بندی‌ها</option>
+                  {categories
+                    .filter((c) => c.isActive !== false)
+                    .map((c) => (
+                      <option key={c.id} value={c.slug}>
+                        {c.name}
+                      </option>
+                    ))}
+                </Select>
+              </div>
+
+              <div className="pt-3 border-t border-border">
+                <BrandFilterBox
+                  selectedBrandIds={selectedBrandIds}
+                  onChange={setSelectedBrandIds}
+                  brandCounts={brandCounts}
+                />
+              </div>
             </div>
 
             {/* دکمه اعمال در فوتر مدال */}
@@ -625,7 +684,7 @@ export function CategoryClient({ slug }: CategoryClientProps) {
                 onClick={() => setIsMobileFilterOpen(false)}
                 className="flex-1 rounded-xl bg-primary text-primary-foreground font-bold text-xs"
               >
-                نمایش نتایج ({filteredProducts.length} کالا)
+                مشاهده ({filteredProducts.length.toLocaleString("fa-IR")}) کالا
               </Button>
             </div>
           </div>
