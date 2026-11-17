@@ -152,8 +152,8 @@ export function HeroCarousel({
                 <Image
                   src={banner.image}
                   alt={banner.alt || banner.title || `بنر ${index + 1}`}
-                  width={2154}
-                  height={730}
+                  width={7777}
+                  height={7777}
                   draggable={false}
                   priority={index === 0}
                   className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.01] select-none pointer-events-none"
