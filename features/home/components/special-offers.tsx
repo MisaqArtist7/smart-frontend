@@ -104,7 +104,7 @@ export function SpecialOffers({ className }: SpecialOffersProps) {
                   return (
                     <CarouselItem
                       key={product.id}
-                      className="ps-[3px] basis-[70%] sm:basis-[45%] md:basis-1/3 xl:basis-[22.22%]"
+                      className="ps-[3px] basis-[70%] sm:basis-[45%] md:basis-1/3 xl:basis-[22.22%] 2xl:basis-[15.38%]"
                     >
                       <div className="group/card relative flex flex-col justify-between h-85 w-full rounded-xs bg-card text-card-foreground p-3.5 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
                         {/* بج درصد تخفیف قرمز رنگ */}

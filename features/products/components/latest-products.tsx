@@ -114,7 +114,7 @@ export function LatestProducts({
               return (
                 <CarouselItem
                   key={product.id}
-                  className="ps-[3px] basis-[72%] sm:basis-[48%] md:basis-1/3 lg:basis-1/4 xl:basis-[15.38%]"
+                  className="ps-[3px] basis-[72%] sm:basis-[48%] md:basis-1/3 lg:basis-1/4 xl:basis-[15.38%] 2xl:basis-[12.82%]"
                 >
                   <div className="group relative flex flex-col justify-between h-full rounded-xs border border-border/80 bg-card p-3 sm:p-4 shadow-xs transition-all duration-300 hover:border-primary/40 hover:shadow-md">
                     <Link href={`/product/${product.slug}`} className="flex flex-col flex-1 justify-between space-y-3">
