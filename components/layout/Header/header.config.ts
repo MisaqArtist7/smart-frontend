@@ -19,7 +19,7 @@ import type { HeaderConfig } from "./header.types";
 export const DEFAULT_HEADER_CONFIG: HeaderConfig = {
   topBar: {
     announcement: {
-      text: "ارسال رایگان برای سفارش‌های بالای ۱,۰۰۰,۰۰۰ تومان به سراسر کشور",
+      text: "ارسال رایگان برای سفارش‌های بالای ۳,۰۰۰,۰۰۰ تومان به سراسر کشور",
       badgeText: "تخفیف ویژه",
     },
     discount: {
