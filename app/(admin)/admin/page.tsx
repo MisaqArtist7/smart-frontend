@@ -90,8 +90,8 @@ export default function AdminDashboardPage() {
             <CardTitle className="text-xs font-bold text-muted-foreground">
               مجموع فروش کل
             </CardTitle>
-            <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-              <TrendingUp className="size-4.5" />
+            <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <TrendingUp className="size-6" />
             </div>
           </CardHeader>
           <CardContent className="p-5 pt-0">
@@ -113,8 +113,8 @@ export default function AdminDashboardPage() {
             <CardTitle className="text-xs font-bold text-muted-foreground">
               محصولات فعال در ویترین
             </CardTitle>
-            <div className="size-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-              <PackageCheck className="size-4.5" />
+            <div className="size-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+              <PackageCheck className="size-6" />
             </div>
           </CardHeader>
           <CardContent className="p-5 pt-0">
@@ -133,8 +133,8 @@ export default function AdminDashboardPage() {
             <CardTitle className="text-xs font-bold text-muted-foreground">
               هشدار کسری انبار
             </CardTitle>
-            <div className="size-9 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-              <AlertTriangle className="size-4.5" />
+            <div className="size-12 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+              <AlertTriangle className="size-6" />
             </div>
           </CardHeader>
           <CardContent className="p-5 pt-0">
@@ -154,8 +154,8 @@ export default function AdminDashboardPage() {
               <CardTitle className="text-xs font-bold text-muted-foreground group-hover:text-blue-600 transition-colors">
                 تعداد کل سفارشات
               </CardTitle>
-              <div className="size-9 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-                <ShoppingBag className="size-4.5" />
+              <div className="size-12 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                <ShoppingBag className="size-6" />
               </div>
             </CardHeader>
             <CardContent className="p-5 pt-0">
