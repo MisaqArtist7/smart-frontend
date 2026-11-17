@@ -1393,28 +1393,52 @@ export function useAdminUsers() {
 export function useAdminMetrics() {
   return useQuery<AdminMetrics>({
     queryKey: ["admin-metrics"],
+    refetchOnMount: "always",
     queryFn: async () => {
       try {
         return await apiFetch<AdminMetrics>("/admin/metrics");
       } catch {
-        try {
-          const prods = await apiFetch<Product[]>("/product");
-          const activeCount = prods.filter((p) => p.isActive).length;
-          const lowStockCount = prods.filter((p) => p.stock <= 5).length;
-          return {
-            totalSales: 0,
-            activeProductsCount: activeCount,
-            lowStockCount: lowStockCount,
-            totalOrders: 0,
-          };
-        } catch {
-          return {
-            totalSales: 0,
-            activeProductsCount: 0,
-            lowStockCount: 0,
-            totalOrders: 0,
-          };
-        }
+        const [productsRes, ordersRes] = await Promise.allSettled([
+          apiFetch<Product[] | { items: Product[] }>("/admin/products").catch(() =>
+            apiFetch<Product[]>("/product")
+          ),
+          apiFetch<AdminOrdersResponse | AdminOrderListItem[]>(
+            "/admin/orders?page=1&limit=50"
+          )
+            .catch(() =>
+              apiFetch<AdminOrdersResponse | AdminOrderListItem[]>("/admin/orders")
+            )
+            .catch(() => apiFetch<AdminOrderListItem[]>("/orders")),
+        ]);
+
+        const prods: Product[] =
+          productsRes.status === "fulfilled"
+            ? Array.isArray(productsRes.value)
+              ? productsRes.value
+              : productsRes.value?.items || []
+            : [];
+
+        const ordersValue =
+          ordersRes.status === "fulfilled" ? ordersRes.value : null;
+        const ordersList: AdminOrderListItem[] = Array.isArray(ordersValue)
+          ? ordersValue
+          : ordersValue?.items || [];
+        const totalOrders = Array.isArray(ordersValue)
+          ? ordersValue.length
+          : typeof ordersValue?.total === "number"
+          ? ordersValue.total
+          : ordersList.length;
+
+        const totalSales = ordersList
+          .filter((o) => o.status !== "CANCELLED" && o.paymentStatus === "PAID")
+          .reduce((sum, o) => sum + (o.totalPrice || 0), 0);
+
+        return {
+          totalSales,
+          activeProductsCount: prods.filter((p) => p.isActive).length,
+          lowStockCount: prods.filter((p) => p.stock <= 5).length,
+          totalOrders,
+        };
       }
     },
   });
