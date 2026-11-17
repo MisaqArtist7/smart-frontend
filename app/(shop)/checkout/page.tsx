@@ -436,39 +436,30 @@ export default function CheckoutPage() {
 
                 {/* لیست اقلام سفارش داخل فاکتور */}
                 <div className="space-y-2.5 max-h-72 overflow-y-auto pe-1 border-b border-border/60 pb-3.5">
-                  {items.map((item) => {
-                    const unitPrice = item.discountPrice ?? item.price;
-                    const lineTotal = unitPrice * item.quantity;
-                    return (
-                      <div
-                        key={item.id}
-                        className="flex items-center justify-between gap-2.5 rounded-xl bg-muted/20 border border-border/50 p-2.5 text-xs"
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                          <div className="size-11 rounded-lg bg-background border border-border p-1 shrink-0 flex items-center justify-center">
-                            <Image
-                              src={item.image}
-                              alt={item.title}
-                              width={38}
-                              height={38}
-                              className="object-contain size-full"
-                            />
-                          </div>
-                          <div className="min-w-0 flex-1 space-y-0.5">
-                            <span className="font-bold text-foreground line-clamp-2 leading-snug block">
-                              {item.title}
-                            </span>
-                            <span className="text-[11px] text-muted-foreground font-mono block">
-                              {item.quantity.toLocaleString("fa-IR")} × {unitPrice.toLocaleString("fa-IR")} تومان
-                            </span>
-                          </div>
-                        </div>
-                        <div className="font-mono font-bold text-foreground shrink-0 text-end">
-                          {lineTotal.toLocaleString("fa-IR")} <span className="text-[10px] text-muted-foreground">تومان</span>
-                        </div>
+                  {items.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center gap-3 rounded-xl bg-muted/20 border border-border/50 p-2.5 text-xs"
+                    >
+                      <div className="size-16 rounded-xl bg-background border border-border p-1.5 shrink-0 flex items-center justify-center">
+                        <Image
+                          src={item.image}
+                          alt={item.title}
+                          width={60}
+                          height={60}
+                          className="object-contain size-full"
+                        />
                       </div>
-                    );
-                  })}
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <span className="font-bold text-sm text-foreground line-clamp-2 leading-snug block">
+                          {item.title}
+                        </span>
+                        <span className="text-xs text-muted-foreground font-mono block">
+                          تعداد: {item.quantity.toLocaleString("fa-IR")} عدد
+                        </span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
                 <div className="space-y-3 text-sm">
