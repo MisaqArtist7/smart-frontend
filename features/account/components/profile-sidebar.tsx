@@ -9,12 +9,10 @@ import {
   MapPin,
   UserCog,
   LogOut,
-  CheckCircle2,
   User as UserIcon,
 } from "lucide-react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { toPersianDigits } from "@/lib/account-data";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
@@ -82,18 +80,9 @@ export function ProfileSidebar({ className, onNavigate }: ProfileSidebarProps) {
           </div>
 
           <div className="flex flex-col min-w-0 flex-1">
-            <div className="flex items-center justify-between gap-2">
-              <span className="font-extrabold text-sm sm:text-base text-foreground truncate">
-                {currentUser.name || "کاربر گرامی"}
-              </span>
-              <Badge
-                variant="outline"
-                className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-[10px] font-semibold gap-1 px-1.5 py-0.5 shrink-0"
-              >
-                <CheckCircle2 className="size-2.5" />
-                <span>تایید شده</span>
-              </Badge>
-            </div>
+            <span className="font-extrabold text-sm sm:text-base text-foreground truncate">
+              {currentUser.name || "کاربر گرامی"}
+            </span>
 
             <span className="text-xs text-muted-foreground font-mono mt-0.5 tracking-wider">
               {toPersianDigits(currentUser.phone)}

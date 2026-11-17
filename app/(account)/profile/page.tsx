@@ -92,9 +92,6 @@ export default function ProfileDashboardPage() {
                 <span className="size-2 rounded-full bg-primary" />
                 <span>حساب کاربری</span>
               </span>
-              <Badge variant="outline" className="text-xs font-mono">
-                {user?.role === "ADMIN" ? "مدیر سیستم" : "مشتری"}
-              </Badge>
             </div>
 
             <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
