@@ -72,13 +72,20 @@ export default function ProfileLayout({
   }
 
   // ۳. کاربر احراز هویت شده
+  const isOrdersPage = pathname.startsWith("/profile/orders");
+
   return (
     <div dir="rtl" className="min-h-screen bg-background text-foreground flex flex-col">
       {/* هدر کامل ۳ طبقه فروشگاه */}
       <Header />
 
       {/* کانتینر اصلی بخش حساب کاربری */}
-      <main className="flex-1 mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+      <main
+        className={cn(
+          "flex-1 w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6",
+          isOrdersPage ? "max-w-full" : "mx-auto max-w-7xl"
+        )}
+      >
         {/* نوار ناوبری افقی مخصوص موبایل و تبلت‌های کوچک */}
         <div className="lg:hidden w-full overflow-x-auto pb-2 -mx-4 px-4 scrollbar-none flex items-center gap-2 select-none">
           {PROFILE_NAV_ITEMS.map((item) => {

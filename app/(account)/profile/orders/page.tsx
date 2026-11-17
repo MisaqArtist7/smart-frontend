@@ -129,10 +129,10 @@ export default function ProfileOrdersPage() {
     <div className="space-y-6 select-none">
       {/* سربرگ بخش سفارش‌ها */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
+        <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
           سفارش‌های من
         </h1>
-        <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+        <p className="text-sm sm:text-base text-muted-foreground mt-1">
           پیگیری مرسوله‌ها، ثبت فیش واریز، مشاهده فاکتور خرید و تاریخچه اقلام
         </p>
       </div>
@@ -142,7 +142,7 @@ export default function ProfileOrdersPage() {
         <button
           type="button"
           onClick={() => setActiveTab("all")}
-          className={`px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-all shrink-0 cursor-pointer ${
+          className={`px-4 py-2.5 text-sm sm:text-base font-bold border-b-2 transition-all shrink-0 cursor-pointer ${
             activeTab === "all"
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -154,7 +154,7 @@ export default function ProfileOrdersPage() {
         <button
           type="button"
           onClick={() => setActiveTab("in-progress")}
-          className={`px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-all shrink-0 cursor-pointer ${
+          className={`px-4 py-2.5 text-sm sm:text-base font-bold border-b-2 transition-all shrink-0 cursor-pointer ${
             activeTab === "in-progress"
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -170,7 +170,7 @@ export default function ProfileOrdersPage() {
         <button
           type="button"
           onClick={() => setActiveTab("delivered")}
-          className={`px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-all shrink-0 cursor-pointer ${
+          className={`px-4 py-2.5 text-sm sm:text-base font-bold border-b-2 transition-all shrink-0 cursor-pointer ${
             activeTab === "delivered"
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -183,7 +183,7 @@ export default function ProfileOrdersPage() {
         <button
           type="button"
           onClick={() => setActiveTab("cancelled")}
-          className={`px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-all shrink-0 cursor-pointer ${
+          className={`px-4 py-2.5 text-sm sm:text-base font-bold border-b-2 transition-all shrink-0 cursor-pointer ${
             activeTab === "cancelled"
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -244,18 +244,18 @@ export default function ProfileOrdersPage() {
                   {/* ردیف اول: مشخصات بالای کارت */}
                   <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-border/70">
                     <div className="flex items-center gap-3">
-                      <div className="font-mono font-black text-sm text-foreground">
+                      <div className="font-mono font-black text-base text-foreground">
                         {order.orderNumber}
                       </div>
                       <span className="text-muted-foreground/40">•</span>
-                      <span className="text-xs text-muted-foreground font-mono">
+                      <span className="text-sm text-muted-foreground font-mono">
                         {formatDate(order.createdAt)}
                       </span>
                     </div>
 
                     <Badge
                       variant="outline"
-                      className={`text-[11px] font-bold px-2.5 py-1 gap-1.5 ${statusCfg.badgeClass}`}
+                      className={`text-xs font-bold px-3 py-1 gap-1.5 ${statusCfg.badgeClass}`}
                     >
                       <StatusIcon className="size-3.5" />
                       <span>{statusCfg.label}</span>
@@ -263,7 +263,7 @@ export default function ProfileOrdersPage() {
                   </div>
 
                   {/* ردیف رهگیری پستی و وضعیت پرداخت */}
-                  <div className="flex flex-wrap items-center justify-between gap-3 bg-muted/30 p-3 rounded-xl border border-border/50 text-xs">
+                  <div className="flex flex-wrap items-center justify-between gap-3 bg-muted/30 p-3.5 rounded-xl border border-border/50 text-sm">
                     {/* اطلاعات روش پرداخت */}
                     <div className="flex items-center gap-2">
                       <CreditCard className="size-4 text-muted-foreground" />
@@ -309,7 +309,7 @@ export default function ProfileOrdersPage() {
                   {/* هشدار آپلود فیش برای سفارش‌های کارت به کارت در انتظار پرداخت */}
                   {order.paymentMethod === "CARD_TO_CARD" &&
                     order.paymentStatus === "PENDING" && (
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-sm">
                         <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300">
                           <AlertCircle className="size-4 shrink-0" />
                           <span>
@@ -319,17 +319,17 @@ export default function ProfileOrdersPage() {
 
                         <Link
                           href={`/orders/${order.id}`}
-                          className="bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold gap-1.5 shrink-0 self-start sm:self-auto cursor-pointer inline-flex items-center px-3 py-2 shadow-xs transition-colors"
+                          className="bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm font-bold gap-1.5 shrink-0 self-start sm:self-auto cursor-pointer inline-flex items-center px-3.5 py-2 shadow-xs transition-colors"
                         >
-                          <CreditCard className="size-3.5" />
+                          <CreditCard className="size-4" />
                           <span>پرداخت و ثبت فیش</span>
                         </Link>
                       </div>
                     )}
 
                   {/* نمایش اقلام خریداری شده در سفارش */}
-                  <div className="space-y-2 pt-1">
-                    <div className="text-xs font-bold text-muted-foreground">
+                  <div className="space-y-2.5 pt-1">
+                    <div className="text-sm font-bold text-muted-foreground">
                       اقلام سفارش ({order.items?.length || 0} قلم):
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -341,9 +341,9 @@ export default function ProfileOrdersPage() {
                         return (
                           <div
                             key={item.id}
-                            className="flex items-center gap-3 p-2.5 rounded-xl bg-background border border-border/80"
+                            className="flex items-center gap-3 p-3 rounded-xl bg-background border border-border/80"
                           >
-                            <div className="size-14 rounded-lg bg-muted/20 border border-border p-1.5 flex items-center justify-center shrink-0">
+                            <div className="size-16 rounded-lg bg-muted/20 border border-border p-1.5 flex items-center justify-center shrink-0">
                               {rawImg ? (
                                 /* eslint-disable-next-line @next/next/no-img-element */
                                 <img
@@ -357,10 +357,10 @@ export default function ProfileOrdersPage() {
                             </div>
 
                             <div className="min-w-0 flex-1">
-                              <div className="font-bold text-xs sm:text-sm text-foreground line-clamp-1">
+                              <div className="font-bold text-sm sm:text-base text-foreground line-clamp-1">
                                 {item.title}
                               </div>
-                              <div className="text-xs text-muted-foreground font-mono mt-1 flex items-center justify-between">
+                              <div className="text-sm text-muted-foreground font-mono mt-1 flex items-center justify-between">
                                 <span>تعداد: {toPersianDigits(item.quantity)} عدد</span>
                                 <span className="font-bold text-foreground">
                                   {formatPrice(item.price * item.quantity)}
@@ -376,8 +376,8 @@ export default function ProfileOrdersPage() {
                   {/* ردیف پایین: مبلغ نهایی و دکمه جزئیات فاکتور */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-border/60">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground">مبلغ نهایی سفارش:</span>
-                      <span className="text-base sm:text-lg font-black text-foreground">
+                      <span className="text-sm text-muted-foreground">مبلغ نهایی سفارش:</span>
+                      <span className="text-lg sm:text-xl font-black text-foreground">
                         {formatPrice(order.totalPrice)}
                       </span>
                     </div>
@@ -385,17 +385,16 @@ export default function ProfileOrdersPage() {
                     <div className="flex items-center gap-2">
                       <Link
                         href={`/orders/${order.id}`}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border text-xs font-bold text-foreground hover:bg-muted transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-border text-sm font-bold text-foreground hover:bg-muted transition-colors"
                       >
                         <span>صفحه کامل سفارش</span>
-                        <ChevronLeft className="size-3.5" />
+                        <ChevronLeft className="size-4" />
                       </Link>
 
                       <Button
                         variant="outline"
-                        size="sm"
                         onClick={() => setSelectedOrder(order)}
-                        className="rounded-xl border-border text-xs font-bold gap-1.5 hover:bg-accent cursor-pointer"
+                        className="rounded-xl border-border text-sm font-bold gap-1.5 hover:bg-accent cursor-pointer"
                       >
                         <Eye className="size-4 text-primary" />
                         <span>مشاهده فاکتور</span>
