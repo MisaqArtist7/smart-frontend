@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { toast } from "sonner";
 import {
   Search,
@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import {
   useAdminOrders,
+  useAdminProducts,
   useReviewReceipt,
   useUpdateAdminOrderStatus,
   useAdminCancelOrder,
@@ -41,6 +42,28 @@ import {
   formatToman,
   toPersianDigits,
 } from "@/lib/order-utils";
+import { normalizeImageUrl } from "@/lib/utils";
+
+function formatPersianPhone(phone?: string | null): string {
+  if (!phone) return "";
+  const digits = phone.replace(/\D/g, "");
+  if (digits.length === 11 && digits.startsWith("09")) {
+    return toPersianDigits(`${digits.slice(0, 4)} ${digits.slice(4, 7)} ${digits.slice(7)}`);
+  }
+  if (digits.length === 11) {
+    return toPersianDigits(`${digits.slice(0, 3)} ${digits.slice(3, 7)} ${digits.slice(7)}`);
+  }
+  return toPersianDigits(phone);
+}
+
+function formatPersianPostalCode(code?: string | null): string {
+  if (!code) return "";
+  const digits = code.replace(/\D/g, "");
+  if (digits.length === 10) {
+    return toPersianDigits(`${digits.slice(0, 5)} ${digits.slice(5)}`);
+  }
+  return toPersianDigits(code);
+}
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -97,6 +120,16 @@ export default function AdminOrdersPage() {
   const total = ordersData?.total ?? orders.length;
   const totalPages = ordersData?.totalPages ?? Math.max(1, Math.ceil(total / limit));
 
+  const { data: adminProducts = [] } = useAdminProducts();
+  const productImageMap = useMemo(() => {
+    const map = new Map<number, string>();
+    adminProducts.forEach((p) => {
+      const firstUrl = p.images?.[0]?.url;
+      if (firstUrl) map.set(p.id, firstUrl);
+    });
+    return map;
+  }, [adminProducts]);
+
   // موتاسیون‌های عملیاتی ادمین
   const reviewReceiptMutation = useReviewReceipt();
   const updateStatusMutation = useUpdateAdminOrderStatus();
@@ -138,11 +171,19 @@ export default function AdminOrdersPage() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setActiveSearch(searchInput.trim());
-    setPage(1);
-  };
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const next = searchInput.trim();
+      setActiveSearch((prev) => {
+        if (prev !== next) {
+          setPage(1);
+          return next;
+        }
+        return prev;
+      });
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   const handleResetFilters = () => {
     setStatusFilter("");
@@ -372,83 +413,74 @@ export default function AdminOrdersPage() {
         </Card>
       </div>
 
-      {/* بخش فیلترها و جستجو */}
+      {/* بخش فیلترها و جستجوی زنده */}
       <Card className="rounded-2xl border-border bg-card shadow-xs">
         <CardContent className="p-4 sm:p-5">
-          <form onSubmit={handleSearchSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
-              {/* جستجو */}
-              <div className="sm:col-span-5 relative">
-                <Search className="size-4 text-muted-foreground absolute right-3.5 top-1/2 -translate-y-1/2" />
-                <Input
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  placeholder="جستجو در شماره سفارش یا شماره تماس گیرنده..."
-                  className="pe-4 ps-10 rounded-xl text-xs h-10"
-                />
-              </div>
-
-              {/* فیلتر وضعیت سفارش */}
-              <div className="sm:col-span-3">
-                <Select
-                  value={statusFilter}
-                  onChange={(e) => {
-                    setStatusFilter(e.target.value as OrderStatus | "");
-                    setPage(1);
-                  }}
-                  className="rounded-xl text-xs h-10 w-full"
-                >
-                  <option value="">همه وضعیت‌های سفارش</option>
-                  <option value="PENDING">در انتظار پرداخت</option>
-                  <option value="CONFIRMED">تأیید شده / انبار</option>
-                  <option value="SHIPPED">ارسال شده به پست</option>
-                  <option value="DELIVERED">تحویل داده شده</option>
-                  <option value="CANCELLED">لغو شده</option>
-                </Select>
-              </div>
-
-              {/* فیلتر وضعیت پرداخت */}
-              <div className="sm:col-span-3">
-                <Select
-                  value={paymentFilter}
-                  onChange={(e) => {
-                    setPaymentFilter(e.target.value as PaymentStatus | "");
-                    setPage(1);
-                  }}
-                  className="rounded-xl text-xs h-10 w-full"
-                >
-                  <option value="">همه وضعیت‌های پرداخت</option>
-                  <option value="PENDING">پرداخت نشده</option>
-                  <option value="WAITING_REVIEW">در انتظار بررسی رسید</option>
-                  <option value="PAID">پرداخت شده</option>
-                  <option value="FAILED">رسید رد شده</option>
-                </Select>
-              </div>
-
-              {/* دکمه جستجو و ریست */}
-              <div className="sm:col-span-1 flex items-center gap-1.5">
-                <Button
-                  type="submit"
-                  size="sm"
-                  className="h-10 rounded-xl text-xs font-bold w-full"
-                >
-                  فیلتر
-                </Button>
-                {(activeSearch || statusFilter || paymentFilter) && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleResetFilters}
-                    className="h-10 px-2 rounded-xl text-xs text-muted-foreground hover:text-foreground"
-                    title="پاک‌کردن فیلترها"
-                  >
-                    <X className="size-4" />
-                  </Button>
-                )}
-              </div>
+          <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+            {/* جستجوی زنده */}
+            <div className="sm:col-span-6 relative">
+              <Search className="size-4 text-muted-foreground absolute right-3.5 top-1/2 -translate-y-1/2" />
+              <Input
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder="جستجو در شماره سفارش یا شماره تماس گیرنده..."
+                className="pe-4 ps-10 rounded-xl text-xs h-10"
+              />
             </div>
-          </form>
+
+            {/* فیلتر وضعیت سفارش */}
+            <div className="sm:col-span-3">
+              <Select
+                value={statusFilter}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value as OrderStatus | "");
+                  setPage(1);
+                }}
+                className="rounded-xl text-xs h-10 w-full"
+              >
+                <option value="">همه وضعیت‌های سفارش</option>
+                <option value="PENDING">در انتظار پرداخت</option>
+                <option value="CONFIRMED">تأیید شده / انبار</option>
+                <option value="SHIPPED">ارسال شده به پست</option>
+                <option value="DELIVERED">تحویل داده شده</option>
+                <option value="CANCELLED">لغو شده</option>
+              </Select>
+            </div>
+
+            {/* فیلتر وضعیت پرداخت */}
+            <div className={activeSearch || statusFilter || paymentFilter ? "sm:col-span-2" : "sm:col-span-3"}>
+              <Select
+                value={paymentFilter}
+                onChange={(e) => {
+                  setPaymentFilter(e.target.value as PaymentStatus | "");
+                  setPage(1);
+                }}
+                className="rounded-xl text-xs h-10 w-full"
+              >
+                <option value="">همه وضعیت‌های پرداخت</option>
+                <option value="PENDING">پرداخت نشده</option>
+                <option value="WAITING_REVIEW">در انتظار بررسی رسید</option>
+                <option value="PAID">پرداخت شده</option>
+                <option value="FAILED">رسید رد شده</option>
+              </Select>
+            </div>
+
+            {/* دکمه پاک‌کردن فیلترها در صورت فعال بودن */}
+            {(activeSearch || statusFilter || paymentFilter) && (
+              <div className="sm:col-span-1 flex items-center justify-end">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={handleResetFilters}
+                  className="h-10 w-full rounded-xl text-xs text-muted-foreground hover:text-foreground gap-1"
+                  title="پاک‌کردن فیلترها"
+                >
+                  <X className="size-4" />
+                  <span className="sm:hidden">پاک‌کردن فیلترها</span>
+                </Button>
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
 
@@ -661,21 +693,21 @@ export default function AdminOrdersPage() {
                               >
                                 <MoreVertical className="size-3.5" />
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-48 rounded-xl p-1 text-xs" dir="rtl">
+                              <DropdownMenuContent align="end" className="w-auto min-w-56 rounded-xl p-1.5 text-xs whitespace-nowrap" dir="rtl">
                                 <DropdownMenuItem
                                   onClick={() => setSelectedOrderDetails(order)}
-                                  className="flex items-center gap-2 cursor-pointer font-medium py-1.5"
+                                  className="flex items-center gap-2 cursor-pointer font-medium py-1.5 whitespace-nowrap"
                                 >
-                                  <FileText className="size-3.5 text-muted-foreground" />
+                                  <FileText className="size-3.5 text-muted-foreground shrink-0" />
                                   <span>مشاهده کامل فاکتور</span>
                                 </DropdownMenuItem>
 
                                 {(order.hasReceipt || isWaitingReview || order.receiptUrl) && (
                                   <DropdownMenuItem
                                     onClick={() => handleOpenReviewReceipt(order)}
-                                    className="flex items-center gap-2 cursor-pointer font-medium py-1.5 text-primary"
+                                    className="flex items-center gap-2 cursor-pointer font-medium py-1.5 text-primary whitespace-nowrap"
                                   >
-                                    <Receipt className="size-3.5" />
+                                    <Receipt className="size-3.5 shrink-0" />
                                     <span>بررسی / پیش‌نمایش فیش</span>
                                   </DropdownMenuItem>
                                 )}
@@ -683,9 +715,9 @@ export default function AdminOrdersPage() {
                                 {isConfirmed && order.paymentStatus === "PAID" && (
                                   <DropdownMenuItem
                                     onClick={() => handleOpenStatusModal(order, "SHIPPED")}
-                                    className="flex items-center gap-2 cursor-pointer font-medium py-1.5 text-blue-600 dark:text-blue-400"
+                                    className="flex items-center gap-2 cursor-pointer font-medium py-1.5 text-blue-600 dark:text-blue-400 whitespace-nowrap"
                                   >
-                                    <Truck className="size-3.5" />
+                                    <Truck className="size-3.5 shrink-0" />
                                     <span>ثبت کد رهگیری و ارسال</span>
                                   </DropdownMenuItem>
                                 )}
@@ -693,9 +725,9 @@ export default function AdminOrdersPage() {
                                 {isShipped && (
                                   <DropdownMenuItem
                                     onClick={() => handleOpenStatusModal(order, "DELIVERED")}
-                                    className="flex items-center gap-2 cursor-pointer font-medium py-1.5 text-emerald-600 dark:text-emerald-400"
+                                    className="flex items-center gap-2 cursor-pointer font-medium py-1.5 text-emerald-600 dark:text-emerald-400 whitespace-nowrap"
                                   >
-                                    <PackageCheck className="size-3.5" />
+                                    <PackageCheck className="size-3.5 shrink-0" />
                                     <span>ثبت تحویل سفارش</span>
                                   </DropdownMenuItem>
                                 )}
@@ -708,9 +740,9 @@ export default function AdminOrdersPage() {
                                         setCancelModalOrder(order);
                                         setCancelAdminNote("");
                                       }}
-                                      className="flex items-center gap-2 cursor-pointer font-medium py-1.5 text-destructive focus:text-destructive"
+                                      className="flex items-center gap-2 cursor-pointer font-medium py-1.5 text-destructive focus:text-destructive whitespace-nowrap"
                                     >
-                                      <XCircle className="size-3.5" />
+                                      <XCircle className="size-3.5 shrink-0" />
                                       <span>لغو سفارش</span>
                                     </DropdownMenuItem>
                                   </>
@@ -1034,23 +1066,25 @@ export default function AdminOrdersPage() {
                   </Button>
                 </div>
                 <div className="text-muted-foreground leading-relaxed select-text">
-                  {selectedOrderDetails.addressLine
-                    ? selectedOrderDetails.addressLine
-                    : `${selectedOrderDetails.province}، ${selectedOrderDetails.city}`}
+                  {toPersianDigits(
+                    selectedOrderDetails.addressLine
+                      ? selectedOrderDetails.addressLine
+                      : `${selectedOrderDetails.province}، ${selectedOrderDetails.city}`
+                  )}
                 </div>
                 {selectedOrderDetails.streetAddress && (
                   <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
                     <span>استان: <strong className="text-foreground">{selectedOrderDetails.province}</strong></span>
                     <span>شهر: <strong className="text-foreground">{selectedOrderDetails.city}</strong></span>
-                    <span>خیابان: <strong className="text-foreground">{selectedOrderDetails.streetAddress}</strong></span>
+                    <span>خیابان: <strong className="text-foreground">{toPersianDigits(selectedOrderDetails.streetAddress)}</strong></span>
                     {selectedOrderDetails.plaque && (
-                      <span>پلاک: <strong className="text-foreground">{selectedOrderDetails.plaque}</strong></span>
+                      <span>پلاک: <strong className="text-foreground">{toPersianDigits(selectedOrderDetails.plaque)}</strong></span>
                     )}
                     {selectedOrderDetails.floor && (
-                      <span>طبقه: <strong className="text-foreground">{selectedOrderDetails.floor}</strong></span>
+                      <span>طبقه: <strong className="text-foreground">{toPersianDigits(selectedOrderDetails.floor)}</strong></span>
                     )}
                     {selectedOrderDetails.unit && (
-                      <span>واحد: <strong className="text-foreground">{selectedOrderDetails.unit}</strong></span>
+                      <span>واحد: <strong className="text-foreground">{toPersianDigits(selectedOrderDetails.unit)}</strong></span>
                     )}
                   </div>
                 )}
@@ -1059,16 +1093,25 @@ export default function AdminOrdersPage() {
                     تحویل‌گیرنده: <strong className="text-foreground">{selectedOrderDetails.receiverName}</strong>
                   </span>
                   <span>
-                    تلفن اصلی: <strong className="font-mono text-foreground">{selectedOrderDetails.receiverPhone}</strong>
+                    تلفن اصلی:{" "}
+                    <strong dir="ltr" className="inline-block font-mono text-foreground">
+                      {formatPersianPhone(selectedOrderDetails.receiverPhone)}
+                    </strong>
                   </span>
                   {selectedOrderDetails.secondaryPhone && (
                     <span>
-                      تلفن دوم: <strong className="font-mono text-foreground">{selectedOrderDetails.secondaryPhone}</strong>
+                      تلفن دوم:{" "}
+                      <strong dir="ltr" className="inline-block font-mono text-foreground">
+                        {formatPersianPhone(selectedOrderDetails.secondaryPhone)}
+                      </strong>
                     </span>
                   )}
                   {selectedOrderDetails.postalCode && (
                     <span>
-                      کد پستی: <strong className="font-mono text-foreground">{selectedOrderDetails.postalCode}</strong>
+                      کد پستی:{" "}
+                      <strong dir="ltr" className="inline-block font-mono text-foreground">
+                        {formatPersianPostalCode(selectedOrderDetails.postalCode)}
+                      </strong>
                     </span>
                   )}
                 </div>
@@ -1077,33 +1120,43 @@ export default function AdminOrdersPage() {
               {/* لیست اقلام سفارش */}
               <div className="space-y-2">
                 <div className="font-bold text-foreground">
-                  اقلام سفارش ({selectedOrderDetails.items?.length || 0} قلم):
+                  اقلام سفارش ({toPersianDigits(selectedOrderDetails.items?.length || 0)} قلم):
                 </div>
                 <div className="border border-border rounded-xl overflow-hidden divide-y divide-border/60">
-                  {selectedOrderDetails.items?.map((item) => (
-                    <div key={item.id} className="p-3 flex items-center justify-between gap-3 bg-card">
-                      <div className="flex items-center gap-2.5">
-                        <div className="size-10 rounded-lg bg-muted/30 border border-border p-1 flex items-center justify-center shrink-0">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={item.image || "/images/products/adapter-52240.png"}
-                            alt={item.title}
-                            className="size-full object-contain"
-                          />
-                        </div>
-                        <div>
-                          <div className="font-bold text-foreground line-clamp-1">{item.title}</div>
-                          <div className="text-[11px] text-muted-foreground font-mono">
-                            {toPersianDigits(item.quantity)} عدد × {item.price.toLocaleString("fa-IR")} تومان
+                  {selectedOrderDetails.items?.map((item) => {
+                    const rawImg =
+                      item.image ||
+                      item.product?.images?.[0]?.url ||
+                      productImageMap.get(item.productId);
+                    return (
+                      <div key={item.id} className="p-3 flex items-center justify-between gap-3 bg-card">
+                        <div className="flex items-center gap-3">
+                          <div className="size-12 rounded-xl bg-muted/30 border border-border p-1 flex items-center justify-center shrink-0">
+                            {rawImg ? (
+                              /* eslint-disable-next-line @next/next/no-img-element */
+                              <img
+                                src={normalizeImageUrl(rawImg)}
+                                alt={item.title}
+                                className="size-full object-contain"
+                              />
+                            ) : (
+                              <ShoppingBag className="size-5 text-muted-foreground/40" />
+                            )}
+                          </div>
+                          <div>
+                            <div className="font-bold text-foreground line-clamp-1">{item.title}</div>
+                            <div className="text-[11px] text-muted-foreground font-mono">
+                              {toPersianDigits(item.quantity)} عدد × {item.price.toLocaleString("fa-IR")} تومان
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div className="font-mono font-bold text-foreground text-sm shrink-0">
-                        {(item.price * item.quantity).toLocaleString("fa-IR")} تومان
+                        <div className="font-mono font-bold text-foreground text-sm shrink-0">
+                          {(item.price * item.quantity).toLocaleString("fa-IR")} تومان
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 

@@ -98,12 +98,20 @@ export default function AdminCommentsPage() {
     setPage(1);
   };
 
-  // جستجو
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setActiveSearch(searchInput.trim());
-    setPage(1);
-  };
+  // جستجوی زنده با دیبونس ۳۰۰ میلی‌ثانیه
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      const next = searchInput.trim();
+      setActiveSearch((prev) => {
+        if (prev !== next) {
+          setPage(1);
+          return next;
+        }
+        return prev;
+      });
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   // بازنشانی جستجو
   const handleClearSearch = () => {
@@ -359,8 +367,8 @@ export default function AdminCommentsPage() {
             </button>
           </div>
 
-          {/* فرم جستجو */}
-          <form onSubmit={handleSearchSubmit} className="flex items-center gap-2 w-full md:w-80">
+          {/* باکس جستجوی زنده */}
+          <div className="flex items-center gap-2 w-full md:w-80">
             <div className="relative flex-1">
               <Search className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
               <Input
@@ -371,10 +379,7 @@ export default function AdminCommentsPage() {
                 className="pr-9 pl-3 text-xs rounded-xl"
               />
             </div>
-            <Button type="submit" size="sm" className="rounded-xl text-xs font-bold shrink-0">
-              جستجو
-            </Button>
-            {activeSearch && (
+            {searchInput && (
               <Button
                 type="button"
                 variant="ghost"
@@ -385,7 +390,7 @@ export default function AdminCommentsPage() {
                 پاک‌کردن
               </Button>
             )}
-          </form>
+          </div>
         </div>
       </Card>
 
