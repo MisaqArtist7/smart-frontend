@@ -375,21 +375,21 @@ export default function AdminCategoriesPage() {
                 ) : (
                   filteredCategories.map((cat) => (
                     <TableRow key={cat.id}>
-                      {/* تصویر / آیکون کوچک */}
+                      {/* تصویر / آیکون */}
                       <TableCell className="text-center py-2.5">
-                        <div className="size-10 rounded-xl border border-border bg-muted/20 p-1 mx-auto flex items-center justify-center overflow-hidden">
+                        <div className="size-14 sm:size-16 rounded-xl border border-border bg-muted/20 p-1.5 mx-auto flex items-center justify-center overflow-hidden">
                           {cat.image ? (
                             <Image
                               src={normalizeImageUrl(cat.image)}
                               alt={cat.imageAlt || cat.name}
-                              width={32}
-                              height={32}
+                              width={56}
+                              height={56}
                               className="object-contain size-full"
                             />
                           ) : cat.parentId ? (
-                            <CornerDownLeft className="size-4 text-muted-foreground" />
+                            <CornerDownLeft className="size-5 text-muted-foreground" />
                           ) : (
-                            <FolderTree className="size-4 text-primary" />
+                            <FolderTree className="size-5 text-primary" />
                           )}
                         </div>
                       </TableCell>
