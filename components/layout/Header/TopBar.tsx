@@ -56,7 +56,7 @@ export function TopBar({ config, className = "" }: TopBarProps) {
           <span
             className="group flex items-center gap-1.5 rounded border border-dashed border-primary px-2 py-0.5 font-mono text-xs font-bold text-primary transition-colors hover:bg-accent focus:outline-none focus:ring-1 focus:ring-primary"
           >
-            اولین سفارش رایگان میباشد.
+            ارسال بالای ۳ میلیون تومان رایگان است
           </span>
         </div>
       </div>
