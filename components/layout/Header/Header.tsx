@@ -111,7 +111,7 @@ export interface HeaderConfig {
 export const DEFAULT_HEADER_CONFIG: HeaderConfig = {
   topBar: {
     announcement: {
-      text: "ارسال رایگان برای خریدهای بالای ۱,۰۰۰,۰۰۰ تومان به سراسر ایران",
+      text: "تضمین اصالت کالا، مشاوره تخصصی و ارسال سریع به سراسر ایران",
       badgeText: "تخفیف ویژه",
     },
     discount: {
