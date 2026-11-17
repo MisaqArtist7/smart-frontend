@@ -292,52 +292,82 @@ export default function AdminOrdersPage() {
       </div>
 
       {/* کارت‌های شاخص سریع بالای صفحه */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <Card className="rounded-2xl border-border bg-card shadow-xs">
-          <CardHeader className="p-4 pb-2 flex flex-row items-center justify-between">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        <Card className="rounded-2xl border-border bg-card shadow-xs hover:shadow-md transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 p-5">
             <CardTitle className="text-xs font-bold text-muted-foreground">کل سفارش‌ها</CardTitle>
-            <ShoppingBag className="size-4 text-primary" />
+            <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <ShoppingBag className="size-6" />
+            </div>
           </CardHeader>
-          <CardContent className="p-4 pt-0">
-            <div className="text-xl font-black font-mono">{toPersianDigits(total)}</div>
+          <CardContent className="p-5 pt-0">
+            <div className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
+              {toPersianDigits(total)} سفارش
+            </div>
+            <p className="text-[11px] text-muted-foreground font-normal mt-1.5">
+              مجموع کل سفارش‌های ثبت‌شده
+            </p>
           </CardContent>
         </Card>
 
         {/* نیازمند بررسی فیش با هایلایت نارنجی/زرد */}
-        <Card className="rounded-2xl border-amber-500/30 bg-amber-500/5 shadow-xs">
-          <CardHeader className="p-4 pb-2 flex flex-row items-center justify-between">
-            <CardTitle className="text-xs font-bold text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
-              <Receipt className="size-4" />
-              <span>فیش‌های در انتظار بررسی</span>
+        <Card className="rounded-2xl border-amber-500/30 bg-amber-500/5 shadow-xs hover:shadow-md transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 p-5">
+            <CardTitle className="text-xs font-bold text-amber-700 dark:text-amber-400">
+              فیش‌های در انتظار بررسی
             </CardTitle>
-            <Badge className="bg-amber-500/20 text-amber-700 dark:text-amber-400 font-mono text-[10px]">
-              فوری
-            </Badge>
-          </CardHeader>
-          <CardContent className="p-4 pt-0">
-            <div className="text-xl font-black font-mono text-amber-600 dark:text-amber-400">
-              {toPersianDigits(waitingReviewCount)}
+            <div className="size-12 rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+              <Receipt className="size-6" />
             </div>
+          </CardHeader>
+          <CardContent className="p-5 pt-0">
+            <div className="flex items-center gap-2">
+              <div className="text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400 tracking-tight">
+                {toPersianDigits(waitingReviewCount)} فیش
+              </div>
+              {waitingReviewCount > 0 && (
+                <Badge className="bg-amber-500/20 text-amber-700 dark:text-amber-400 text-[10px]">
+                  فوری
+                </Badge>
+              )}
+            </div>
+            <p className="text-[11px] text-amber-600/80 dark:text-amber-400/80 font-semibold mt-1.5">
+              نیازمند بررسی و تایید پرداخت
+            </p>
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border-border bg-card shadow-xs">
-          <CardHeader className="p-4 pb-2 flex flex-row items-center justify-between">
+        <Card className="rounded-2xl border-border bg-card shadow-xs hover:shadow-md transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 p-5">
             <CardTitle className="text-xs font-bold text-muted-foreground">آماده بسته‌بندی</CardTitle>
-            <Clock className="size-4 text-blue-500" />
+            <div className="size-12 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+              <Clock className="size-6" />
+            </div>
           </CardHeader>
-          <CardContent className="p-4 pt-0">
-            <div className="text-xl font-black font-mono">{toPersianDigits(confirmedCount)}</div>
+          <CardContent className="p-5 pt-0">
+            <div className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
+              {toPersianDigits(confirmedCount)} سفارش
+            </div>
+            <p className="text-[11px] text-muted-foreground font-normal mt-1.5">
+              پرداخت تاییدشده در صف ارسال
+            </p>
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border-border bg-card shadow-xs">
-          <CardHeader className="p-4 pb-2 flex flex-row items-center justify-between">
+        <Card className="rounded-2xl border-border bg-card shadow-xs hover:shadow-md transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 p-5">
             <CardTitle className="text-xs font-bold text-muted-foreground">در مسیر ارسال پست</CardTitle>
-            <Truck className="size-4 text-purple-500" />
+            <div className="size-12 rounded-2xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+              <Truck className="size-6" />
+            </div>
           </CardHeader>
-          <CardContent className="p-4 pt-0">
-            <div className="text-xl font-black font-mono">{toPersianDigits(shippedCount)}</div>
+          <CardContent className="p-5 pt-0">
+            <div className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
+              {toPersianDigits(shippedCount)} مرسوله
+            </div>
+            <p className="text-[11px] text-muted-foreground font-normal mt-1.5">
+              تحویل‌شده به پست و در حال ارسال
+            </p>
           </CardContent>
         </Card>
       </div>
