@@ -15,7 +15,6 @@ import {
   Send,
   CheckCircle2,
   Loader2,
-  ChevronDown,
   MessageSquare,
   AlertCircle,
   RotateCcw,
@@ -26,6 +25,7 @@ import {
   Map,
 } from "lucide-react";
 import { toast } from "sonner";
+import { Select } from "@/components/ui/select";
 import { useAuth } from "@/components/providers/auth-provider";
 
 const ContactMap = dynamic(
@@ -481,28 +481,25 @@ export function ContactUsClient() {
                   >
                     موضوع پیام <span className="text-destructive">*</span>
                   </label>
-                  <div className="relative flex items-center">
-                    <select
-                      id="subject"
-                      {...register("subject")}
-                      defaultValue=""
-                      className={`w-full appearance-none rounded-xl border bg-muted/30 pr-4 pl-10 py-2.5 text-sm text-foreground outline-none transition-all focus:bg-background focus:ring-2 cursor-pointer ${
-                        errors.subject
-                          ? "border-destructive focus:border-destructive focus:ring-destructive/20"
-                          : "border-input focus:border-primary focus:ring-primary/20"
-                      }`}
-                    >
-                      <option value="" disabled className="text-muted-foreground">
-                        موضوع پیام را انتخاب کنید
+                  <Select
+                    id="subject"
+                    {...register("subject")}
+                    defaultValue=""
+                    className={`h-10.5 rounded-xl bg-muted/30 px-4 text-sm ${
+                      errors.subject
+                        ? "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20"
+                        : ""
+                    }`}
+                  >
+                    <option value="" disabled>
+                      موضوع پیام را انتخاب کنید
+                    </option>
+                    {CONTACT_SUBJECT_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
                       </option>
-                      {CONTACT_SUBJECT_OPTIONS.map((opt) => (
-                        <option key={opt.value} value={opt.value} className="text-foreground bg-card">
-                          {opt.label}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                  </div>
+                    ))}
+                  </Select>
                   {errors.subject && (
                     <p role="alert" className="text-destructive text-xs mt-1 font-medium">
                       {errors.subject.message}
