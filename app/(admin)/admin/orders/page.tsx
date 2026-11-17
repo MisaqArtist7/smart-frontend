@@ -761,8 +761,8 @@ export default function AdminOrdersPage() {
               </div>
 
               {/* مشخصات و یادداشت */}
-              <div className="space-y-1.5 text-xs">
-                <label className="font-bold text-foreground">
+              <div className="space-y-2 text-xs">
+                <label className="block font-bold text-foreground">
                   یادداشت داخلی ادمین (اختیاری):
                 </label>
                 <Textarea
@@ -828,10 +828,10 @@ export default function AdminOrdersPage() {
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="space-y-3.5 text-xs pt-2">
+              <div className="space-y-4 text-xs pt-2">
                 {targetStatus === "SHIPPED" && (
-                  <div className="space-y-1.5">
-                    <label className="font-bold text-foreground">
+                  <div className="space-y-2">
+                    <label className="block font-bold text-foreground">
                       کد رهگیری مرسوله پستی (اختیاری):
                     </label>
                     <Input
@@ -845,8 +845,8 @@ export default function AdminOrdersPage() {
                   </div>
                 )}
 
-                <div className="space-y-1.5">
-                  <label className="font-bold text-foreground">
+                <div className="space-y-2">
+                  <label className="block font-bold text-foreground">
                     یادداشت داخلی ادمین (اختیاری):
                   </label>
                   <Textarea
@@ -901,8 +901,8 @@ export default function AdminOrdersPage() {
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="space-y-1.5 text-xs pt-2">
-                <label className="font-bold text-foreground">
+              <div className="space-y-2 text-xs pt-2">
+                <label className="block font-bold text-foreground">
                   علت لغو سفارش (در یادداشت ادمین ثبت می‌شود):
                 </label>
                 <Textarea
