@@ -159,7 +159,7 @@ export default function AdminLayout({
         <AdminTopbar onOpenMobileSidebar={() => setIsMobileOpen(true)} />
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
-          <div className="mx-auto max-w-7xl w-full">
+          <div className="w-full max-w-full">
             {children}
           </div>
         </main>
