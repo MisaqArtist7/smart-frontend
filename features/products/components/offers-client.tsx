@@ -6,7 +6,6 @@ import Image from "next/image";
 import {
   Flame,
   Eye,
-  ChevronDown,
   RotateCcw,
   CheckCircle2,
   PackageX,
@@ -15,6 +14,7 @@ import {
 } from "lucide-react";
 import { useProducts } from "@/lib/api";
 import { formatToman } from "@/lib/order-utils";
+import { Select } from "@/components/ui/select";
 import { cn, normalizeImageUrl } from "@/lib/utils";
 
 type SortOption = "discount-desc" | "price-asc" | "price-desc" | "newest";
@@ -151,10 +151,10 @@ export function OffersClient() {
           {/* انتخاب دسته‌بندی */}
           {categories.length > 0 && (
             <div className="md:col-span-6 relative flex items-center">
-              <select
+              <Select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full appearance-none rounded-xl border border-input bg-muted/40 pr-10 pl-8 py-2.5 text-xs sm:text-sm text-foreground outline-none transition-all focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                className="h-10.5 rounded-xl bg-muted/40 ps-10 text-xs sm:text-sm"
               >
                 <option value="all">همه دسته‌بندی‌ها</option>
                 {categories.map((cat) => (
@@ -162,9 +162,8 @@ export function OffersClient() {
                     {cat}
                   </option>
                 ))}
-              </select>
-              <Tag className="pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <ChevronDown className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              </Select>
+              <Tag className="pointer-events-none absolute start-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             </div>
           )}
 
@@ -175,18 +174,17 @@ export function OffersClient() {
               categories.length > 0 ? "md:col-span-6" : "md:col-span-12"
             )}
           >
-            <select
+            <Select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as SortOption)}
-              className="w-full appearance-none rounded-xl border border-input bg-muted/40 pr-10 pl-8 py-2.5 text-xs sm:text-sm text-foreground outline-none transition-all focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 cursor-pointer"
+              className="h-10.5 rounded-xl bg-muted/40 ps-10 text-xs sm:text-sm"
             >
               <option value="discount-desc">بیشترین تخفیف (پیش‌فرض)</option>
               <option value="price-asc">ارزان‌ترین قیمت</option>
               <option value="price-desc">گران‌ترین قیمت</option>
               <option value="newest">جدیدترین محصولات</option>
-            </select>
-            <ArrowUpDown className="pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <ChevronDown className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            </Select>
+            <ArrowUpDown className="pointer-events-none absolute start-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           </div>
         </div>
 

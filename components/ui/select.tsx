@@ -88,7 +88,7 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           setUncontrolledValue(domVal)
         }
       }
-    })
+    }, [isControlled, uncontrolledValue, children])
 
     const setRefs = React.useCallback(
       (node: HTMLSelectElement | null) => {
