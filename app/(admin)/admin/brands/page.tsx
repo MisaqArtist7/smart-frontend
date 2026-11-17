@@ -377,7 +377,7 @@ export default function AdminBrandsPage() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/30">
-                  <TableHead className="text-center text-xs font-black w-16">لوگو</TableHead>
+                  <TableHead className="text-center text-xs font-black w-28">لوگو</TableHead>
                   <TableHead className="text-right text-xs font-black">نام برند (فارسی)</TableHead>
                   <TableHead className="text-right text-xs font-black">شناسه انگلیسی (Slug)</TableHead>
                   <TableHead className="text-right text-xs font-black">تعداد کالاها</TableHead>
@@ -396,7 +396,7 @@ export default function AdminBrandsPage() {
                     <TableRow key={brand.id} className="text-xs hover:bg-muted/20">
                       {/* ستون لوگو */}
                       <TableCell className="text-center py-3">
-                        <div className="size-10 rounded-xl border border-border bg-muted/20 p-1 mx-auto flex items-center justify-center overflow-hidden relative">
+                        <div className="size-20 sm:size-24 rounded-2xl border border-border bg-muted/20 p-1 mx-auto flex items-center justify-center overflow-hidden relative">
                           {brand.logo ? (
                             <Image
                               src={normalizeImageUrl(brand.logo)}

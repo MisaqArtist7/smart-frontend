@@ -464,7 +464,7 @@ export default function AdminProductsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-16 text-center">تصویر</TableHead>
+                  <TableHead className="w-28 text-center">تصویر</TableHead>
                   <TableHead>عنوان محصول</TableHead>
                   <TableHead>کد SKU</TableHead>
                   <TableHead>دسته‌بندی</TableHead>
@@ -492,13 +492,13 @@ export default function AdminProductsPage() {
                   filteredProducts.map((prod) => (
                     <TableRow key={prod.id}>
                       {/* تصویر */}
-                      <TableCell className="text-center py-2.5">
-                        <div className="size-12 rounded-xl border border-border bg-muted/20 p-1 mx-auto flex items-center justify-center overflow-hidden">
+                      <TableCell className="text-center py-3">
+                        <div className="size-20 sm:size-24 rounded-2xl border border-border bg-muted/20 p-1 mx-auto flex items-center justify-center overflow-hidden">
                           <Image
                             src={prod.images?.[0]?.url ? normalizeImageUrl(prod.images[0].url) : FALLBACK_IMAGE}
                             alt={prod.title}
-                            width={44}
-                            height={44}
+                            width={88}
+                            height={88}
                             className="object-contain size-full"
                           />
                         </div>

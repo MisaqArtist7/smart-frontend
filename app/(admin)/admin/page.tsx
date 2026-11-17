@@ -206,7 +206,7 @@ export default function AdminDashboardPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-16 text-center">تصویر</TableHead>
+                  <TableHead className="w-24 text-center">تصویر</TableHead>
                   <TableHead>نام کالا و شناسه</TableHead>
                   <TableHead>دسته‌بندی</TableHead>
                   <TableHead>برند</TableHead>
@@ -250,13 +250,13 @@ export default function AdminDashboardPage() {
                     return (
                       <TableRow key={product.id}>
                         {/* تصویر کوچک */}
-                        <TableCell className="text-center py-2.5">
-                          <div className="size-11 rounded-xl border border-border bg-muted/30 p-1 mx-auto flex items-center justify-center overflow-hidden">
+                        <TableCell className="text-center py-3">
+                          <div className="size-16 sm:size-20 rounded-2xl border border-border bg-muted/30 p-1 mx-auto flex items-center justify-center overflow-hidden">
                             <Image
                               src={normalizeImageUrl(product.images?.[0]?.url)}
                               alt={product.title}
-                              width={40}
-                              height={40}
+                              width={72}
+                              height={72}
                               className="object-contain size-full"
                             />
                           </div>
