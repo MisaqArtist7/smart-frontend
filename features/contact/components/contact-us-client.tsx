@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -26,6 +27,18 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/components/providers/auth-provider";
+
+const ContactMap = dynamic(
+  () => import("./contact-map").then((mod) => mod.ContactMap),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-[300px] sm:h-[340px] bg-muted/40 flex items-center justify-center text-xs text-muted-foreground">
+        در حال بارگذاری نقشه...
+      </div>
+    ),
+  }
+);
 import {
   useSubmitContact,
   CONTACT_SUBJECT_OPTIONS,
@@ -206,189 +219,124 @@ export function ContactUsClient() {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-      {/* =========================================================================
-          ستون ۱: اطلاعات تماس و شعب (۴ ستون در دسکتاپ)
-          ========================================================================= */}
-      <div className="lg:col-span-4 flex flex-col gap-3.5">
-        {/* کارت آدرس حضوری و فروشگاه */}
-        <div className="rounded-2xl border border-border bg-card p-4 shadow-xs transition-colors hover:border-primary/40">
-          <div className="flex items-start gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">
-              <Building2 className="size-4.5" />
-            </div>
-            <div className="space-y-1.5 flex-1 text-right">
-              <span className="block text-xs font-bold text-muted-foreground">
-                آدرس شعب و فروشگاه‌های حضوری
-              </span>
-              <div className="space-y-1 text-xs font-semibold text-foreground leading-relaxed">
-                <p>
-                  <span className="text-primary font-bold">شعبه ۱: </span>
-                  {shopAddress}
-                </p>
-                <p>
-                  <span className="text-primary font-bold">شعبه ۲: </span>
-                  {branch2Address}
-                </p>
+    <div className="space-y-5">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+        {/* =========================================================================
+            ستون ۱: اطلاعات تماس و شعب (۵ ستون در دسکتاپ)
+            ========================================================================= */}
+        <div className="lg:col-span-5 flex flex-col gap-3.5">
+          {/* کارت آدرس حضوری و فروشگاه */}
+          <div className="rounded-2xl border border-border bg-card p-4 shadow-xs transition-colors hover:border-primary/40">
+            <div className="flex items-start gap-3">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">
+                <Building2 className="size-4.5" />
+              </div>
+              <div className="space-y-1.5 flex-1 text-right">
+                <span className="block text-xs font-bold text-muted-foreground">
+                  آدرس شعب و فروشگاه‌های حضوری
+                </span>
+                <div className="space-y-1 text-xs font-semibold text-foreground leading-relaxed">
+                  <p>
+                    <span className="text-primary font-bold">شعبه ۱: </span>
+                    {shopAddress}
+                  </p>
+                  <p>
+                    <span className="text-primary font-bold">شعبه ۲: </span>
+                    {branch2Address}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* کارت تماس تلفنی و خطوط ویژه */}
-        <div className="rounded-2xl border border-border bg-card p-4 shadow-xs transition-colors hover:border-primary/40">
-          <div className="flex items-start gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">
-              <PhoneCall className="size-4.5" />
-            </div>
-            <div className="space-y-2 flex-1">
-              <span className="block text-xs font-bold text-muted-foreground text-right">
-                تماس تلفنی و پشتیبانی
-              </span>
-              <div className="flex flex-col gap-1.5">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs text-muted-foreground">مالک و مدیریت:</span>
-                  <a
-                    href={`tel:${adminMobile.replace(/[^0-9]/g, "")}`}
-                    dir="ltr"
-                    className="text-sm font-black font-mono tracking-wide text-foreground hover:text-primary transition-colors text-start"
-                  >
-                    {adminMobile}
-                  </a>
-                </div>
-                {technicalSupportPhone && (
-                  <div className="flex items-center justify-between gap-2 border-t border-border/40 pt-1.5">
-                    <span className="text-xs text-muted-foreground">پشتیبانی فنی:</span>
+          {/* کارت تماس تلفنی و خطوط ویژه */}
+          <div className="rounded-2xl border border-border bg-card p-4 shadow-xs transition-colors hover:border-primary/40">
+            <div className="flex items-start gap-3">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">
+                <PhoneCall className="size-4.5" />
+              </div>
+              <div className="space-y-2 flex-1">
+                <span className="block text-xs font-bold text-muted-foreground text-right">
+                  تماس تلفنی و پشتیبانی
+                </span>
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs text-muted-foreground">مالک و مدیریت:</span>
                     <a
-                      href={`tel:${technicalSupportPhone.replace(/[^0-9]/g, "")}`}
+                      href={`tel:${adminMobile.replace(/[^0-9]/g, "")}`}
                       dir="ltr"
-                      className="text-xs sm:text-sm font-bold font-mono tracking-wide text-muted-foreground hover:text-primary transition-colors text-start"
+                      className="text-sm font-black font-mono tracking-wide text-foreground hover:text-primary transition-colors text-start"
                     >
-                      {technicalSupportPhone}
+                      {adminMobile}
                     </a>
                   </div>
-                )}
+                  {technicalSupportPhone && (
+                    <div className="flex items-center justify-between gap-2 border-t border-border/40 pt-1.5">
+                      <span className="text-xs text-muted-foreground">پشتیبانی فنی:</span>
+                      <a
+                        href={`tel:${technicalSupportPhone.replace(/[^0-9]/g, "")}`}
+                        dir="ltr"
+                        className="text-xs sm:text-sm font-bold font-mono tracking-wide text-muted-foreground hover:text-primary transition-colors text-start"
+                      >
+                        {technicalSupportPhone}
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* کارت پست الکترونیک */}
+          <div className="rounded-2xl border border-border bg-card p-4 shadow-xs transition-colors hover:border-primary/40">
+            <div className="flex items-start gap-3">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">
+                <Mail className="size-4.5" />
+              </div>
+              <div className="space-y-1 flex-1 text-right">
+                <span className="block text-xs font-bold text-muted-foreground">
+                  پست الکترونیک رسمی
+                </span>
+                <a
+                  href={`mailto:${shopEmail}`}
+                  dir="ltr"
+                  className="text-xs sm:text-sm font-bold text-foreground hover:text-primary transition-colors block text-start"
+                >
+                  {shopEmail}
+                </a>
+                <span className="block text-[11px] text-muted-foreground">
+                  ارسال استعلام بها و مکاتبات سازمانی
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* کارت ساعات کاری */}
+          <div className="rounded-2xl border border-border bg-card p-4 shadow-xs transition-colors hover:border-primary/40 flex-1">
+            <div className="flex items-start gap-3">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">
+                <Clock className="size-4.5" />
+              </div>
+              <div className="space-y-1 flex-1 text-right">
+                <span className="block text-xs font-bold text-muted-foreground">
+                  ساعات کاری و پاسخگویی
+                </span>
+                <p className="text-xs sm:text-sm font-semibold text-foreground leading-relaxed">
+                  {shopWorkingHours}
+                </p>
+                <span className="block text-[11px] text-muted-foreground">
+                  ثبت سفارش آنلاین در تمام روزهای هفته فعال است
+                </span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* کارت پست الکترونیک */}
-        <div className="rounded-2xl border border-border bg-card p-4 shadow-xs transition-colors hover:border-primary/40">
-          <div className="flex items-start gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">
-              <Mail className="size-4.5" />
-            </div>
-            <div className="space-y-1 flex-1 text-right">
-              <span className="block text-xs font-bold text-muted-foreground">
-                پست الکترونیک رسمی
-              </span>
-              <a
-                href={`mailto:${shopEmail}`}
-                dir="ltr"
-                className="text-xs sm:text-sm font-bold text-foreground hover:text-primary transition-colors block text-start"
-              >
-                {shopEmail}
-              </a>
-              <span className="block text-[11px] text-muted-foreground">
-                ارسال استعلام بها و مکاتبات سازمانی
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* کارت ساعات کاری */}
-        <div className="rounded-2xl border border-border bg-card p-4 shadow-xs transition-colors hover:border-primary/40 flex-1">
-          <div className="flex items-start gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">
-              <Clock className="size-4.5" />
-            </div>
-            <div className="space-y-1 flex-1 text-right">
-              <span className="block text-xs font-bold text-muted-foreground">
-                ساعات کاری و پاسخگویی
-              </span>
-              <p className="text-xs sm:text-sm font-semibold text-foreground leading-relaxed">
-                {shopWorkingHours}
-              </p>
-              <span className="block text-[11px] text-muted-foreground">
-                ثبت سفارش آنلاین در تمام روزهای هفته فعال است
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* =========================================================================
-          ستون ۲: نقشه موقعیت مکانی و مسیریابی هوشمند (۴ ستون در دسکتاپ)
-          ========================================================================= */}
-      <div className="lg:col-span-4 flex flex-col">
-        <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-xs flex flex-col flex-1">
-          <div className="p-3.5 border-b border-border/60 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Map className="size-4.5 text-primary" />
-              <h3 className="text-sm font-bold text-foreground">
-                موقعیت مکانی روی نقشه
-              </h3>
-            </div>
-            <span className="text-[11px] text-muted-foreground flex items-center gap-1 font-medium">
-              <MapPin className="size-3 text-primary" />
-              دماوند (شعبه ۲)
-            </span>
-          </div>
-
-          {/* نمای نقشه */}
-          <div className="relative flex-1 min-h-60 w-full bg-muted/40 overflow-hidden">
-            <iframe
-              title="موقعیت مکانی فروشگاه اسمارت الکتریک روی نقشه"
-              src="https://www.openstreetmap.org/export/embed.html?bbox=52.0347%2C35.6883%2C52.0427%2C35.6943&layer=mapnik&marker=35.691306%2C52.038722"
-              className="w-full h-full border-0 grayscale-15 contrast-105"
-              loading="lazy"
-            />
-          </div>
-
-          {/* دکمه‌های مسیریابی با اپلیکیشن‌های محبوب */}
-          <div className="p-3.5 bg-muted/20 border-t border-border/60 space-y-2">
-            <span className="block text-[11px] font-semibold text-muted-foreground text-right">
-              مسیریابی با اپلیکیشن‌های نقشه:
-            </span>
-            <div className="grid grid-cols-3 gap-2">
-              <a
-                href={neshanUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-card hover:bg-card/80 border border-border px-2 py-2 text-xs font-bold text-foreground shadow-xs transition-colors hover:text-primary hover:border-primary/40 text-center"
-              >
-                <Navigation className="size-3.5 text-primary shrink-0" />
-                <span>نشان</span>
-              </a>
-              <a
-                href={baladUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-card hover:bg-card/80 border border-border px-2 py-2 text-xs font-bold text-foreground shadow-xs transition-colors hover:text-primary hover:border-primary/40 text-center"
-              >
-                <Compass className="size-3.5 text-primary shrink-0" />
-                <span>بلد</span>
-              </a>
-              <a
-                href={googleMapsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-card hover:bg-card/80 border border-border px-2 py-2 text-xs font-bold text-foreground shadow-xs transition-colors hover:text-primary hover:border-primary/40 text-center"
-              >
-                <ExternalLink className="size-3.5 text-primary shrink-0" />
-                <span>گوگل مپس</span>
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* =========================================================================
-          ستون ۳: فرم ارسال پیام (۴ ستون در دسکتاپ)
-          ========================================================================= */}
-      <div className="lg:col-span-4 flex flex-col">
-        <div className="rounded-2xl border border-border bg-card p-5 shadow-xs flex-1 flex flex-col justify-between">
+        {/* =========================================================================
+            ستون ۲: فرم ارسال پیام (۷ ستون در دسکتاپ)
+            ========================================================================= */}
+        <div className="lg:col-span-7 flex flex-col">
+          <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-xs flex-1 flex flex-col justify-between">
           {isSuccess ? (
             /* وضعیت موفقیت ثبت پیام */
             <div className="py-8 text-center space-y-5 animate-in fade-in zoom-in-95">
@@ -623,7 +571,65 @@ export function ContactUsClient() {
               </form>
             </div>
           )}
+          </div>
         </div>
+      </div>
+
+      {/* =========================================================================
+          بخش نقشه تمام‌عرض با Leaflet زیر فرم و اطلاعات تماس
+          ========================================================================= */}
+      <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-xs">
+        <div className="p-4 border-b border-border/60 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <Map className="size-4.5 text-primary shrink-0" />
+            <div>
+              <h3 className="text-sm font-bold text-foreground">
+                موقعیت مکانی فروشگاه روی نقشه
+              </h3>
+              <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                <MapPin className="size-3 text-primary shrink-0" />
+                <span>شعبه ۲: {branch2Address}</span>
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <a
+              href={neshanUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-muted/40 hover:bg-muted border border-border px-3 py-1.5 text-xs font-bold text-foreground transition-colors hover:text-primary hover:border-primary/40"
+            >
+              <Navigation className="size-3.5 text-primary shrink-0" />
+              <span>نشان</span>
+            </a>
+            <a
+              href={baladUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-muted/40 hover:bg-muted border border-border px-3 py-1.5 text-xs font-bold text-foreground transition-colors hover:text-primary hover:border-primary/40"
+            >
+              <Compass className="size-3.5 text-primary shrink-0" />
+              <span>بلد</span>
+            </a>
+            <a
+              href={googleMapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-muted/40 hover:bg-muted border border-border px-3 py-1.5 text-xs font-bold text-foreground transition-colors hover:text-primary hover:border-primary/40"
+            >
+              <ExternalLink className="size-3.5 text-primary shrink-0" />
+              <span>گوگل مپس</span>
+            </a>
+          </div>
+        </div>
+
+        <ContactMap
+          lat={35.691306}
+          lng={52.038722}
+          title="اسمارت الکتریک — شعبه ۲ (دماوند)"
+          address={branch2Address}
+        />
       </div>
     </div>
   );
