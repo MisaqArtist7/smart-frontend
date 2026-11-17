@@ -242,9 +242,91 @@ export default function CheckoutPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
-            {/* ستون اصلی راست: آدرس تحویل، روش پرداخت، یادداشت و بررسی اقلام */}
+            {/* ستون اصلی راست: اقلام سفارش، آدرس تحویل، روش پرداخت و یادداشت */}
             <div className="lg:col-span-8 space-y-6">
-              {/* بخش ۱: انتخاب یا افزودن آدرس تحویل */}
+              {/* بخش ۱: بازبینی اقلام سفارش */}
+              <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-xs space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-border/60">
+                  <div className="flex items-center gap-2.5 flex-wrap">
+                    <ShoppingBag className="size-5 text-primary shrink-0" />
+                    <h2 className="font-black text-lg text-foreground">اقلام انتخابی سفارش</h2>
+                    <Badge variant="secondary" className="text-xs font-bold">
+                      {toPersianDigits(items.length)} کالا ({toPersianDigits(items.reduce((sum, i) => sum + i.quantity, 0))} عدد)
+                    </Badge>
+                  </div>
+                  <Link href="/cart" className="text-sm text-primary hover:underline font-bold">
+                    ویرایش سبد خرید
+                  </Link>
+                </div>
+
+                <div className="space-y-3">
+                  {items.map((item) => {
+                    const unitPrice = item.discountPrice ?? item.price;
+                    const hasDiscount =
+                      typeof item.discountPrice === "number" && item.discountPrice < item.price;
+                    const lineTotal = unitPrice * item.quantity;
+
+                    return (
+                      <div
+                        key={item.id}
+                        className="rounded-xl border border-border/70 bg-muted/20 p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5"
+                      >
+                        <div className="flex items-start sm:items-center gap-3.5 min-w-0 flex-1">
+                          <div className="size-16 sm:size-18 rounded-xl bg-background border border-border p-1.5 shrink-0 flex items-center justify-center">
+                            <Image
+                              src={item.image}
+                              alt={item.title}
+                              width={64}
+                              height={64}
+                              className="object-contain size-full"
+                            />
+                          </div>
+                          <div className="min-w-0 flex-1 space-y-1.5">
+                            <span className="font-bold text-sm sm:text-base text-foreground leading-snug line-clamp-2 block">
+                              {item.title}
+                            </span>
+
+                            <div className="flex flex-wrap items-center gap-2 text-xs">
+                              <Badge
+                                variant="outline"
+                                className="bg-background font-bold text-foreground border-border"
+                              >
+                                تعداد: {item.quantity.toLocaleString("fa-IR")} عدد
+                              </Badge>
+
+                              <span className="text-muted-foreground font-mono">
+                                قیمت واحد:{" "}
+                                <strong className="text-foreground">
+                                  {unitPrice.toLocaleString("fa-IR")}
+                                </strong>{" "}
+                                تومان
+                              </span>
+
+                              {hasDiscount && (
+                                <span className="text-muted-foreground/70 line-through font-mono">
+                                  {item.price.toLocaleString("fa-IR")}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex sm:flex-col items-center sm:items-end justify-between border-t sm:border-t-0 border-border/50 pt-2.5 sm:pt-0 shrink-0">
+                          <span className="text-xs text-muted-foreground sm:mb-0.5">
+                            جمع ردیف:
+                          </span>
+                          <div className="font-mono font-black text-sm sm:text-base text-primary">
+                            {lineTotal.toLocaleString("fa-IR")}{" "}
+                            <span className="text-xs font-semibold text-muted-foreground">تومان</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* بخش ۲: انتخاب یا افزودن آدرس تحویل */}
               <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-xs space-y-4">
                 <div className="flex items-center justify-between pb-2 border-b border-border/60">
                   <div className="flex items-center gap-2">
@@ -390,52 +472,6 @@ export default function CheckoutPage() {
                       به دلیل اینکه قیمت‌ها مدام در حال تغییر هستند و ثبات ندارند، درگاه پرداخت آنلاین فعلاً غیرفعال می‌باشد.
                     </p>
                   </div>
-                </div>
-              </div>
-
-              {/* بخش ۳: بازبینی اقلام سفارش */}
-              <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-xs space-y-4">
-                <div className="flex items-center justify-between pb-2 border-b border-border/60">
-                  <div className="flex items-center gap-2">
-                    <ShoppingBag className="size-5 text-primary" />
-                    <h2 className="font-black text-lg text-foreground">اقلام انتخابی سفارش</h2>
-                  </div>
-                  <Link href="/cart" className="text-sm text-primary hover:underline font-bold">
-                    ویرایش سبد خرید
-                  </Link>
-                </div>
-
-                <div className="divide-y divide-border/60">
-                  {items.map((item) => {
-                    const price = item.discountPrice ?? item.price;
-                    return (
-                      <div key={item.id} className="py-3 flex items-center justify-between gap-4 text-sm">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="size-12 rounded-lg bg-muted/30 border border-border p-1 shrink-0 flex items-center justify-center">
-                            <Image
-                              src={item.image}
-                              alt={item.title}
-                              width={40}
-                              height={40}
-                              className="object-contain size-full"
-                            />
-                          </div>
-                          <div className="min-w-0">
-                            <span className="font-bold text-foreground line-clamp-1 block">
-                              {item.title}
-                            </span>
-                            <span className="text-xs text-muted-foreground font-mono">
-                              تعداد: {item.quantity.toLocaleString("fa-IR")} عدد
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="text-end shrink-0 font-mono font-bold text-foreground">
-                          {(price * item.quantity).toLocaleString("fa-IR")} تومان
-                        </div>
-                      </div>
-                    );
-                  })}
                 </div>
               </div>
 
