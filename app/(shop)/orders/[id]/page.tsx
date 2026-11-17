@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams, useSearchParams } from "next/navigation";
@@ -32,11 +32,13 @@ import Footer from "@/components/layout/footer";
 import {
   useOrder,
   usePaymentInfo,
+  useProducts,
   useUploadReceipt,
   useCancelOrder,
   fetchReceiptBlob,
   ApiError,
 } from "@/lib/api";
+import { normalizeImageUrl } from "@/lib/utils";
 import { useAuth } from "@/components/providers/auth-provider";
 import { formatAddressSummary } from "@/lib/address-utils";
 import {
@@ -73,6 +75,16 @@ export default function OrderDetailsPage() {
 
 function OrderDetailsContent() {
   const params = useParams();
+  const { data: products = [] } = useProducts();
+
+  const productImageMap = useMemo(() => {
+    const map = new Map<number, string>();
+    products.forEach((p) => {
+      const firstUrl = p.images?.[0]?.url;
+      if (firstUrl) map.set(p.id, firstUrl);
+    });
+    return map;
+  }, [products]);
   const searchParams = useSearchParams();
   const orderId = params?.id as string;
   const isNew = searchParams.get("new") === "1";
@@ -784,40 +796,50 @@ function OrderDetailsContent() {
               </div>
 
               <div className="divide-y divide-border/60">
-                {order.items?.map((item) => (
-                  <div key={item.id} className="py-3.5 flex items-center justify-between gap-4 text-xs">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="size-14 rounded-xl bg-muted/20 border border-border p-1.5 shrink-0 flex items-center justify-center">
-                        <Image
-                          src={item.image || "/images/products/adapter-52240.png"}
-                          alt={item.title}
-                          width={48}
-                          height={48}
-                          className="object-contain size-full"
-                        />
-                      </div>
-                      <div className="min-w-0 space-y-1">
-                        <span className="font-bold text-foreground line-clamp-1 block">
-                          {item.title}
-                        </span>
-                        <div className="text-[11px] text-muted-foreground flex items-center gap-3">
-                          <span>
-                            تعداد: <strong className="font-mono text-foreground">{toPersianDigits(item.quantity)} عدد</strong>
+                {order.items?.map((item) => {
+                  const rawImg =
+                    item.image ||
+                    item.product?.images?.[0]?.url ||
+                    productImageMap.get(item.productId);
+                  return (
+                    <div key={item.id} className="py-3.5 flex items-center justify-between gap-4 text-xs">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="size-14 rounded-xl bg-muted/20 border border-border p-1.5 shrink-0 flex items-center justify-center">
+                          {rawImg ? (
+                            <Image
+                              src={normalizeImageUrl(rawImg)}
+                              alt={item.title}
+                              width={48}
+                              height={48}
+                              className="object-contain size-full"
+                            />
+                          ) : (
+                            <ShoppingBag className="size-6 text-muted-foreground/40" />
+                          )}
+                        </div>
+                        <div className="min-w-0 space-y-1">
+                          <span className="font-bold text-foreground line-clamp-1 block">
+                            {item.title}
                           </span>
-                          <span>•</span>
-                          <span>
-                            قیمت واحد: <span className="font-mono font-medium">{item.price.toLocaleString("fa-IR")}</span> تومان
-                          </span>
+                          <div className="text-[11px] text-muted-foreground flex items-center gap-3">
+                            <span>
+                              تعداد: <strong className="font-mono text-foreground">{toPersianDigits(item.quantity)} عدد</strong>
+                            </span>
+                            <span>•</span>
+                            <span>
+                              قیمت واحد: <span className="font-mono font-medium">{item.price.toLocaleString("fa-IR")}</span> تومان
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="text-end shrink-0 font-mono font-black text-foreground text-sm">
-                      {(item.price * item.quantity).toLocaleString("fa-IR")}{" "}
-                      <span className="text-xs font-normal text-muted-foreground">تومان</span>
+                      <div className="text-end shrink-0 font-mono font-black text-foreground text-sm">
+                        {(item.price * item.quantity).toLocaleString("fa-IR")}{" "}
+                        <span className="text-xs font-normal text-muted-foreground">تومان</span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 

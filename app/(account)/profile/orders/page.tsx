@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import {
@@ -19,10 +19,12 @@ import {
 } from "lucide-react";
 import {
   useMyOrders,
+  useProducts,
   useUploadReceipt,
   ApiError,
   type Order,
 } from "@/lib/api";
+import { normalizeImageUrl } from "@/lib/utils";
 import {
   formatPrice,
 } from "@/lib/account-data";
@@ -49,7 +51,17 @@ type TabFilter = "all" | "in-progress" | "delivered" | "cancelled";
 
 export default function ProfileOrdersPage() {
   const { data: orders = [], isLoading: isOrdersLoading } = useMyOrders();
+  const { data: products = [] } = useProducts();
   const uploadReceiptMutation = useUploadReceipt();
+
+  const productImageMap = useMemo(() => {
+    const map = new Map<number, string>();
+    products.forEach((p) => {
+      const firstUrl = p.images?.[0]?.url;
+      if (firstUrl) map.set(p.id, firstUrl);
+    });
+    return map;
+  }, [products]);
 
   const [activeTab, setActiveTab] = useState<TabFilter>("all");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -321,33 +333,43 @@ export default function ProfileOrdersPage() {
                       اقلام سفارش ({order.items?.length || 0} قلم):
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {order.items?.map((item) => (
-                        <div
-                          key={item.id}
-                          className="flex items-center gap-3 p-2.5 rounded-xl bg-background border border-border/80"
-                        >
-                          <div className="size-14 rounded-lg bg-muted/20 border border-border p-1.5 flex items-center justify-center shrink-0">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={item.image || "/images/products/adapter-52240.png"}
-                              alt={item.title}
-                              className="object-contain size-full"
-                            />
-                          </div>
+                      {order.items?.map((item) => {
+                        const rawImg =
+                          item.image ||
+                          item.product?.images?.[0]?.url ||
+                          productImageMap.get(item.productId);
+                        return (
+                          <div
+                            key={item.id}
+                            className="flex items-center gap-3 p-2.5 rounded-xl bg-background border border-border/80"
+                          >
+                            <div className="size-14 rounded-lg bg-muted/20 border border-border p-1.5 flex items-center justify-center shrink-0">
+                              {rawImg ? (
+                                /* eslint-disable-next-line @next/next/no-img-element */
+                                <img
+                                  src={normalizeImageUrl(rawImg)}
+                                  alt={item.title}
+                                  className="object-contain size-full"
+                                />
+                              ) : (
+                                <ShoppingBag className="size-6 text-muted-foreground/40" />
+                              )}
+                            </div>
 
-                          <div className="min-w-0 flex-1">
-                            <div className="font-bold text-xs sm:text-sm text-foreground line-clamp-1">
-                              {item.title}
-                            </div>
-                            <div className="text-xs text-muted-foreground font-mono mt-1 flex items-center justify-between">
-                              <span>تعداد: {toPersianDigits(item.quantity)} عدد</span>
-                              <span className="font-bold text-foreground">
-                                {formatPrice(item.price * item.quantity)}
-                              </span>
+                            <div className="min-w-0 flex-1">
+                              <div className="font-bold text-xs sm:text-sm text-foreground line-clamp-1">
+                                {item.title}
+                              </div>
+                              <div className="text-xs text-muted-foreground font-mono mt-1 flex items-center justify-between">
+                                <span>تعداد: {toPersianDigits(item.quantity)} عدد</span>
+                                <span className="font-bold text-foreground">
+                                  {formatPrice(item.price * item.quantity)}
+                                </span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
 
