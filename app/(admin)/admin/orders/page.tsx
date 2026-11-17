@@ -727,18 +727,18 @@ export default function AdminOrdersPage() {
          ========================================================================= */}
       <Dialog open={!!reviewOrder} onOpenChange={(open) => !open && handleCloseReviewReceipt()}>
         {reviewOrder && (
-          <DialogContent className="max-w-md rounded-2xl" dir="rtl">
+          <DialogContent className="sm:max-w-[580px] max-h-[90vh] overflow-y-auto" dir="rtl">
             <DialogHeader>
-              <DialogTitle className="text-base font-black flex items-center gap-2">
+              <DialogTitle className="text-right flex items-center gap-2">
                 <Receipt className="size-5 text-primary" />
                 <span>بررسی فیش واریز کارت‌به‌کارت</span>
               </DialogTitle>
-              <DialogDescription className="text-xs">
+              <DialogDescription className="text-right text-xs">
                 سفارش {reviewOrder.orderNumber} به مبلغ {formatToman(reviewOrder.totalPrice)}
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-4 py-2">
+            <div className="space-y-4 pt-2">
               {/* کادر پیش‌نمایش تصویر فیش */}
               <div className="rounded-xl border border-border bg-muted/20 p-2 flex flex-col items-center justify-center min-h-[220px] max-h-[360px] overflow-hidden">
                 {isFetchingBlob ? (
@@ -771,33 +771,29 @@ export default function AdminOrdersPage() {
                   placeholder="مثلاً: فیش بانکی با واریزی ساعت ۱۰ مطابقت داشت و تایید شد..."
                   rows={2}
                   maxLength={500}
-                  className="rounded-xl text-xs"
                 />
               </div>
             </div>
 
-            <DialogFooter className="flex-col sm:flex-row gap-2 pt-2">
+            <DialogFooter className="gap-2 pt-2">
               <Button
                 variant="destructive"
-                size="sm"
                 onClick={() => handleSubmitReceiptReview("reject")}
                 disabled={reviewReceiptMutation.isPending}
-                className="rounded-xl text-xs font-bold gap-1.5 cursor-pointer"
               >
-                <XCircle className="size-3.5" />
+                <XCircle className="size-4" />
                 <span>رد فیش پرداختی</span>
               </Button>
 
               <Button
-                size="sm"
                 onClick={() => handleSubmitReceiptReview("approve")}
                 disabled={reviewReceiptMutation.isPending}
-                className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold gap-1.5 cursor-pointer"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white"
               >
                 {reviewReceiptMutation.isPending ? (
-                  <Loader2 className="size-3.5 animate-spin" />
+                  <Loader2 className="size-4 animate-spin" />
                 ) : (
-                  <CheckCircle2 className="size-3.5" />
+                  <CheckCircle2 className="size-4" />
                 )}
                 <span>تأیید فیش و ثبت پرداخت</span>
               </Button>
@@ -811,10 +807,10 @@ export default function AdminOrdersPage() {
          ========================================================================= */}
       <Dialog open={!!statusModalOrder} onOpenChange={(open) => !open && setStatusModalOrder(null)}>
         {statusModalOrder && (
-          <DialogContent className="max-w-md rounded-2xl" dir="rtl">
+          <DialogContent className="sm:max-w-[580px] max-h-[90vh] overflow-y-auto" dir="rtl">
             <form onSubmit={handleSubmitStatusChange} className="space-y-4">
               <DialogHeader>
-                <DialogTitle className="text-base font-black flex items-center gap-2">
+                <DialogTitle className="text-right flex items-center gap-2">
                   {targetStatus === "SHIPPED" ? (
                     <>
                       <Truck className="size-5 text-blue-600" />
@@ -827,12 +823,12 @@ export default function AdminOrdersPage() {
                     </>
                   )}
                 </DialogTitle>
-                <DialogDescription className="text-xs">
+                <DialogDescription className="text-right text-xs">
                   شماره سفارش: {statusModalOrder.orderNumber} | گیرنده: {statusModalOrder.receiverName}
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="space-y-3.5 text-xs py-2">
+              <div className="space-y-3.5 text-xs pt-2">
                 {targetStatus === "SHIPPED" && (
                   <div className="space-y-1.5">
                     <label className="font-bold text-foreground">
@@ -844,7 +840,7 @@ export default function AdminOrdersPage() {
                       placeholder="مثال: ۲۴ رقم بارکد پستی پیشتاز..."
                       dir="ltr"
                       maxLength={50}
-                      className="rounded-xl text-xs font-mono text-start"
+                      className="font-mono text-start"
                     />
                   </div>
                 )}
@@ -859,31 +855,26 @@ export default function AdminOrdersPage() {
                     placeholder="مثال: بسته به پست مرکزی تحویل گردید..."
                     rows={2}
                     maxLength={500}
-                    className="rounded-xl text-xs"
                   />
                 </div>
               </div>
 
-              <DialogFooter className="gap-2">
+              <DialogFooter className="gap-2 pt-2">
                 <Button
                   type="button"
                   variant="outline"
-                  size="sm"
                   onClick={() => setStatusModalOrder(null)}
-                  className="rounded-xl text-xs"
                 >
                   انصراف
                 </Button>
                 <Button
                   type="submit"
-                  size="sm"
                   disabled={updateStatusMutation.isPending}
-                  className="rounded-xl text-xs font-bold gap-1.5"
                 >
                   {updateStatusMutation.isPending ? (
-                    <Loader2 className="size-3.5 animate-spin" />
+                    <Loader2 className="size-4 animate-spin" />
                   ) : (
-                    <Check className="size-3.5" />
+                    <Check className="size-4" />
                   )}
                   <span>تأیید و ذخیره تغییر وضعیت</span>
                 </Button>
@@ -898,21 +889,19 @@ export default function AdminOrdersPage() {
          ========================================================================= */}
       <Dialog open={!!cancelModalOrder} onOpenChange={(open) => !open && setCancelModalOrder(null)}>
         {cancelModalOrder && (
-          <DialogContent className="max-w-md rounded-2xl" dir="rtl">
+          <DialogContent className="sm:max-w-[580px] max-h-[90vh] overflow-y-auto" dir="rtl">
             <form onSubmit={handleSubmitCancelOrder} className="space-y-4">
               <DialogHeader>
-                <div className="size-12 rounded-2xl bg-destructive/10 text-destructive flex items-center justify-center mb-1">
-                  <AlertTriangle className="size-6" />
-                </div>
-                <DialogTitle className="text-base font-black">
-                  لغو سفارش {cancelModalOrder.orderNumber}
+                <DialogTitle className="text-right flex items-center gap-2 text-destructive">
+                  <AlertTriangle className="size-5 shrink-0" />
+                  <span>لغو سفارش {cancelModalOrder.orderNumber}</span>
                 </DialogTitle>
-                <DialogDescription className="text-xs leading-relaxed text-muted-foreground">
+                <DialogDescription className="text-right text-xs leading-relaxed">
                   با لغو این سفارش، موجودی تمام اقلام به صورت اتمیک به انبار بازمی‌گردد. در صورت پرداخت شدن فاکتور، وجه باید به صورت دستی به مشتری استرداد داده شود.
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="space-y-1.5 text-xs py-1">
+              <div className="space-y-1.5 text-xs pt-2">
                 <label className="font-bold text-foreground">
                   علت لغو سفارش (در یادداشت ادمین ثبت می‌شود):
                 </label>
@@ -922,31 +911,26 @@ export default function AdminOrdersPage() {
                   placeholder="مثال: لغو به علت درخواست تلفنی مشتری یا عدم موجودی کالا..."
                   rows={3}
                   maxLength={500}
-                  className="rounded-xl text-xs"
                 />
               </div>
 
-              <DialogFooter className="gap-2">
+              <DialogFooter className="gap-2 pt-2">
                 <Button
                   type="button"
                   variant="outline"
-                  size="sm"
                   onClick={() => setCancelModalOrder(null)}
-                  className="rounded-xl text-xs"
                 >
                   انصراف
                 </Button>
                 <Button
                   type="submit"
                   variant="destructive"
-                  size="sm"
                   disabled={cancelOrderMutation.isPending}
-                  className="rounded-xl text-xs font-bold gap-1.5"
                 >
                   {cancelOrderMutation.isPending ? (
-                    <Loader2 className="size-3.5 animate-spin" />
+                    <Loader2 className="size-4 animate-spin" />
                   ) : (
-                    <XCircle className="size-3.5" />
+                    <XCircle className="size-4" />
                   )}
                   <span>تأیید لغو سفارش</span>
                 </Button>
@@ -964,16 +948,14 @@ export default function AdminOrdersPage() {
         onOpenChange={(open) => !open && setSelectedOrderDetails(null)}
       >
         {selectedOrderDetails && (
-          <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl" dir="rtl">
+          <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto" dir="rtl">
             <DialogHeader>
-              <DialogTitle className="text-base font-black flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <FileText className="size-5 text-primary" />
-                  <span>فاکتور جامع سفارش</span>
-                  <span className="font-mono text-primary">{selectedOrderDetails.orderNumber}</span>
-                </div>
+              <DialogTitle className="text-right flex items-center gap-2">
+                <FileText className="size-5 text-primary" />
+                <span>فاکتور جامع سفارش</span>
+                <span className="font-mono text-primary">{selectedOrderDetails.orderNumber}</span>
               </DialogTitle>
-              <DialogDescription className="text-xs">
+              <DialogDescription className="text-right text-xs">
                 ثبت‌شده در تاریخ {formatPersianDate(selectedOrderDetails.createdAt)}
               </DialogDescription>
             </DialogHeader>
