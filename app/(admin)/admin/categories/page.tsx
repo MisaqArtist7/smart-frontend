@@ -349,7 +349,7 @@ export default function AdminCategoriesPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-16 text-center">آیکون</TableHead>
+                  <TableHead className="w-28 text-center">تصویر</TableHead>
                   <TableHead>نام و شناسه (Slug)</TableHead>
                   <TableHead>سطح والد</TableHead>
                   <TableHead className="w-20 text-center">ترتیب</TableHead>
@@ -376,20 +376,20 @@ export default function AdminCategoriesPage() {
                   filteredCategories.map((cat) => (
                     <TableRow key={cat.id}>
                       {/* تصویر / آیکون */}
-                      <TableCell className="text-center py-2.5">
-                        <div className="size-14 sm:size-16 rounded-xl border border-border bg-muted/20 p-1.5 mx-auto flex items-center justify-center overflow-hidden">
+                      <TableCell className="text-center py-3">
+                        <div className="size-20 sm:size-24 rounded-2xl border border-border bg-muted/20 p-1 mx-auto flex items-center justify-center overflow-hidden">
                           {cat.image ? (
                             <Image
                               src={normalizeImageUrl(cat.image)}
                               alt={cat.imageAlt || cat.name}
-                              width={56}
-                              height={56}
+                              width={88}
+                              height={88}
                               className="object-contain size-full"
                             />
                           ) : cat.parentId ? (
-                            <CornerDownLeft className="size-5 text-muted-foreground" />
+                            <CornerDownLeft className="size-6 text-muted-foreground" />
                           ) : (
-                            <FolderTree className="size-5 text-primary" />
+                            <FolderTree className="size-6 text-primary" />
                           )}
                         </div>
                       </TableCell>
