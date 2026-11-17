@@ -113,15 +113,15 @@ export default function ProfileLayout({
           })}
         </div>
 
-        {/* چیدمان دو ستونه دسکتاپ: سایدبار در راست + محتوا در چپ */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
-          {/* ستون سایدبار دسکتاپ (۴ ستون از ۱۲ ستون) */}
-          <div className="hidden lg:block lg:col-span-4 xl:col-span-3 sticky top-24">
+        {/* چیدمان دو ستونه دسکتاپ: سایدبار باریک در راست + محتوای منعطف در چپ */}
+        <div className="flex flex-col lg:flex-row gap-6 items-start">
+          {/* ستون سایدبار دسکتاپ */}
+          <div className="hidden lg:block lg:w-64 shrink-0 sticky top-24">
             <ProfileSidebar />
           </div>
 
-          {/* ستون محتوای ساب‌پیج‌ها (۸ ستون از ۱۲ ستون) */}
-          <div className="lg:col-span-8 xl:col-span-9 min-w-0">
+          {/* ستون محتوای ساب‌پیج‌ها */}
+          <div className="w-full lg:flex-1 min-w-0">
             {children}
           </div>
         </div>
