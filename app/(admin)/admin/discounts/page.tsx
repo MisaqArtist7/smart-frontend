@@ -293,31 +293,28 @@ export default function AdminDiscountsPage() {
       {/* سربرگ صفحه */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-foreground flex items-center gap-2.5">
-            <Tag className="size-6 text-primary" />
-            <span>مدیریت کدهای تخفیف و کوپن‌ها</span>
+          <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
+            مدیریت کدهای تخفیف و کوپن‌ها
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             تعریف کوپن‌های درصدی و مبلغ ثابت، سقف مصرف، حداقل خرید و پایش استفاده کاربران
           </p>
         </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-auto">
+        <div className="flex items-center gap-2.5 self-start sm:self-auto">
           <Button
             variant="outline"
-            size="sm"
             onClick={() => refetch()}
             disabled={isFetching}
-            className="rounded-xl text-xs font-bold gap-2"
+            className="gap-2 font-semibold"
           >
-            {isFetching ? <Loader2 className="size-3.5 animate-spin" /> : null}
+            {isFetching ? <Loader2 className="size-4 animate-spin" /> : null}
             <span>بروزرسانی</span>
           </Button>
 
           <Button
             onClick={handleOpenCreateDialog}
-            size="sm"
-            className="rounded-xl text-xs font-bold gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs"
+            className="gap-2 font-bold shadow-xs"
           >
             <Plus className="size-4" />
             <span>تعریف کد تخفیف جدید</span>
@@ -326,59 +323,59 @@ export default function AdminDiscountsPage() {
       </div>
 
       {/* کارت‌های آمار سریع */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <Card className="hover:border-primary/50 transition-colors">
-          <CardContent className="p-4 flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-xs text-muted-foreground font-medium">کل کدهای تعریف‌شده</span>
-              <div className="text-2xl font-black text-foreground">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        <Card className="rounded-2xl border-border bg-card shadow-xs hover:shadow-md transition-shadow">
+          <CardContent className="p-5 flex items-center justify-between">
+            <div className="space-y-1.5">
+              <span className="text-xs font-bold text-muted-foreground">کل کدهای تعریف‌شده</span>
+              <div className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
                 {stats.total.toLocaleString("fa-IR")}
               </div>
             </div>
-            <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-              <Tag className="size-5" />
+            <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <Tag className="size-6" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="hover:border-emerald-500/50 transition-colors">
-          <CardContent className="p-4 flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-xs text-muted-foreground font-medium">کدهای فعال و معتبر</span>
-              <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
+        <Card className="rounded-2xl border-border bg-card shadow-xs hover:shadow-md transition-shadow">
+          <CardContent className="p-5 flex items-center justify-between">
+            <div className="space-y-1.5">
+              <span className="text-xs font-bold text-muted-foreground">کدهای فعال و معتبر</span>
+              <div className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">
                 {stats.active.toLocaleString("fa-IR")}
               </div>
             </div>
-            <div className="size-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-              <CheckCircle2 className="size-5" />
+            <div className="size-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+              <CheckCircle2 className="size-6" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="hover:border-purple-500/50 transition-colors">
-          <CardContent className="p-4 flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-xs text-muted-foreground font-medium">مجموع دفعات استفاده</span>
-              <div className="text-2xl font-black text-purple-600 dark:text-purple-400">
+        <Card className="rounded-2xl border-border bg-card shadow-xs hover:shadow-md transition-shadow">
+          <CardContent className="p-5 flex items-center justify-between">
+            <div className="space-y-1.5">
+              <span className="text-xs font-bold text-muted-foreground">مجموع دفعات استفاده</span>
+              <div className="text-xl sm:text-2xl font-black text-purple-600 dark:text-purple-400 tracking-tight">
                 {stats.totalUses.toLocaleString("fa-IR")}
               </div>
             </div>
-            <div className="size-10 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
-              <Sparkles className="size-5" />
+            <div className="size-12 rounded-2xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+              <Sparkles className="size-6" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="hover:border-amber-500/50 transition-colors">
-          <CardContent className="p-4 flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-xs text-muted-foreground font-medium">منقضی یا تکمیل ظرفیت</span>
-              <div className="text-2xl font-black text-amber-600 dark:text-amber-400">
+        <Card className="rounded-2xl border-border bg-card shadow-xs hover:shadow-md transition-shadow">
+          <CardContent className="p-5 flex items-center justify-between">
+            <div className="space-y-1.5">
+              <span className="text-xs font-bold text-muted-foreground">منقضی یا تکمیل ظرفیت</span>
+              <div className="text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400 tracking-tight">
                 {(stats.expired + stats.depleted).toLocaleString("fa-IR")}
               </div>
             </div>
-            <div className="size-10 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
-              <Clock className="size-5" />
+            <div className="size-12 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+              <Clock className="size-6" />
             </div>
           </CardContent>
         </Card>

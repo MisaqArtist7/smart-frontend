@@ -143,63 +143,63 @@ export default function AdminContactPage() {
       </div>
 
       {/* کارت‌های آمار وضعیت */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
         <Card
-          className="rounded-2xl border-border bg-card shadow-xs cursor-pointer hover:border-amber-500/40 transition-colors"
+          className="rounded-2xl border-border bg-card shadow-xs cursor-pointer hover:shadow-md hover:border-amber-500/40 transition-all"
           onClick={() => {
             setStatusFilter(statusFilter === "NEW" ? "ALL" : "NEW");
             setPage(1);
           }}
         >
-          <CardContent className="p-4 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-medium text-muted-foreground">پیام‌های جدید</p>
-              <p className="text-2xl font-black text-foreground mt-1">
+          <CardContent className="p-5 flex items-center justify-between">
+            <div className="space-y-1.5">
+              <p className="text-xs font-bold text-muted-foreground">پیام‌های جدید</p>
+              <p className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
                 {toPersianDigits(counts.NEW)}
               </p>
             </div>
-            <div className="size-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
-              <AlertCircle className="size-5" />
+            <div className="size-12 rounded-2xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
+              <AlertCircle className="size-6" />
             </div>
           </CardContent>
         </Card>
 
         <Card
-          className="rounded-2xl border-border bg-card shadow-xs cursor-pointer hover:border-blue-500/40 transition-colors"
+          className="rounded-2xl border-border bg-card shadow-xs cursor-pointer hover:shadow-md hover:border-blue-500/40 transition-all"
           onClick={() => {
             setStatusFilter(statusFilter === "IN_PROGRESS" ? "ALL" : "IN_PROGRESS");
             setPage(1);
           }}
         >
-          <CardContent className="p-4 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-medium text-muted-foreground">در حال پیگیری</p>
-              <p className="text-2xl font-black text-foreground mt-1">
+          <CardContent className="p-5 flex items-center justify-between">
+            <div className="space-y-1.5">
+              <p className="text-xs font-bold text-muted-foreground">در حال پیگیری</p>
+              <p className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
                 {toPersianDigits(counts.IN_PROGRESS)}
               </p>
             </div>
-            <div className="size-10 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center">
-              <Clock className="size-5" />
+            <div className="size-12 rounded-2xl bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0">
+              <Clock className="size-6" />
             </div>
           </CardContent>
         </Card>
 
         <Card
-          className="rounded-2xl border-border bg-card shadow-xs cursor-pointer hover:border-emerald-500/40 transition-colors"
+          className="rounded-2xl border-border bg-card shadow-xs cursor-pointer hover:shadow-md hover:border-emerald-500/40 transition-all"
           onClick={() => {
             setStatusFilter(statusFilter === "DONE" ? "ALL" : "DONE");
             setPage(1);
           }}
         >
-          <CardContent className="p-4 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-medium text-muted-foreground">انجام‌شده</p>
-              <p className="text-2xl font-black text-foreground mt-1">
+          <CardContent className="p-5 flex items-center justify-between">
+            <div className="space-y-1.5">
+              <p className="text-xs font-bold text-muted-foreground">انجام‌شده</p>
+              <p className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
                 {toPersianDigits(counts.DONE)}
               </p>
             </div>
-            <div className="size-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
-              <CheckCircle2 className="size-5" />
+            <div className="size-12 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+              <CheckCircle2 className="size-6" />
             </div>
           </CardContent>
         </Card>

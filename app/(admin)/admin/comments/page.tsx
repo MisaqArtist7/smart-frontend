@@ -167,9 +167,8 @@ export default function AdminCommentsPage() {
       {/* سربرگ صفحه و آمار کلی */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-foreground flex items-center gap-2.5">
-            <MessageSquare className="size-6 text-primary" />
-            <span>مدیریت دیدگاه‌ها و نظرات کاربران</span>
+          <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
+            مدیریت دیدگاه‌ها و نظرات کاربران
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             بررسی، تأیید، رد، ثبت پاسخ رسمی و پایش بازخورد خریداران روی کالاها
@@ -178,34 +177,33 @@ export default function AdminCommentsPage() {
 
         <Button
           variant="outline"
-          size="sm"
           onClick={() => refetch()}
           disabled={isFetching}
-          className="rounded-xl text-xs font-bold gap-2 self-start sm:self-auto"
+          className="gap-2 font-semibold self-start sm:self-auto"
         >
-          {isFetching ? <Loader2 className="size-3.5 animate-spin" /> : null}
+          {isFetching ? <Loader2 className="size-4 animate-spin" /> : null}
           <span>بروزرسانی لیست</span>
         </Button>
       </div>
 
       {/* کارت‌های خلاصه وضعیت */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         <Card
           onClick={() => handleTabChange("PENDING")}
           className={cn(
-            "cursor-pointer transition-all hover:border-amber-500/50",
+            "rounded-2xl border-border bg-card shadow-xs cursor-pointer transition-all hover:shadow-md hover:border-amber-500/50",
             activeTab === "PENDING" && "ring-2 ring-amber-500/40 bg-amber-500/5"
           )}
         >
-          <CardContent className="p-4 flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-xs text-muted-foreground font-medium">در انتظار تأیید</span>
-              <div className="text-2xl font-black text-amber-600 dark:text-amber-400">
+          <CardContent className="p-5 flex items-center justify-between">
+            <div className="space-y-1.5">
+              <span className="text-xs font-bold text-muted-foreground">در انتظار تأیید</span>
+              <div className="text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400 tracking-tight">
                 {(counts.PENDING || 0).toLocaleString("fa-IR")}
               </div>
             </div>
-            <div className="size-10 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
-              <Clock className="size-5" />
+            <div className="size-12 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+              <Clock className="size-6" />
             </div>
           </CardContent>
         </Card>
@@ -213,19 +211,19 @@ export default function AdminCommentsPage() {
         <Card
           onClick={() => handleTabChange("APPROVED")}
           className={cn(
-            "cursor-pointer transition-all hover:border-emerald-500/50",
+            "rounded-2xl border-border bg-card shadow-xs cursor-pointer transition-all hover:shadow-md hover:border-emerald-500/50",
             activeTab === "APPROVED" && "ring-2 ring-emerald-500/40 bg-emerald-500/5"
           )}
         >
-          <CardContent className="p-4 flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-xs text-muted-foreground font-medium">تأیید شده</span>
-              <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
+          <CardContent className="p-5 flex items-center justify-between">
+            <div className="space-y-1.5">
+              <span className="text-xs font-bold text-muted-foreground">تأیید شده</span>
+              <div className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">
                 {(counts.APPROVED || 0).toLocaleString("fa-IR")}
               </div>
             </div>
-            <div className="size-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-              <CheckCircle2 className="size-5" />
+            <div className="size-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+              <CheckCircle2 className="size-6" />
             </div>
           </CardContent>
         </Card>
@@ -233,19 +231,19 @@ export default function AdminCommentsPage() {
         <Card
           onClick={() => handleTabChange("REJECTED")}
           className={cn(
-            "cursor-pointer transition-all hover:border-destructive/50",
+            "rounded-2xl border-border bg-card shadow-xs cursor-pointer transition-all hover:shadow-md hover:border-destructive/50",
             activeTab === "REJECTED" && "ring-2 ring-destructive/40 bg-destructive/5"
           )}
         >
-          <CardContent className="p-4 flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-xs text-muted-foreground font-medium">رد شده</span>
-              <div className="text-2xl font-black text-destructive">
+          <CardContent className="p-5 flex items-center justify-between">
+            <div className="space-y-1.5">
+              <span className="text-xs font-bold text-muted-foreground">رد شده</span>
+              <div className="text-xl sm:text-2xl font-black text-destructive tracking-tight">
                 {(counts.REJECTED || 0).toLocaleString("fa-IR")}
               </div>
             </div>
-            <div className="size-10 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center shrink-0">
-              <XCircle className="size-5" />
+            <div className="size-12 rounded-2xl bg-destructive/10 text-destructive flex items-center justify-center shrink-0">
+              <XCircle className="size-6" />
             </div>
           </CardContent>
         </Card>
@@ -253,19 +251,19 @@ export default function AdminCommentsPage() {
         <Card
           onClick={() => handleTabChange("ALL")}
           className={cn(
-            "cursor-pointer transition-all hover:border-primary/50",
+            "rounded-2xl border-border bg-card shadow-xs cursor-pointer transition-all hover:shadow-md hover:border-primary/50",
             activeTab === "ALL" && "ring-2 ring-primary/40 bg-primary/5"
           )}
         >
-          <CardContent className="p-4 flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-xs text-muted-foreground font-medium">کل دیدگاه‌ها</span>
-              <div className="text-2xl font-black text-foreground">
+          <CardContent className="p-5 flex items-center justify-between">
+            <div className="space-y-1.5">
+              <span className="text-xs font-bold text-muted-foreground">کل دیدگاه‌ها</span>
+              <div className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
                 {(counts.TOTAL || 0).toLocaleString("fa-IR")}
               </div>
             </div>
-            <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-              <MessageSquare className="size-5" />
+            <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <MessageSquare className="size-6" />
             </div>
           </CardContent>
         </Card>

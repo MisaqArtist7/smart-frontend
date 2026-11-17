@@ -272,9 +272,8 @@ export default function AdminOrdersPage() {
       {/* سربرگ مدیریت سفارشات */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight flex items-center gap-2.5">
-            <ShoppingBag className="size-6 text-primary" />
-            <span>مدیریت و پیگیری سفارشات</span>
+          <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
+            مدیریت و پیگیری سفارشات
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             بررسی فیش‌های واریزی، تغییر وضعیت مرسوله‌ها، ثبت کدهای رهگیری پستی و فاکتورها
@@ -283,12 +282,11 @@ export default function AdminOrdersPage() {
 
         <Button
           variant="outline"
-          size="sm"
           onClick={() => refetch()}
           disabled={isLoading || isFetching}
-          className="rounded-xl text-xs font-bold gap-1.5 self-start sm:self-auto cursor-pointer"
+          className="font-semibold gap-2 self-start sm:self-auto"
         >
-          <RotateCcw className={`size-3.5 ${isFetching ? "animate-spin" : ""}`} />
+          <RotateCcw className={`size-4 ${isFetching ? "animate-spin" : ""}`} />
           <span>بروزرسانی داده‌ها</span>
         </Button>
       </div>
