@@ -29,11 +29,16 @@ function DropdownMenuContent({
 }: DropdownMenuContentProps) {
   return (
     <MenuPrimitive.Portal>
-      <MenuPrimitive.Positioner sideOffset={sideOffset} align={align}>
+      <MenuPrimitive.Positioner
+        sideOffset={sideOffset}
+        align={align}
+        positionMethod="fixed"
+        className="z-[100]"
+      >
         <MenuPrimitive.Popup
           data-slot="dropdown-menu-content"
           className={cn(
-            "z-50 min-w-[9rem] overflow-hidden rounded-xl border border-border bg-popover p-1.5 text-popover-foreground shadow-md outline-none data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+            "z-[100] min-w-[9rem] overflow-hidden rounded-xl border border-border bg-popover p-1.5 text-popover-foreground shadow-md outline-none data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
             className
           )}
           {...props}
