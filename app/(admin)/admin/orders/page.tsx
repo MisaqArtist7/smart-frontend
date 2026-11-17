@@ -499,8 +499,21 @@ export default function AdminOrdersPage() {
                     const isShipped = order.status === "SHIPPED";
                     const canCancel = order.status !== "DELIVERED" && order.status !== "CANCELLED";
 
+                    const rowTintByStatus: Record<OrderStatus, string> = {
+                      PENDING: "bg-amber-500/[0.06] hover:bg-amber-500/[0.11]",
+                      CONFIRMED: "bg-sky-500/[0.06] hover:bg-sky-500/[0.11]",
+                      SHIPPED: "bg-indigo-500/[0.06] hover:bg-indigo-500/[0.11]",
+                      DELIVERED: "bg-emerald-500/[0.06] hover:bg-emerald-500/[0.11]",
+                      CANCELLED: "bg-destructive/[0.07] hover:bg-destructive/[0.12]",
+                    };
+
                     return (
-                      <TableRow key={order.id} className="border-border/50 hover:bg-muted/30">
+                      <TableRow
+                        key={order.id}
+                        className={`border-border/50 transition-colors ${
+                          rowTintByStatus[order.status] || "hover:bg-muted/30"
+                        }`}
+                      >
                         {/* شماره سفارش */}
                         <TableCell className="font-mono text-xs font-black text-foreground">
                           <div className="flex items-center gap-1.5">
