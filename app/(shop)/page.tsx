@@ -12,7 +12,12 @@ import FaqSection from "@/components/home/faq-section";
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
+    <div
+      className="min-h-screen text-foreground flex flex-col"
+      style={{
+        backgroundColor: "color-mix(in srgb, var(--primary) 3%, var(--background))",
+      }}
+    >
       {/* کامپوننت هدر ۳ طبقه */}
       <Header />
 

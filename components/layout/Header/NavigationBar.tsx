@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -92,6 +93,18 @@ export function NavigationBar({
                 }`}
               />
             </button>
+
+            {/* پس‌زمینه محوشونده کل صفحه هنگام باز بودن منوی دسته‌بندی‌ها */}
+            {isCategoriesOpen &&
+              typeof document !== "undefined" &&
+              createPortal(
+                <div
+                  aria-hidden="true"
+                  onClick={() => setIsCategoriesOpen(false)}
+                  className="fixed inset-0 z-30 bg-black/20 backdrop-blur-xs animate-in fade-in duration-150"
+                />,
+                document.body
+              )}
 
             {/* پنل بازشونده دسته‌بندی‌ها (Mega Dropdown) */}
             {isCategoriesOpen && (
