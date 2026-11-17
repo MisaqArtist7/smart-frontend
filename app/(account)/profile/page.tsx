@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -12,15 +12,15 @@ import {
   Truck,
   AlertCircle,
   ShieldCheck,
-  Phone,
   LogOut,
   Loader2,
   ShoppingBag,
 } from "lucide-react";
 import { useAuth } from "@/components/providers/auth-provider";
-import { useMyOrders, useAddresses, type OrderStatus } from "@/lib/api";
+import { useMyOrders, useAddresses, useProducts, type OrderStatus } from "@/lib/api";
 import { formatPrice, toPersianDigits } from "@/lib/account-data";
 import { formatAddressSummary } from "@/lib/address-utils";
+import { normalizeImageUrl } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -61,6 +61,16 @@ export default function ProfileDashboardPage() {
   const { user, logout } = useAuth();
   const { data: orders = [], isLoading: isOrdersLoading } = useMyOrders();
   const { data: addresses = [], isLoading: isAddressesLoading } = useAddresses();
+  const { data: products = [] } = useProducts();
+
+  const productImageMap = useMemo(() => {
+    const map = new Map<number, string>();
+    products.forEach((p) => {
+      const firstUrl = p.images?.[0]?.url;
+      if (firstUrl) map.set(p.id, firstUrl);
+    });
+    return map;
+  }, [products]);
 
   // محاسبه آمارها از داده‌های واقعی سرور
   const inProgressOrders = orders.filter((o) =>
@@ -97,17 +107,6 @@ export default function ProfileDashboardPage() {
             <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
               سلام، {user?.name || "کاربر گرامی"} عزیز
             </h1>
-
-            <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-              {user?.phone && (
-                <div className="flex items-center gap-1.5">
-                  <Phone className="size-3.5 text-primary" />
-                  <span className="font-mono tracking-wider" dir="ltr">
-                    {toPersianDigits(user.phone)}
-                  </span>
-                </div>
-              )}
-            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
@@ -147,8 +146,8 @@ export default function ProfileDashboardPage() {
               <CardTitle className="text-xs font-bold text-muted-foreground group-hover:text-primary transition-colors">
                 سفارش‌های جاری
               </CardTitle>
-              <div className="size-9 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-                <Clock className="size-4.5" />
+              <div className="size-12 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                <Clock className="size-6" />
               </div>
             </CardHeader>
             <CardContent className="p-5 pt-0">
@@ -176,8 +175,8 @@ export default function ProfileDashboardPage() {
               <CardTitle className="text-xs font-bold text-muted-foreground group-hover:text-emerald-600 transition-colors">
                 سفارش‌های تحویل شده
               </CardTitle>
-              <div className="size-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                <PackageCheck className="size-4.5" />
+              <div className="size-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                <PackageCheck className="size-6" />
               </div>
             </CardHeader>
             <CardContent className="p-5 pt-0">
@@ -205,8 +204,8 @@ export default function ProfileDashboardPage() {
               <CardTitle className="text-xs font-bold text-muted-foreground group-hover:text-primary transition-colors">
                 آدرس‌های ثبت‌شده
               </CardTitle>
-              <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                <MapPin className="size-4.5" />
+              <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <MapPin className="size-6" />
               </div>
             </CardHeader>
             <CardContent className="p-5 pt-0">
@@ -314,30 +313,40 @@ export default function ProfileDashboardPage() {
 
                   {/* پیش‌نمایش اقلام سفارش */}
                   <div className="flex flex-wrap items-center gap-3">
-                    {order.items?.map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex items-center gap-2.5 p-2 rounded-xl bg-card border border-border/70"
-                      >
-                        <div className="size-11 rounded-lg bg-muted/30 border border-border p-1 flex items-center justify-center shrink-0">
-                          <Image
-                            src={item.image || "/images/products/adapter-52240.png"}
-                            alt={item.title}
-                            width={36}
-                            height={36}
-                            className="object-contain size-full"
-                          />
-                        </div>
-                        <div className="text-start">
-                          <div className="text-xs font-bold text-foreground line-clamp-1 max-w-50">
-                            {item.title}
+                    {order.items?.map((item) => {
+                      const rawImg =
+                        item.image ||
+                        item.product?.images?.[0]?.url ||
+                        productImageMap.get(item.productId);
+                      return (
+                        <div
+                          key={item.id}
+                          className="flex items-center gap-2.5 p-2 rounded-xl bg-card border border-border/70"
+                        >
+                          <div className="size-12 rounded-xl bg-muted/30 border border-border p-1 flex items-center justify-center shrink-0">
+                            {rawImg ? (
+                              <Image
+                                src={normalizeImageUrl(rawImg)}
+                                alt={item.title}
+                                width={42}
+                                height={42}
+                                className="object-contain size-full"
+                              />
+                            ) : (
+                              <ShoppingBag className="size-5 text-muted-foreground/40" />
+                            )}
                           </div>
-                          <div className="text-[11px] text-muted-foreground font-mono mt-0.5">
-                            {toPersianDigits(item.quantity)} عدد × {item.price.toLocaleString("fa-IR")} تومان
+                          <div className="text-start">
+                            <div className="text-xs font-bold text-foreground line-clamp-1 max-w-50">
+                              {item.title}
+                            </div>
+                            <div className="text-[11px] text-muted-foreground font-mono mt-0.5">
+                              {toPersianDigits(item.quantity)} عدد × {item.price.toLocaleString("fa-IR")} تومان
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
 
                   {/* ردیف پایین: مبلغ کل و لینک مشاهده جزئیات */}

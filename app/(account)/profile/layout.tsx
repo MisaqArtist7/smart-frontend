@@ -78,7 +78,7 @@ export default function ProfileLayout({
       <Header />
 
       {/* کانتینر اصلی بخش حساب کاربری */}
-      <main className="flex-1 mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+      <main className="flex-1 mx-auto max-w-[1440px] w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
         {/* نوار ناوبری افقی مخصوص موبایل و تبلت‌های کوچک */}
         <div className="lg:hidden w-full overflow-x-auto pb-2 -mx-4 px-4 scrollbar-none flex items-center gap-2 select-none">
           {PROFILE_NAV_ITEMS.map((item) => {
