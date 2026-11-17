@@ -58,6 +58,20 @@ export const DEFAULT_BANNERS: BannerItem[] = [
     alt: "آیفون تصویری و صوتی مدرن",
     title: "آیفون تصویری و صوتی مدرن",
   },
+  {
+    id: "banner-safe-purchase",
+    image: "/images/carousel/خرید مطمئن، امنیت هوشمند.png",
+    link: "/category/security",
+    alt: "خرید مطمئن، امنیت هوشمند",
+    title: "خرید مطمئن، امنیت هوشمند",
+  },
+  {
+    id: "banner-camera-alarm",
+    image: "/images/carousel/دوربین و دزدگیر؛ امنیت هوشمند.png",
+    link: "/category/security",
+    alt: "دوربین و دزدگیر؛ امنیت هوشمند",
+    title: "دوربین و دزدگیر؛ امنیت هوشمند",
+  },
 ];
 
 export interface HeroCarouselProps {
