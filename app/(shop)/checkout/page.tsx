@@ -393,19 +393,6 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* اطلاعیه رسمی نحوه ارسال و پس‌کرایه (بخش مجزا) */}
-              <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-xs flex items-start gap-3 text-sm leading-relaxed">
-                <Truck className="size-5 text-primary shrink-0 mt-0.5" />
-                <div className="space-y-1 text-muted-foreground">
-                  <strong className="text-foreground block text-base">
-                    هزینه ارسال به صورت پس‌کرایه (پرداخت در مقصد):
-                  </strong>
-                  <span>
-                    هزینه بسته‌بندی و ارسال سفارش در این فاکتور <strong>۰ تومان</strong> لحاظ شده است؛ زیرا هزینه کرایه پستی یا باربری به صورت مستقیم توسط خریدار به مامور محترم پست در هنگام تحویل کالا پرداخت می‌شود.
-                  </span>
-                </div>
-              </div>
-
               {/* بخش ۳: بازبینی اقلام سفارش */}
               <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-xs space-y-4">
                 <div className="flex items-center justify-between pb-2 border-b border-border/60">
@@ -554,6 +541,19 @@ export default function CheckoutPage() {
                   <p className="leading-relaxed">
                     با کلیک روی ثبت سفارش، اقلام انتخابی برای شما رزرو شده و کد پیگیری سفارش صادر می‌گردد.
                   </p>
+                </div>
+              </div>
+
+              {/* اطلاعیه رسمی نحوه ارسال و پس‌کرایه */}
+              <div className="rounded-2xl border border-border bg-card p-5 shadow-xs flex items-start gap-3 text-xs sm:text-sm leading-relaxed">
+                <Truck className="size-5 text-primary shrink-0 mt-0.5" />
+                <div className="space-y-1 text-muted-foreground">
+                  <strong className="text-foreground block text-sm sm:text-base">
+                    هزینه ارسال به صورت پس‌کرایه (پرداخت در مقصد):
+                  </strong>
+                  <span>
+                    هزینه بسته‌بندی و ارسال سفارش در این فاکتور <strong>۰ تومان</strong> لحاظ شده است؛ زیرا هزینه کرایه پستی یا باربری به صورت مستقیم توسط خریدار به مامور محترم پست در هنگام تحویل کالا پرداخت می‌شود.
+                  </span>
                 </div>
               </div>
             </div>
