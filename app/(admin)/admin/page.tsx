@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -13,7 +13,7 @@ import {
   Eye,
   Store,
 } from "lucide-react";
-import { useAdminProducts, useAdminMetrics } from "@/lib/api";
+import { useAdminProducts, useAdminMetrics, useAdminBrands } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
   Table,
@@ -30,6 +30,15 @@ import { normalizeImageUrl } from "@/lib/utils";
 export default function AdminDashboardPage() {
   const { data: metrics, isLoading: isMetricsLoading } = useAdminMetrics();
   const { data: products, isLoading: isProductsLoading } = useAdminProducts();
+  const { data: brands = [] } = useAdminBrands();
+
+  const brandNameMap = useMemo(() => {
+    const map = new Map<number, string>();
+    brands.forEach((b) => {
+      if (b.id && b.name) map.set(b.id, b.name);
+    });
+    return map;
+  }, [brands]);
 
   const recentProducts = products?.slice(0, 5) || [];
 
@@ -234,6 +243,10 @@ export default function AdminDashboardPage() {
                           )
                         : 0;
 
+                    const brandName =
+                      product.brand?.name ||
+                      (product.brandId ? brandNameMap.get(product.brandId) : undefined);
+
                     return (
                       <TableRow key={product.id}>
                         {/* تصویر کوچک */}
@@ -268,9 +281,9 @@ export default function AdminDashboardPage() {
 
                         {/* برند */}
                         <TableCell>
-                          {product.brand?.name ? (
+                          {brandName ? (
                             <Badge variant="outline" className="text-[11px] font-medium">
-                              {product.brand.name}
+                              {brandName}
                             </Badge>
                           ) : (
                             <span className="text-xs text-muted-foreground">—</span>
