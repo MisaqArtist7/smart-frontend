@@ -200,8 +200,11 @@ export default function AdminDashboardPage() {
                   <TableHead className="w-16 text-center">تصویر</TableHead>
                   <TableHead>نام کالا و شناسه</TableHead>
                   <TableHead>دسته‌بندی</TableHead>
+                  <TableHead>برند</TableHead>
                   <TableHead>قیمت (تومان)</TableHead>
+                  <TableHead>تخفیف</TableHead>
                   <TableHead>موجودی</TableHead>
+                  <TableHead>تاریخ ثبت</TableHead>
                   <TableHead>وضعیت</TableHead>
                   <TableHead className="w-20 text-center">عملیات</TableHead>
                 </TableRow>
@@ -210,99 +213,141 @@ export default function AdminDashboardPage() {
               <TableBody>
                 {isProductsLoading ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-10 text-muted-foreground">
+                    <TableCell colSpan={10} className="text-center py-10 text-muted-foreground">
                       در حال دریافت لیست محصولات...
                     </TableCell>
                   </TableRow>
                 ) : recentProducts.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-10 text-muted-foreground">
+                    <TableCell colSpan={10} className="text-center py-10 text-muted-foreground">
                       هنوز هیچ محصولی ثبت نشده است.
                     </TableCell>
                   </TableRow>
                 ) : (
-                  recentProducts.map((product) => (
-                    <TableRow key={product.id}>
-                      {/* تصویر کوچک */}
-                      <TableCell className="text-center py-2.5">
-                        <div className="size-11 rounded-xl border border-border bg-muted/30 p-1 mx-auto flex items-center justify-center overflow-hidden">
-                          <Image
-                            src={normalizeImageUrl(product.images?.[0]?.url, "/images/products/adapter-52240.png")}
-                            alt={product.title}
-                            width={40}
-                            height={40}
-                            className="object-contain size-full"
-                          />
-                        </div>
-                      </TableCell>
+                  recentProducts.map((product) => {
+                    const discountPercent =
+                      product.discountPrice != null &&
+                      product.price > 0 &&
+                      product.discountPrice < product.price
+                        ? Math.round(
+                            ((product.price - product.discountPrice) / product.price) * 100
+                          )
+                        : 0;
 
-                      {/* عنوان و شناسه کالا */}
-                      <TableCell>
-                        <div className="font-bold text-xs sm:text-sm text-foreground line-clamp-1 max-w-xs">
-                          {product.title}
-                        </div>
-                        <div className="text-[11px] text-muted-foreground font-mono mt-0.5">
-                          {product.sku}
-                        </div>
-                      </TableCell>
-
-                      {/* دسته‌بندی */}
-                      <TableCell>
-                        <span className="text-xs text-muted-foreground font-medium">
-                          {product.category?.name || product.categoryName || "عمومی"}
-                        </span>
-                      </TableCell>
-
-                      {/* قیمت */}
-                      <TableCell>
-                        <div className="font-extrabold text-xs sm:text-sm text-foreground">
-                          {(product.discountPrice ?? product.price).toLocaleString("fa-IR")}
-                        </div>
-                        {product.discountPrice != null && (
-                          <div className="text-[11px] text-muted-foreground line-through">
-                            {product.price.toLocaleString("fa-IR")}
+                    return (
+                      <TableRow key={product.id}>
+                        {/* تصویر کوچک */}
+                        <TableCell className="text-center py-2.5">
+                          <div className="size-11 rounded-xl border border-border bg-muted/30 p-1 mx-auto flex items-center justify-center overflow-hidden">
+                            <Image
+                              src={normalizeImageUrl(product.images?.[0]?.url)}
+                              alt={product.title}
+                              width={40}
+                              height={40}
+                              className="object-contain size-full"
+                            />
                           </div>
-                        )}
-                      </TableCell>
+                        </TableCell>
 
-                      {/* موجودی */}
-                      <TableCell>
-                        <span
-                          className={`text-xs font-bold ${
-                            product.stock <= 5
-                              ? "text-amber-600 dark:text-amber-400"
-                              : "text-foreground"
-                          }`}
-                        >
-                          {product.stock.toLocaleString("fa-IR")} عدد
-                        </span>
-                      </TableCell>
+                        {/* عنوان و شناسه کالا */}
+                        <TableCell>
+                          <div className="font-bold text-xs sm:text-sm text-foreground line-clamp-1 max-w-xs">
+                            {product.title}
+                          </div>
+                          <div className="text-[11px] text-muted-foreground font-mono mt-0.5">
+                            {product.sku || `ID-${product.id}`}
+                          </div>
+                        </TableCell>
 
-                      {/* وضعیت فعال بودن */}
-                      <TableCell>
-                        {product.isActive ? (
-                          <Badge variant="default" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[10px]">
-                            فعال
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="text-muted-foreground text-[10px]">
-                            غیرفعال
-                          </Badge>
-                        )}
-                      </TableCell>
+                        {/* دسته‌بندی */}
+                        <TableCell>
+                          <span className="text-xs text-muted-foreground font-medium">
+                            {product.category?.name || product.categoryName || "عمومی"}
+                          </span>
+                        </TableCell>
 
-                      {/* دکمه عملیات سریع */}
-                      <TableCell className="text-center">
-                        <Link
-                          href="/admin/products"
-                          className="size-8 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground inline-flex items-center justify-center transition-colors"
-                        >
-                          <Eye className="size-4" />
-                          <span className="sr-only">مشاهده</span>
-                        </Link>
-                      </TableCell>
-                    </TableRow>
-                  ))
+                        {/* برند */}
+                        <TableCell>
+                          {product.brand?.name ? (
+                            <Badge variant="outline" className="text-[11px] font-medium">
+                              {product.brand.name}
+                            </Badge>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
+
+                        {/* قیمت */}
+                        <TableCell>
+                          <div className="font-extrabold text-xs sm:text-sm text-foreground">
+                            {(product.discountPrice ?? product.price).toLocaleString("fa-IR")}
+                          </div>
+                          {product.discountPrice != null && (
+                            <div className="text-[11px] text-muted-foreground line-through">
+                              {product.price.toLocaleString("fa-IR")}
+                            </div>
+                          )}
+                        </TableCell>
+
+                        {/* تخفیف */}
+                        <TableCell>
+                          {discountPercent > 0 ? (
+                            <Badge className="bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 text-[11px] font-bold">
+                              {discountPercent.toLocaleString("fa-IR")}٪
+                            </Badge>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
+
+                        {/* موجودی */}
+                        <TableCell>
+                          <span
+                            className={`text-xs font-bold ${
+                              product.stock <= 5
+                                ? "text-amber-600 dark:text-amber-400"
+                                : "text-foreground"
+                            }`}
+                          >
+                            {product.stock.toLocaleString("fa-IR")} عدد
+                          </span>
+                        </TableCell>
+
+                        {/* تاریخ ثبت */}
+                        <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                          {product.createdAt
+                            ? new Intl.DateTimeFormat("fa-IR", {
+                                dateStyle: "medium",
+                              }).format(new Date(product.createdAt))
+                            : "—"}
+                        </TableCell>
+
+                        {/* وضعیت فعال بودن */}
+                        <TableCell>
+                          {product.isActive ? (
+                            <Badge variant="default" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[10px]">
+                              فعال
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-muted-foreground text-[10px]">
+                              غیرفعال
+                            </Badge>
+                          )}
+                        </TableCell>
+
+                        {/* دکمه عملیات سریع */}
+                        <TableCell className="text-center">
+                          <Link
+                            href="/admin/products"
+                            className="size-8 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground inline-flex items-center justify-center transition-colors"
+                          >
+                            <Eye className="size-4" />
+                            <span className="sr-only">مشاهده</span>
+                          </Link>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
                 )}
               </TableBody>
             </Table>
