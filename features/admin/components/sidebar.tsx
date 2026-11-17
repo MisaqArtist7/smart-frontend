@@ -110,53 +110,67 @@ export function AdminSidebar({
         className
       )}
     >
-      {/* سربرگ سایدبار ادمین: لوگو و نام فروشگاه (کلیک به صفحه اصلی) */}
-      <div className="h-16 flex items-center justify-between px-4 border-b border-border">
+      {/* سربرگ سایدبار ادمین: لوگو در سطر بالا، نام فروشگاه زیر لوگو + دکمه جمع‌کردن سایدبار */}
+      <div
+        className={cn(
+          "relative flex flex-col items-center justify-center border-b border-border transition-all",
+          isCollapsed ? "py-4 px-2 gap-2" : "py-5 px-4"
+        )}
+      >
+        {onToggleCollapse && (
+          <button
+            type="button"
+            onClick={onToggleCollapse}
+            title={isCollapsed ? "باز کردن سایدبار" : "جمع کردن سایدبار"}
+            aria-label={isCollapsed ? "باز کردن سایدبار" : "بستن سایدبار"}
+            className={cn(
+              "hidden lg:flex items-center justify-center size-8 rounded-lg border border-border bg-background text-foreground shadow-xs hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all cursor-pointer",
+              isCollapsed ? "mb-1" : "absolute top-3 end-3"
+            )}
+          >
+            <ChevronRight
+              className={cn("size-4.5 transition-transform", isCollapsed && "rotate-180")}
+            />
+          </button>
+        )}
+
         <Link
           href="/"
           onClick={onNavigate}
           title="مشاهده و بازگشت به صفحه اصلی فروشگاه"
-          className="flex items-center gap-3 overflow-hidden focus:outline-none group"
+          className="flex flex-col items-center text-center gap-2 focus:outline-none group"
         >
-          <div className="relative size-11 sm:size-12 flex items-center justify-center shrink-0">
+          <div
+            className={cn(
+              "relative flex items-center justify-center shrink-0 transition-all",
+              isCollapsed ? "size-12" : "size-20 sm:size-24"
+            )}
+          >
             <Image
               src="/images/brand/logo.png"
               alt="لوگوی اسمارت الکتریک"
-              width={44}
-              height={44}
+              width={96}
+              height={96}
               className="size-full object-contain transition-transform group-hover:scale-105"
             />
           </div>
           {!isCollapsed && (
-            <div className="flex flex-col">
-              <span className="font-black text-sm text-foreground tracking-tight line-clamp-1 group-hover:text-primary transition-colors">
+            <div className="flex flex-col items-center gap-1">
+              <span className="font-black text-base sm:text-lg text-foreground tracking-tight group-hover:text-primary transition-colors">
                 اسمارت الکتریک
               </span>
-              <span className="text-[11px] text-muted-foreground flex items-center gap-1 font-medium">
-                <ShieldCheck className="size-3 text-primary" />
+              <span className="text-xs text-muted-foreground flex items-center gap-1 font-medium">
+                <ShieldCheck className="size-3.5 text-primary" />
                 پنل مدیریت فروشگاه
               </span>
             </div>
           )}
         </Link>
-
-        {onToggleCollapse && (
-          <button
-            type="button"
-            onClick={onToggleCollapse}
-            aria-label={isCollapsed ? "باز کردن سایدبار" : "بستن سایدبار"}
-            className="hidden lg:flex size-7 items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ChevronRight
-              className={cn("size-4 transition-transform", isCollapsed && "rotate-180")}
-            />
-          </button>
-        )}
       </div>
 
       {/* لیست آیتم‌های ناوبری اصلی */}
       <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1.5">
-        <div className="px-3 pb-2 text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+        <div className="px-3 pb-2 text-xs sm:text-sm font-bold text-muted-foreground tracking-wider">
           {!isCollapsed ? "مدیریت و دسترسی‌ها" : "•••"}
         </div>
 

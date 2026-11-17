@@ -23,7 +23,7 @@ export default function AdminSettingsPage() {
   };
 
   return (
-    <div className="space-y-6 select-none max-w-4xl">
+    <div className="space-y-6 select-none w-full">
       <div>
         <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
           تنظیمات فروشگاه
