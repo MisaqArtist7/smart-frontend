@@ -234,7 +234,7 @@ export function NavigationBar({
                 <span className="truncate">{authButton.text}</span>
                 <ChevronDown className="size-3.5 shrink-0 opacity-80" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-52 rounded-xl p-1.5" dir="rtl">
+              <DropdownMenuContent align="end" sideOffset={10} className="w-52 rounded-xl p-1.5" dir="rtl">
                 <div className="px-3 py-2 text-xs border-b border-border/60 mb-1">
                   <span className="font-bold text-foreground block truncate">
                     {authButton.userName || authButton.text}
