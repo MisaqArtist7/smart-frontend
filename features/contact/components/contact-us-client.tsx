@@ -215,10 +215,10 @@ export function ContactUsClient() {
                 <Building2 className="size-4.5" />
               </div>
               <div className="space-y-1.5 flex-1 text-right">
-                <span className="block text-xs font-bold text-muted-foreground">
+                <span className="block text-xs sm:text-sm font-bold text-muted-foreground">
                   آدرس شعب و فروشگاه‌های حضوری
                 </span>
-                <div className="space-y-1 text-xs font-semibold text-foreground leading-relaxed">
+                <div className="space-y-1.5 text-sm font-semibold text-foreground leading-relaxed">
                   <p>
                     <span className="text-primary font-bold">شعبه ۱: </span>
                     {shopAddress}
@@ -239,27 +239,27 @@ export function ContactUsClient() {
                 <PhoneCall className="size-4.5" />
               </div>
               <div className="space-y-2 flex-1">
-                <span className="block text-xs font-bold text-muted-foreground text-right">
+                <span className="block text-xs sm:text-sm font-bold text-muted-foreground text-right">
                   تماس تلفنی و پشتیبانی
                 </span>
                 <div className="flex flex-col gap-1.5">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs text-muted-foreground">مالک و مدیریت:</span>
+                    <span className="text-xs sm:text-sm text-muted-foreground">مالک و مدیریت:</span>
                     <a
                       href={`tel:${adminMobile.replace(/[^0-9]/g, "")}`}
                       dir="ltr"
-                      className="text-sm font-black font-mono tracking-wide text-foreground hover:text-primary transition-colors text-start"
+                      className="text-sm sm:text-base font-black font-mono tracking-wide text-foreground hover:text-primary transition-colors text-start"
                     >
                       {adminMobile}
                     </a>
                   </div>
                   {technicalSupportPhone && (
                     <div className="flex items-center justify-between gap-2 border-t border-border/40 pt-1.5">
-                      <span className="text-xs text-muted-foreground">پشتیبانی فنی:</span>
+                      <span className="text-xs sm:text-sm text-muted-foreground">پشتیبانی فنی:</span>
                       <a
                         href={`tel:${technicalSupportPhone.replace(/[^0-9]/g, "")}`}
                         dir="ltr"
-                        className="text-xs sm:text-sm font-bold font-mono tracking-wide text-muted-foreground hover:text-primary transition-colors text-start"
+                        className="text-sm font-bold font-mono tracking-wide text-muted-foreground hover:text-primary transition-colors text-start"
                       >
                         {technicalSupportPhone}
                       </a>
@@ -277,17 +277,17 @@ export function ContactUsClient() {
                 <Mail className="size-4.5" />
               </div>
               <div className="space-y-1 flex-1 text-right">
-                <span className="block text-xs font-bold text-muted-foreground">
+                <span className="block text-xs sm:text-sm font-bold text-muted-foreground">
                   پست الکترونیک رسمی
                 </span>
                 <a
                   href={`mailto:${shopEmail}`}
                   dir="ltr"
-                  className="text-xs sm:text-sm font-bold text-foreground hover:text-primary transition-colors block text-start"
+                  className="text-sm sm:text-base font-bold text-foreground hover:text-primary transition-colors block text-start"
                 >
                   {shopEmail}
                 </a>
-                <span className="block text-[11px] text-muted-foreground">
+                <span className="block text-xs text-muted-foreground">
                   ارسال استعلام بها و مکاتبات سازمانی
                 </span>
               </div>
@@ -301,13 +301,13 @@ export function ContactUsClient() {
                 <Clock className="size-4.5" />
               </div>
               <div className="space-y-1 flex-1 text-right">
-                <span className="block text-xs font-bold text-muted-foreground">
+                <span className="block text-xs sm:text-sm font-bold text-muted-foreground">
                   ساعات کاری و پاسخگویی
                 </span>
-                <p className="text-xs sm:text-sm font-semibold text-foreground leading-relaxed">
+                <p className="text-sm sm:text-base font-semibold text-foreground leading-relaxed">
                   {shopWorkingHours}
                 </p>
-                <span className="block text-[11px] text-muted-foreground">
+                <span className="block text-xs text-muted-foreground">
                   ثبت سفارش آنلاین در تمام روزهای هفته فعال است
                 </span>
               </div>
@@ -353,11 +353,11 @@ export function ContactUsClient() {
                   <div className="flex size-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
                     <MessageSquare className="size-4.5" />
                   </div>
-                  <h2 className="text-lg font-black tracking-tight text-foreground">
+                  <h2 className="text-xl font-black tracking-tight text-foreground">
                     ارسال پیام مستقیم
                   </h2>
                 </div>
-                <p className="text-xs text-muted-foreground leading-relaxed">
+                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                   فرم زیر را تکمیل کنید تا کارشناسان ما در کوتاه‌ترین زمان با شما تماس بگیرند.
                 </p>
               </div>
@@ -565,11 +565,11 @@ export function ContactUsClient() {
           <div className="flex items-center gap-2.5">
             <Map className="size-4.5 text-primary shrink-0" />
             <div>
-              <h3 className="text-sm font-bold text-foreground">
+              <h3 className="text-base font-bold text-foreground">
                 موقعیت مکانی فروشگاه روی نقشه
               </h3>
-              <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
-                <MapPin className="size-3 text-primary shrink-0" />
+              <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                <MapPin className="size-3.5 text-primary shrink-0" />
                 <span>شعبه ۲: {branch2Address}</span>
               </p>
             </div>
