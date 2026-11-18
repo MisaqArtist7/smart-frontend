@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import dynamic from "next/dynamic";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -26,7 +26,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Select } from "@/components/ui/select";
-import { useAuth } from "@/components/providers/auth-provider";
 
 const ContactMap = dynamic(
   () => import("./contact-map").then((mod) => mod.ContactMap),
@@ -88,7 +87,6 @@ const contactFormSchema = z.object({
 type ContactFormData = z.infer<typeof contactFormSchema>;
 
 export function ContactUsClient() {
-  const { user } = useAuth();
   const [isSuccess, setIsSuccess] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -98,7 +96,6 @@ export function ContactUsClient() {
     register,
     handleSubmit,
     setValue,
-    getValues,
     control,
     reset,
     formState: { errors, isSubmitting },
@@ -113,20 +110,6 @@ export function ContactUsClient() {
     },
     mode: "onTouched",
   });
-
-  // مقداردهی اولیه فیلدها در صورت لاگین بودن کاربر
-  useEffect(() => {
-    if (user) {
-      const currentName = getValues("fullName");
-      const currentPhone = getValues("phone");
-      if (!currentName && user.name) {
-        setValue("fullName", user.name);
-      }
-      if (!currentPhone && user.phone) {
-        setValue("phone", user.phone);
-      }
-    }
-  }, [user, setValue, getValues]);
 
   // متغیرهای اطلاعات تماس و آدرس حضوری فروشگاه با مقادیر پیش‌فرض اسمارت الکتریک
   const adminMobile =
@@ -210,8 +193,8 @@ export function ContactUsClient() {
     setIsSuccess(false);
     setFormError(null);
     reset({
-      fullName: user?.name || "",
-      phone: user?.phone || "",
+      fullName: "",
+      phone: "",
       subject: undefined,
       message: "",
       website: "",
@@ -393,7 +376,7 @@ export function ContactUsClient() {
                 </div>
               )}
 
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-3" noValidate>
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-3" noValidate autoComplete="off">
                 {/* فیلد هانی‌پات (مخفی برای کاربران عادی و آشکار برای ربات‌ها) */}
                 <input
                   type="text"
@@ -418,6 +401,7 @@ export function ContactUsClient() {
                       <input
                         id="fullName"
                         type="text"
+                        autoComplete="off"
                         placeholder="مثال: علی رضایی"
                         {...register("fullName")}
                         className={`w-full rounded-xl border bg-muted/30 pr-11 pl-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-all focus:bg-background focus:ring-2 ${
@@ -448,6 +432,7 @@ export function ContactUsClient() {
                         id="phone"
                         type="tel"
                         inputMode="tel"
+                        autoComplete="off"
                         dir="ltr"
                         placeholder="09123456789"
                         {...register("phone", {
