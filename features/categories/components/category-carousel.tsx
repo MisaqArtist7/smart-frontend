@@ -98,7 +98,7 @@ export function CategoryCarousel({
   const displayCategories = useMemo<CategoryItem[]>(() => {
     if (serverCategories && serverCategories.length > 0) {
       return serverCategories
-        .filter((c) => c.isActive !== false)
+        .filter((c) => c.isActive !== false && c.parentId == null && !c.parent)
         .map((cat) => ({
           id: cat.id,
           title: cat.name,
