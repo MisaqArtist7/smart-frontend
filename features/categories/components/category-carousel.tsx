@@ -152,7 +152,7 @@ export function CategoryCarousel({
             {displayCategories.map((cat) => (
               <CarouselItem
                 key={cat.id}
-                className="ps-3 sm:ps-4 basis-[44%] sm:basis-[30%] md:basis-[22%] lg:basis-[16.6%] xl:basis-[15%]"
+                className="ps-3 sm:ps-4 basis-[44%] sm:basis-[30%] md:basis-[22%] lg:basis-[16.6%] xl:basis-[15%] 2xl:basis-[14.2857%]"
               >
                 <Link
                   href={cat.href}

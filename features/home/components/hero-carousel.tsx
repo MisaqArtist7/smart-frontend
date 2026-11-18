@@ -31,46 +31,32 @@ export interface BannerItem {
  */
 export const DEFAULT_BANNERS: BannerItem[] = [
   {
-    id: "banner-security",
-    image: "/images/carousel/امنیت هوشمند خانه و محل کار.png",
+    id: "banner-1",
+    image: "/images/carousel/44.webp",
     link: "/category/security",
-    alt: "امنیت هوشمند خانه و محل کار",
-    title: "امنیت هوشمند خانه و محل کار",
+    alt: "بنر تبلیغاتی ۱ اسمارت الکتریک",
+    title: "بنر تبلیغاتی ۱ اسمارت الکتریک",
   },
   {
-    id: "banner-lighting",
-    image: "/images/carousel/لوستر و لامپ؛ زیبایی و روشنایی.png",
+    id: "banner-2",
+    image: "/images/carousel/55.webp",
     link: "/category/lighting",
-    alt: "لوستر و لامپ؛ زیبایی و روشنایی",
-    title: "لوستر و لامپ؛ زیبایی و روشنایی",
+    alt: "بنر تبلیغاتی ۲ اسمارت الکتریک",
+    title: "بنر تبلیغاتی ۲ اسمارت الکتریک",
   },
   {
-    id: "banner-solar",
-    image: "/images/carousel/پنل خورشیدی؛ انرژی پاک، آینده روشن.png",
+    id: "banner-3",
+    image: "/images/carousel/66.webp",
     link: "/offers",
-    alt: "پنل خورشیدی؛ انرژی پاک، آینده روشن",
-    title: "پنل خورشیدی؛ انرژی پاک، آینده روشن",
+    alt: "بنر تبلیغاتی ۳ اسمارت الکتریک",
+    title: "بنر تبلیغاتی ۳ اسمارت الکتریک",
   },
   {
-    id: "banner-intercom-modern",
-    image: "/images/carousel/ایفون تصویری و صوتی مدرن.png",
-    link: "/category/smart-home",
-    alt: "آیفون تصویری و صوتی مدرن",
-    title: "آیفون تصویری و صوتی مدرن",
-  },
-  {
-    id: "banner-safe-purchase",
-    image: "/images/carousel/خرید مطمئن، امنیت هوشمند.png",
-    link: "/category/security",
-    alt: "خرید مطمئن، امنیت هوشمند",
-    title: "خرید مطمئن، امنیت هوشمند",
-  },
-  {
-    id: "banner-camera-alarm",
-    image: "/images/carousel/دوربین و دزدگیر؛ امنیت هوشمند.png",
-    link: "/category/security",
-    alt: "دوربین و دزدگیر؛ امنیت هوشمند",
-    title: "دوربین و دزدگیر؛ امنیت هوشمند",
+    id: "banner-4",
+    image: "/images/carousel/77.webp",
+    link: "/products",
+    alt: "بنر تبلیغاتی ۴ اسمارت الکتریک",
+    title: "بنر تبلیغاتی ۴ اسمارت الکتریک",
   },
 ];
 
@@ -146,7 +132,7 @@ export function HeroCarousel({
               <Link
                 href={banner.link}
                 draggable={false}
-                className="group relative block w-full aspect-[2154/730] rounded-2xl border border-border/80 shadow-xs overflow-hidden outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 select-none"
+                className="group relative block w-full aspect-[2154/730] max-h-[200px] sm:max-h-[280px] md:max-h-[320px] lg:max-h-[350px] xl:max-h-[380px] rounded-2xl border border-border/80 shadow-xs overflow-hidden outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 select-none"
               >
                 {/* تصویر اصلی بنر هم‌اندازه دقیق با عرض اسلایدر */}
                 <Image
