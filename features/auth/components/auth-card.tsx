@@ -23,6 +23,8 @@ import { Input } from "@/components/ui/input";
 import { OtpInput } from "./otp-input";
 import { useAuth } from "@/components/providers/auth-provider";
 import {
+  loginUser,
+  registerUser,
   requestOtp,
   verifyOtp,
   isValidIranPhone,
@@ -34,7 +36,7 @@ import { toPersianDigits } from "@/lib/account-data";
 import { cn } from "@/lib/utils";
 import type { User } from "@/lib/types";
 
-export type AuthStep = "phone" | "otp";
+export type AuthStep = "phone" | "register" | "otp";
 
 interface AuthCardProps {
   initialTab?: string;
@@ -43,6 +45,7 @@ interface AuthCardProps {
 }
 
 export function AuthCard({
+  initialTab,
   initialStep = "phone",
   redirectUrl = "/",
 }: AuthCardProps) {
@@ -53,15 +56,22 @@ export function AuthCard({
   const queryPhone = searchParams.get("phone") || "";
   const queryRedirect = searchParams.get("redirect") || redirectUrl;
 
-  const [step, setStep] = useState<AuthStep>(
-    queryStep === "otp" || initialStep === "otp" ? "otp" : "phone"
-  );
+  const [step, setStep] = useState<AuthStep>(() => {
+    if (queryStep === "otp" || initialStep === "otp") return "otp";
+    if (
+      queryStep === "register" ||
+      initialStep === "register" ||
+      initialTab === "register"
+    ) {
+      return "register";
+    }
+    return "phone";
+  });
 
   // مقادیر فرم
   const [phone, setPhone] = useState<string>(queryPhone);
   const [name, setName] = useState<string>("");
   const [otpCode, setOtpCode] = useState<string>("");
-  const [isNewUser, setIsNewUser] = useState<boolean>(false);
 
   // استیت‌های لودینگ و خطا
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -106,8 +116,8 @@ export function AuthCard({
     setIsSubmitting(true);
 
     try {
-      const res = await requestOtp(cleanPhone);
-      setIsNewUser(Boolean(res.isNewUser));
+      const res = await loginUser(cleanPhone);
+      setPhone(cleanPhone);
       setStep("otp");
       setTimer(60);
       setOtpCode("");
@@ -115,6 +125,81 @@ export function AuthCard({
       toast.success(res.message || "کد تأیید ارسال گردید.");
     } catch (err) {
       if (err instanceof ApiError) {
+        if (err.status === 404) {
+          setPhone(cleanPhone);
+          setErrorMessage(null);
+          setStep("register");
+          toast.info("حساب کاربری با این شماره یافت نشد. لطفاً نام خود را برای ثبت‌نام وارد کنید.");
+          return;
+        }
+        if (err.status === 429) {
+          setErrorMessage("کمی صبر کنید. تعداد درخواست‌های ارسال پیامک بیش از حد مجاز است.");
+          setTimer(60);
+          toast.warning("کمی صبر کنید. لطفاً منتظر بمانید.");
+          return;
+        }
+        if (err.status === 503) {
+          const msg = err.message || "سرویس ارسال پیامک موقتاً در دسترس نیست. لطفاً دقایقی دیگر تلاش کنید.";
+          setErrorMessage(msg);
+          toast.error(msg);
+          return;
+        }
+        setErrorMessage(err.message);
+        toast.error(err.message);
+      } else {
+        const msg = "خطا در برقراری ارتباط با سرور. لطفاً مجدداً تلاش فرمایید.";
+        setErrorMessage(msg);
+        toast.error(msg);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // ----------------------------------------------------
+  // مرحله ثبت‌نام: ارسال نام و شماره موبایل و دریافت OTP
+  // ----------------------------------------------------
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage(null);
+
+    const cleanName = name.trim();
+    const cleanPhone = normalizePhoneNumber(phone);
+
+    if (!cleanName || cleanName.length < 2 || cleanName.length > 100) {
+      setErrorMessage("نام و نام خانوادگی الزامی است (بین ۲ تا ۱۰۰ کاراکتر).");
+      return;
+    }
+
+    if (!cleanPhone) {
+      setErrorMessage("لطفاً شماره موبایل خود را وارد نمایید.");
+      return;
+    }
+
+    if (!isValidIranPhone(cleanPhone)) {
+      setErrorMessage("شماره موبایل نامعتبر است. فرمت صحیح: ۰۹۱۲۳۴۵۶۷۸۹");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const res = await registerUser(cleanName, cleanPhone);
+      setPhone(cleanPhone);
+      setStep("otp");
+      setTimer(60);
+      setOtpCode("");
+      setOtpError(false);
+      toast.success(res.message || "ثبت‌نام انجام شد و کد تأیید ارسال گردید.");
+    } catch (err) {
+      if (err instanceof ApiError) {
+        if (err.status === 409) {
+          setPhone(cleanPhone);
+          setErrorMessage(err.message || "این شماره قبلاً ثبت‌نام کرده است. لطفاً وارد شوید.");
+          setStep("phone");
+          toast.info("شما قبلاً ثبت‌نام کرده‌اید. لطفاً وارد شوید.");
+          return;
+        }
         if (err.status === 429) {
           setErrorMessage("کمی صبر کنید. تعداد درخواست‌های ارسال پیامک بیش از حد مجاز است.");
           setTimer(60);
@@ -188,27 +273,13 @@ export function AuthCard({
         return;
       }
 
-      // در صورت کاربر جدید، فیلد نام الزامی است (۲ تا ۱۰۰ کاراکتر)
-      const cleanName = name.trim();
-      if (isNewUser) {
-        if (!cleanName || cleanName.length < 2 || cleanName.length > 100) {
-          setErrorMessage("نام و نام خانوادگی الزامی است (بین ۲ تا ۱۰۰ کاراکتر).");
-          return;
-        }
-      }
-
       isVerifyingRef.current = true;
       setIsSubmitting(true);
       setErrorMessage(null);
       setOtpError(false);
 
       try {
-        // فیلد name تنها و تنها در صورتی که isNewUser باشد ارسال می‌شود
-        const res = await verifyOtp(
-          phone,
-          code,
-          isNewUser ? cleanName : undefined
-        );
+        const res = await verifyOtp(phone, code);
 
         // واکشی مشخصات کامل و موثق کاربر از GET /auth/me
         let currentUser: User = res.user;
@@ -280,7 +351,7 @@ export function AuthCard({
         setIsSubmitting(false);
       }
     },
-    [isNewUser, loginSuccess, name, otpCode, phone, queryRedirect, refreshUser]
+    [loginSuccess, otpCode, phone, queryRedirect, refreshUser]
   );
 
   // ویرایش شماره و بازگشت به مرحله اول
@@ -388,9 +459,125 @@ export function AuthCard({
                   "دریافت کد تأیید"
                 )}
               </Button>
+              <div className="mt-4 text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setErrorMessage(null);
+                    setStep("register");
+                  }}
+                  className="text-xs font-medium text-primary hover:text-primary/80 transition-colors cursor-pointer"
+                >
+                  حساب کاربری ندارید؟ ثبت‌نام کنید
+                </button>
+              </div>
             </form>
 
             {/* پاورقی کارت */}
+            <div className="mt-6 pt-5 border-t border-border/60 text-center text-[11px] text-muted-foreground flex items-center justify-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
+              <span>احراز هویت امن و محافظت‌شده بر بستر پیامک</span>
+            </div>
+          </div>
+        )}
+
+        {/* ------------------------------------------------------------------ */}
+        {/* مرحله ثبت‌نام: دریافت نام و شماره موبایل کاربر جدید */}
+        {/* ------------------------------------------------------------------ */}
+        {step === "register" && (
+          <div>
+            <div className="text-center mb-6">
+              <h1 className="text-lg sm:text-xl font-bold text-foreground">
+                ثبت‌نام حساب کاربری
+              </h1>
+              <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
+                لطفاً نام و شماره موبایل خود را وارد نمایید تا کد تأیید پیامکی برای شما ارسال شود.
+              </p>
+            </div>
+
+            {errorMessage && (
+              <div className="mb-5 p-3.5 rounded-2xl bg-destructive/10 border border-destructive/20 text-xs text-destructive flex items-center gap-2 animate-in fade-in">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{errorMessage}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleRegisterSubmit} className="space-y-4">
+              <div className="space-y-1.5 text-right">
+                <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                  <UserIcon className="w-3.5 h-3.5 text-primary" />
+                  <span>نام و نام خانوادگی *</span>
+                </label>
+                <Input
+                  required
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="نام و نام خانوادگی (مثال: علی رضایی)"
+                  maxLength={100}
+                  className="h-11 rounded-xl text-xs sm:text-sm bg-background"
+                  disabled={isSubmitting}
+                  autoFocus
+                />
+              </div>
+
+              <div className="space-y-1.5 text-right">
+                <label className="text-xs font-semibold text-foreground flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <Phone className="w-3.5 h-3.5 text-primary" />
+                    شماره موبایل *
+                  </span>
+                  <span className="text-[11px] text-muted-foreground font-normal">
+                    فرمت: ۰۹۱۲۳۴۵۶۷۸۹
+                  </span>
+                </label>
+                <div className="relative">
+                  <Input
+                    required
+                    type="tel"
+                    dir="ltr"
+                    value={phone}
+                    onChange={(e) => setPhone(toEnglishDigits(e.target.value))}
+                    placeholder="09123456789"
+                    maxLength={11}
+                    className="h-11 rounded-xl text-sm font-mono text-center tracking-wider bg-background pl-10"
+                    disabled={isSubmitting}
+                  />
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">
+                    +۹۸
+                  </div>
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full h-10 px-5 rounded-md text-sm font-bold leading-none shadow-md hover:shadow-lg transition-all mt-2"
+              >
+                {isSubmitting ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    در حال ثبت‌نام و ارسال کد...
+                  </span>
+                ) : (
+                  "ثبت‌نام و دریافت کد تأیید"
+                )}
+              </Button>
+
+              <div className="mt-4 text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setErrorMessage(null);
+                    setStep("phone");
+                  }}
+                  className="text-xs font-medium text-primary hover:text-primary/80 transition-colors cursor-pointer"
+                >
+                  قبلاً ثبت‌نام کرده‌اید؟ ورود به حساب
+                </button>
+              </div>
+            </form>
+
             <div className="mt-6 pt-5 border-t border-border/60 text-center text-[11px] text-muted-foreground flex items-center justify-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
               <span>احراز هویت امن و محافظت‌شده بر بستر پیامک</span>
@@ -430,29 +617,6 @@ export function AuthCard({
                 </button>
               </div>
             </div>
-
-            {/* در صورت کاربر جدید: نمایش پیام و فیلد الزامی نام */}
-            {isNewUser && (
-              <div className="p-3.5 rounded-2xl bg-primary/10 border border-primary/20 space-y-2.5 animate-in fade-in">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-primary">
-                  <UserIcon className="w-4 h-4" />
-                  <span>تکمیل حساب کاربری جدید</span>
-                </div>
-                <p className="text-[11px] text-muted-foreground">
-                  شما کاربر جدید هستید. لطفاً نام و نام خانوادگی خود را وارد نمایید.
-                </p>
-                <Input
-                  required
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="نام و نام خانوادگی (مثال: علی رضایی)"
-                  maxLength={100}
-                  className="h-10 rounded-xl text-xs sm:text-sm bg-background"
-                  disabled={isSubmitting}
-                />
-              </div>
-            )}
 
             {/* آلرت پیام خطا */}
             {errorMessage && (
@@ -508,7 +672,7 @@ export function AuthCard({
             <Button
               type="button"
               onClick={() => handleVerifyOtp()}
-              disabled={isSubmitting || otpCode.length !== 6 || (isNewUser && name.trim().length < 2)}
+              disabled={isSubmitting || otpCode.length !== 6}
               className="w-full h-10 px-5 rounded-md text-sm font-bold leading-none shadow-md hover:shadow-lg transition-all"
             >
               {isSubmitting ? (

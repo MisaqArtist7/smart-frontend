@@ -121,13 +121,29 @@ export async function logoutUser(): Promise<void> {
   }
 }
 
-// Backward compatibility helper wrappers
-export const registerUser = async (name: string, phone: string) => {
-  return requestOtp(phone);
+// Backward compatibility & explicit auth flow wrappers
+export const registerUser = async (
+  name: string,
+  phone: string
+): Promise<RequestOtpResponse> => {
+  const cleanPhone = normalizePhoneNumber(phone);
+  return await apiFetch<RequestOtpResponse>("/auth/register", {
+    method: "POST",
+    body: {
+      name: name.trim(),
+      phone: cleanPhone,
+    },
+  });
 };
 
-export const loginUser = async (phone: string) => {
-  return requestOtp(phone);
+export const loginUser = async (
+  phone: string
+): Promise<RequestOtpResponse> => {
+  const cleanPhone = normalizePhoneNumber(phone);
+  return await apiFetch<RequestOtpResponse>("/auth/login", {
+    method: "POST",
+    body: { phone: cleanPhone },
+  });
 };
 
 export const resendOtp = async (phone: string) => {
