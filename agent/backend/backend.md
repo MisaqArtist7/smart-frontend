@@ -407,7 +407,6 @@ model Address {
   provinceId     Int
   city           City     @relation(fields: [cityId], references: [id], onDelete: Restrict)
   cityId         Int
-  neighborhood   String?  @db.VarChar(80)
   streetAddress  String   @db.VarChar(300)
   plaque         String   @db.VarChar(20)
   unit           String?  @db.VarChar(20)
@@ -443,7 +442,7 @@ model Address {
 - کلیه مسیرها با کوکی لاگین مشتری کار می‌کنند و `userId` از توکن استخراج می‌شود.
 - سقف هر کاربر: حداکثر ۱۰ آدرس (ثبت آدرس یازدهم خطای `409 Conflict` می‌دهد).
 - اولین آدرس کاربر خودکار پیش‌فرض می‌شود. ارسال `isDefault`, `userId`, `id` در بدنه `POST` یا `PATCH` ممنوع است (`400 Bad Request`).
-- **فیلدهای اختیاری:** در فرانت‌اند برای فیلدهای اختیاری (`secondaryPhone`, `neighborhood`, `floor`, `unit`, `postalCode`) هرگز رشته خالی `""` نفرستید؛ در صورت خالی بودن، کلید را از Payload حذف (omit) کنید.
+- **فیلدهای اختیاری:** در فرانت‌اند برای فیلدهای اختیاری (`secondaryPhone`, `floor`, `unit`, `postalCode`) هرگز رشته خالی `""` نفرستید؛ در صورت خالی بودن، کلید را از Payload حذف (omit) کنید.
 - `GET /addresses`
   - **پاسخ (200 OK):** آرایه‌ای از آدرس‌های کاربر جاری (آدرس پیش‌فرض اول، سپس جدیدترین‌ها) همراه با آبجکت‌های `province: { id, name, slug }` و `city: { id, name, slug }`. فیلد `userId` در خروجی حذف شده است.
 - `POST /addresses`
@@ -456,7 +455,6 @@ model Address {
       "secondaryPhone": "02188776655",
       "provinceId": 8,
       "cityId": 105,
-      "neighborhood": "ونک",
       "streetAddress": "خیابان ملاصدرا، کوچه یاس",
       "plaque": "۱۲",
       "floor": "۳",
@@ -470,7 +468,7 @@ model Address {
     - `secondaryPhone` (اختیاری): موبایل یا تلفن ثابت ۱۱ رقمی با کد شهر (`/^(09\d{9}|0[1-8]\d{9})$/`). **نباید** با `receiverPhone` برابر باشد (`400 Bad Request`).
     - `provinceId` و `cityId` (الزامی): هر دو باید فعال باشند و شهر حتماً متعلق به همان استان باشد (`400 Bad Request`).
     - `streetAddress` (الزامی، ۵ تا ۳۰۰ کاراکتر) و `plaque` (الزامی، ۱ تا ۲۰ کاراکتر).
-    - `neighborhood` (اختیاری، ۲ تا ۸۰ کاراکتر)، `floor` و `unit` (اختیاری، ۱ تا ۲۰ کاراکتر).
+    - `floor` و `unit` (اختیاری، ۱ تا ۲۰ کاراکتر).
     - `postalCode` (**اختیاری**): در صورت ارسال، دقیقاً ۱۰ رقم (`/^\d{10}$/`). اگر ارسال نشود، `null` ذخیره می‌شود.
   - **پاسخ (201 Created):** رکورد آدرس ایجاد شده همراه با `province` و `city`.
 - `GET /addresses/:id`
@@ -530,7 +528,6 @@ model Order {
   provinceId     Int?
   cityRef        City?          @relation(fields: [cityId], references: [id], onDelete: SetNull)
   cityId         Int?
-  neighborhood   String?        @db.VarChar(80)
   streetAddress  String?        @db.VarChar(300)
   plaque         String?        @db.VarChar(20)
   unit           String?        @db.VarChar(20)
@@ -578,7 +575,7 @@ model OrderItem {
 ۳. **امنیت فیش واریزی:** فیش‌ها در پوشه خصوصی خارج از وب ذخیره می‌شوند و فقط از طریق اندپوینت استریم امن با هدر `Cache-Control: private, no-store` سرو می‌شوند.
 ۴. **رزرو موجودی در ثبت و بازگردانی در لغو:** هنگام ایجاد سفارش موجودی کالاها در ترنزکشن کسر می‌شود. در صورت لغو سفارش (توسط مشتری یا ادمین) موجودی کالاها دقیقاً یک بار بازمی‌گردد.
 ۵. **محرمانگی یادداشت ادمین (`adminNote`):** این فیلد هرگز در پاسخ‌های خریدار فرانت‌اند ظاهر نمی‌شود.
-۶. **اسنپ‌شات کامل آدرس در سفارش:** هنگام ثبت سفارش، نام متنی استان (`province`)، نام متنی شهر (`city`)، هر دو شماره تماس (`receiverPhone` و `secondaryPhone`)، فیلدهای ساختاری (`neighborhood`, `streetAddress`, `plaque`, `unit`, `floor`, `postalCode`) و یک رشته فرمت‌شده از نشانی کامل در `addressLine` داخل رکورد سفارش کپی می‌شوند تا ویرایش یا غیرفعال شدن استان/شهر یا آدرس در آینده روی سفارش‌های قبلی تاثیری نگذارد. در پنل ادمین امکان جستجو بر اساس هر دو شماره تماس نیز وجود دارد.
+۶. **اسنپ‌شات کامل آدرس در سفارش:** هنگام ثبت سفارش، نام متنی استان (`province`)، نام متنی شهر (`city`)، هر دو شماره تماس (`receiverPhone` و `secondaryPhone`)، فیلدهای ساختاری (`streetAddress`, `plaque`, `unit`, `floor`, `postalCode`) و یک رشته فرمت‌شده از نشانی کامل در `addressLine` داخل رکورد سفارش کپی می‌شوند تا ویرایش یا غیرفعال شدن استان/شهر یا آدرس در آینده روی سفارش‌های قبلی تاثیری نگذارد. در پنل ادمین امکان جستجو بر اساس هر دو شماره تماس نیز وجود دارد.
 
 #### اندپوینت‌های خریدار:
 - `GET /payment-info`
@@ -1012,4 +1009,39 @@ async function uploadImage(file: File, type: 'product' | 'category' | 'brand'): 
 1. **انتقال دقیق به فرانت‌اند:** این فایل را در مسیر دلخواه پروژه فرانت قرار دهید تا هوش مصنوعی بر اساس روت‌ها و تایپ‌های بالا کامپوننت‌ها را ایجاد کند.
 2. **عدم اختراع فیلدهای خارج از اسکیما:** فرانت‌اند نباید فیلدهای ساختگی بفرستد (مانند `discountPercentage` یا `userName` در ثبت سفارش) زیرا بک‌ند آنها را رد می‌کند.
 3. **حفظ استایل و دیزاین سیستم:** در تمام صفحات از قالب راست‌چین (RTL)، تایپوگرافی تمیز فارسی و سیستم رنگی هماهنگ با هویت بصری «هوشمند الکتریک» استفاده شود.
+
+---
+
+## ۴. راهنمای اتصال فرانت‌اند به استان‌ها و شهرها (و عیب‌یابی در صورت عدم نمایش)
+
+اگر لیست استان‌ها و شهرها در فرانت‌اند لود نمی‌شود یا در سلکت/کمبوباکس نمایش داده نمی‌شود، این موارد را به ترتیب بررسی کنید:
+
+1. **اجرای مایگریشن و Seed در بک‌ند:**
+   - دیتابیس باید دارای ۳۱ استان و ۱۳۲۳ شهر باشد (`pnpm run seed`).
+   - تست سریع از ترمینال یا مرورگر:
+     `GET http://localhost:4000/locations/provinces`
+   - اگر آرایه خالی `[]` یا خطای 500 برمی‌گرداند، دستور `pnpm run seed` را در بک‌ند اجرا کنید.
+2. **آدرس بک‌ند و CORS:**
+   - در `.env.local` (توسعه) مقدار `NEXT_PUBLIC_API_URL=http://localhost:4000` تنظیم باشد و سرور Next.js بعد از تغییر `.env.local` ری‌استارت شود.
+   - بک‌ند دامنه‌های مجاز CORS را از متغیر `CORS_ORIGIN` در `.env` می‌خواند (پیش‌فرض: `http://localhost:3000`؛ در پروداکشن: `http://localhost:3000,https://smart-electric.ir,https://www.smart-electric.ir`). در محیط لوکال فرانت‌اند را با `http://localhost:3000` باز کنید (نه `127.0.0.1:3000`).
+3. **نحوه دریافت و کش کردن در فرانت‌اند (TanStack Query):**
+   - استان‌ها (بدون نیاز به لاگین): `GET /locations/provinces` $\leftarrow$ خروجی `[{ id, name, slug }]`
+   - شهرهای استان (بدون نیاز به لاگین): `GET /locations/provinces/${provinceId}/cities` $\leftarrow$ خروجی `[{ id, name, slug, provinceId }]` (فقط وقتی `provinceId > 0` است فراخوانی شود).
+   - با تغییر استان در فرم، مقدار `cityId` قبلی ریست شود.
+4. **نکته مهم UI برای Combobox داخل Dialog (`@base-ui/react/dialog`):**
+   - اگر از `@base-ui/react/dialog` استفاده می‌کنید، قرار دادن لیست کشویی داخل `Popover.Portal` (در `document.body`) باعث می‌شود `Dialog` به عنوان لایه modal، بخش بیرونی را `inert` کند و کلیک/تایپ داخل لیست شهرها کار نکند. لیست کشویی Combobox را به صورت `position: absolute` داخل همان کامپوننت رندر کنید (بدون `Portal`).
+
+---
+
+## ۵. تنظیمات سرور پروداکشن، HTTPS، CORS و پیامک واقعی OTP (قاصدک)
+
+1. **الزام HTTPS در پروداکشن (جلوگیری از Mixed Content و حفظ کوکی‌های `httpOnly`):**
+   - هنگامی که فرانت‌اند روی `https://smart-electric.ir` اجرا می‌شود، `NEXT_PUBLIC_API_URL` **مطلقاً نباید** `http://<IP>` باشد (مرورگر درخواست `http://` داخل صفحه `https://` را بلاک می‌کند).
+   - پیشنهاد استاندارد: پراکسی Nginx روی مسیر `/api/` به `http://127.0.0.1:4000/` و تنظیم `NEXT_PUBLIC_API_URL=https://smart-electric.ir/api` (یا ساب‌دامین HTTPS مانند `https://api.smart-electric.ir`) و **بیلد مجدد فرانت‌اند (`pnpm build`)**.
+   - بک‌ند `app.set('trust proxy', 1)` و `CORS_ORIGIN` را پشتیبانی می‌کند و در `NODE_ENV=production` کوکی‌های `accessToken` و `refreshToken` را با `secure: true` و `sameSite: 'lax'` ست می‌کند.
+2. **ارسال واقعی پیامک OTP (درگاه قاصدک):**
+   - سرویس `SmsService` به وب‌سرویس قاصدک (`https://gateway.ghasedak.me/rest/api/v1/webservice/sendotpsms`) متصل شده است و از متغیرهای `GHASEDAK_API_KEY`، `GHASEDAK_OTP_TEMPLATE` و `GHASEDAK_OTP_PARAM` استفاده می‌کند.
+   - در حالت `NODE_ENV=production` فیلد `devCode` در پاسخ `/auth/request-otp`، `/auth/login` و `/auth/register` **ارسال نمی‌شود** (`devCode?: string` فقط در محیط غیرپروداکشن وجود دارد).
+   - اگر درگاه پیامک موقتاً در دسترس نباشد یا خطا بدهد، بک‌ند خطای `503 Service Unavailable` با پیام فارسی برمی‌گرداند که فرانت‌اند باید آن را به کاربر نمایش دهد.
+
 
