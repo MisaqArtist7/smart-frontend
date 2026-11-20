@@ -24,60 +24,6 @@ export interface CategoryItem {
   image: string;
 }
 
-/**
- * دیتای پیش‌فرض دسته‌بندی‌های محصولات (در صورت عدم وجود در دیتابیس)
- */
-export const CATEGORIES_DATA: CategoryItem[] = [
-  {
-    id: "cables",
-    title: "سیم و کابل",
-    href: "/category/cables",
-    image: "/images/categories/cables.svg",
-  },
-  {
-    id: "switches",
-    title: "کلید و پریز",
-    href: "/category/switches",
-    image: "/images/categories/switches.svg",
-  },
-  {
-    id: "protectors",
-    title: "محافظ و چندراهی",
-    href: "/category/protectors",
-    image: "/images/categories/protectors.svg",
-  },
-  {
-    id: "lighting",
-    title: "روشنایی",
-    href: "/category/lighting",
-    image: "/images/categories/lighting.svg",
-  },
-  {
-    id: "security",
-    title: "سیستم های امنیتی",
-    href: "/category/security",
-    image: "/images/categories/security.svg",
-  },
-  {
-    id: "industrial",
-    title: "تجهیزات صنعتی",
-    href: "/category/industrial",
-    image: "/images/categories/industrial.svg",
-  },
-  {
-    id: "tools",
-    title: "ابزار دقیق و تجهیزات",
-    href: "/category/tools",
-    image: "/images/categories/tools.svg",
-  },
-  {
-    id: "smart-home",
-    title: "خانه هوشمند و BMS",
-    href: "/category/smart-home",
-    image: "/images/categories/smart_home.svg",
-  },
-];
-
 export interface CategoryCarouselProps {
   categories?: CategoryItem[];
   title?: string;
@@ -86,7 +32,7 @@ export interface CategoryCarouselProps {
 
 /**
  * کامپوننت اسلایدر دسته‌بندی محصولات
- * دریافت داینامیک دسته‌بندی‌ها از دیتابیس با فال‌بک تمیز
+ * دریافت داینامیک دسته‌بندی‌ها از دیتابیس
  */
 export function CategoryCarousel({
   categories: initialCategories,
@@ -106,8 +52,12 @@ export function CategoryCarousel({
           image: normalizeImageUrl(cat.image, "/images/categories/cables.svg"),
         }));
     }
-    return initialCategories ?? CATEGORIES_DATA;
+    return initialCategories ?? [];
   }, [serverCategories, initialCategories]);
+
+  if (!isLoading && displayCategories.length === 0) {
+    return null;
+  }
 
   return (
     <section

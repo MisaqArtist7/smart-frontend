@@ -112,7 +112,12 @@ export function NavigationBar({
                 className="absolute right-0 top-full z-50 mt-2 w-[320px] sm:w-120 md:w-155 rounded-2xl border border-border bg-card p-4 shadow-xl animate-in fade-in zoom-in-95 duration-150"
                 role="menu"
               >
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[70vh] overflow-y-auto p-1">
+                {categories.length === 0 ? (
+                  <p className="py-6 text-center text-xs text-muted-foreground">
+                    هنوز دسته‌بندی فعالی ثبت نشده است.
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[70vh] overflow-y-auto p-1">
                   {categories.map((category) => {
                     const CategoryIcon = category.icon;
                     return (
@@ -160,7 +165,8 @@ export function NavigationBar({
                       </div>
                     );
                   })}
-                </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

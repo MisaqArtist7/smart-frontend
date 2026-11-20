@@ -139,77 +139,7 @@ export const DEFAULT_HEADER_CONFIG: HeaderConfig = {
   },
   navigation: {
     categoriesTitle: "دسته‌بندی کالاها",
-    categories: [
-      {
-        id: "smart-home",
-        title: "خانه هوشمند و BMS",
-        href: "/category/smart-home",
-        icon: Cpu,
-        badge: "جدید",
-        subcategories: [
-          { id: "controllers", title: "کنترلرهای مرکزی و گیت‌وی", href: "/category/smart-home/controllers" },
-          { id: "relays", title: "رله‌های هوشمند تابلویی", href: "/category/smart-home/relays" },
-          { id: "touch-switches", title: "کلیدهای لمسی هوشمند", href: "/category/smart-home/touch-switches" },
-          { id: "sensors", title: "سنسورهای هوشمند حضور و دما", href: "/category/smart-home/sensors" },
-        ],
-      },
-      {
-        id: "switches",
-        title: "کلید، پریز و کادر",
-        href: "/category/switches",
-        icon: ToggleRight,
-        subcategories: [
-          { id: "luxury-switches", title: "کلید و پریز لوکس و مدرن", href: "/category/switches/luxury" },
-          { id: "standard-switches", title: "کلید و پریز مکانیکی استاندارد", href: "/category/switches/standard" },
-          { id: "waterproof-switches", title: "پریزهای صنعتی و بارانی ضدآب", href: "/category/switches/waterproof" },
-          { id: "frames", title: "قاب و کادرهای شیشه‌ای و چوبی", href: "/category/switches/frames" },
-        ],
-      },
-      {
-        id: "cables",
-        title: "سیم، کابل و لوله برقی",
-        href: "/category/cables",
-        icon: Cable,
-        subcategories: [
-          { id: "building-wires", title: "سیم‌های ساختمانی (افشان و مفتول)", href: "/category/cables/building" },
-          { id: "power-cables", title: "کابل‌های قدرت زمینی و هوایی", href: "/category/cables/power" },
-          { id: "network-cables", title: "کابل‌های مخابرات و شبکه LAN", href: "/category/cables/network" },
-        ],
-      },
-      {
-        id: "lighting",
-        title: "روشنایی و نورپردازی",
-        href: "/category/lighting",
-        icon: Lightbulb,
-        subcategories: [
-          { id: "led-panels", title: "پنل‌ها و چراغ‌های توکار و روکار SMD", href: "/category/lighting/panels" },
-          { id: "linear-lights", title: "لاینرها و پروفیل‌های نور خطی", href: "/category/lighting/linear" },
-          { id: "floodlights", title: "پروژکتور و چراغ خیابانی و سوله", href: "/category/lighting/floodlights" },
-        ],
-      },
-      {
-        id: "switchboards",
-        title: "تابلو برق، فیوز و کلید خودکار",
-        href: "/category/switchboards",
-        icon: ShieldAlert,
-        subcategories: [
-          { id: "mcb", title: "کلیدهای مینیاتوری MCB", href: "/category/switchboards/mcb" },
-          { id: "rcd", title: "کلیدهای محافظ جان RCCB", href: "/category/switchboards/rcd" },
-          { id: "contactors", title: "کنتاکتورها و کلیدهای حرارتی", href: "/category/switchboards/contactors" },
-        ],
-      },
-      {
-        id: "tools",
-        title: "ابزار دقیق و اندازه‌گیری",
-        href: "/category/tools",
-        icon: Wrench,
-        subcategories: [
-          { id: "multimeter", title: "مولتی‌متر دیجیتال و تستر ولتاژ", href: "/category/tools/multimeter" },
-          { id: "clamp-meter", title: "کلمپ‌آمپرمتر و میگر تستر عایق", href: "/category/tools/clamp-meter" },
-          { id: "crimping", title: "پرس کابل‌شو و سیم‌لخت‌کن اتوماتیک", href: "/category/tools/crimping" },
-        ],
-      },
-    ],
+    categories: [],
     navLinks: [
       {
         id: "special-offers",
@@ -421,10 +351,7 @@ export function Header({
     if (userConfig?.navigation?.categories) {
       return userConfig.navigation.categories;
     }
-    const mapped = mapCategoriesToHeader(serverCategories);
-    return mapped.length > 0
-      ? mapped
-      : DEFAULT_HEADER_CONFIG.navigation.categories;
+    return mapCategoriesToHeader(serverCategories);
   }, [serverCategories, userConfig?.navigation?.categories]);
 
   // ادغام عمیق کانفیگ پیش‌فرض با کانفیگ سفارشی احتمالی

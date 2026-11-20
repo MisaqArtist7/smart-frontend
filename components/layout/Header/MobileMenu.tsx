@@ -178,7 +178,12 @@ export function MobileMenu({
               {navigation.categoriesTitle}
             </div>
             <div className="space-y-1">
-              {navigation.categories.map((cat) => {
+              {navigation.categories.length === 0 ? (
+                <p className="py-3 px-2 text-xs text-muted-foreground">
+                  هنوز دسته‌بندی فعالی ثبت نشده است.
+                </p>
+              ) : (
+                navigation.categories.map((cat) => {
                 const CatIcon = cat.icon;
                 const isExpanded = expandedCategoryId === cat.id;
                 const hasSubs = cat.subcategories && cat.subcategories.length > 0;
@@ -236,7 +241,8 @@ export function MobileMenu({
                     )}
                   </div>
                 );
-              })}
+              })
+              )}
             </div>
           </div>
 

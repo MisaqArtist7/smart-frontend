@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { useCategories } from "@/lib/api";
 import { normalizeImageUrl } from "@/lib/utils";
-import { CATEGORIES_DATA } from "./category-carousel";
 
 export function AllCategoriesClient() {
   const { data: serverCategories = [], isLoading } = useCategories();
@@ -22,14 +21,8 @@ export function AllCategoriesClient() {
   const { rootCategories, subcategoriesByParent } = useMemo(() => {
     if (!serverCategories || serverCategories.length === 0) {
       return {
-        rootCategories: CATEGORIES_DATA.map((c) => ({
-          id: c.id,
-          name: c.title,
-          slug: c.id.toString(),
-          image: c.image,
-          description: "تجهیزات تخصصی و استاندارد با ضمانت اصالت کالا",
-        })),
-        subcategoriesByParent: {} as Record<string | number, typeof serverCategories>,
+        rootCategories: [] as typeof serverCategories,
+        subcategoriesByParent: {} as Record<number, typeof serverCategories>,
       };
     }
 
@@ -112,6 +105,12 @@ export function AllCategoriesClient() {
           <div className="py-20 flex flex-col items-center justify-center gap-3 text-muted-foreground">
             <Loader2 className="size-8 animate-spin text-primary" />
             <span className="text-xs font-bold">در حال بارگذاری دسته‌بندی‌ها...</span>
+          </div>
+        ) : rootCategories.length === 0 ? (
+          <div className="w-full rounded-2xl border border-dashed border-border bg-card/50 p-10 text-center">
+            <p className="text-xs sm:text-sm text-muted-foreground font-medium">
+              هنوز دسته‌بندی فعالی در فروشگاه ثبت نشده است.
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3.5 sm:gap-4 md:gap-5">

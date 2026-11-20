@@ -31,42 +31,13 @@ export function useValidateCoupon() {
         });
       } catch (err) {
         if (err instanceof ApiError && err.status === 404) {
-          try {
-            return await apiFetch<ValidateCouponResponse>(
-              "/coupons/validate",
-              {
-                method: "POST",
-                body: { code, orderAmount: input.orderAmount },
-              }
-            );
-          } catch {
-            // کدهای پیش‌فرض تستی در صورت عدم پیاده‌سازی موقت اندپوینت در بک‌ند
-            if (code === "SMART" || code === "OFF10") {
-              const discount = Math.round(input.orderAmount * 0.1);
-              return {
-                valid: true,
-                code,
-                type: "PERCENTAGE",
-                value: 10,
-                discountAmount: discount,
-                message: "کد تخفیف ۱۰ درصدی با موفقیت اعمال شد.",
-              };
+          return await apiFetch<ValidateCouponResponse>(
+            "/coupons/validate",
+            {
+              method: "POST",
+              body: { code, orderAmount: input.orderAmount },
             }
-            if (code === "YALDA" || code === "YALDA1405") {
-              return {
-                valid: true,
-                code,
-                type: "FIXED_AMOUNT",
-                value: 50000,
-                discountAmount: Math.min(50000, input.orderAmount),
-                message: "کد تخفیف ۵۰,۰۰۰ تومانی با موفقیت اعمال شد.",
-              };
-            }
-            throw new ApiError(
-              400,
-              "کد تخفیف وارد شده معتبر نیست یا منقضی شده است."
-            );
-          }
+          );
         }
         throw err;
       }

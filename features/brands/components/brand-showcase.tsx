@@ -14,51 +14,6 @@ interface BrandItem {
   href: string;
 }
 
-const FALLBACK_BRANDS: BrandItem[] = [
-  {
-    id: "dahua",
-    name: "داهوا",
-    latinName: "Dahua",
-    logo: "/images/brand/dahua.png",
-    href: "/search?q=%D8%AF%D8%A7%D9%87%D9%88%D8%A7",
-  },
-  {
-    id: "hikvision",
-    name: "هایک‌ویژن",
-    latinName: "Hikvision",
-    logo: "/images/brand/hikvision.avif",
-    href: "/search?q=%D9%87%D8%A7%DB%8C%DA%A9%E2%80%8C%D9%88%DB%8C%DA%98%D9%86",
-  },
-  {
-    id: "khayam",
-    name: "کابل خیام",
-    latinName: "Khayam",
-    logo: "/images/brand/khayam.png",
-    href: "/search?q=%DA%A9%D8%A7%D8%A8%D9%84%20%D8%AE%DB%8C%D8%A7%D9%85",
-  },
-  {
-    id: "legrand",
-    name: "لگراند فرانسه",
-    latinName: "Legrand",
-    logo: "/images/brand/1.webp",
-    href: "/search?q=%D9%84%DA%AF%D8%B1%D8%A7%D9%86%D8%AF",
-  },
-  {
-    id: "schneider",
-    name: "اشنایدر الکتریک",
-    latinName: "Schneider",
-    logo: "/images/brand/2.webp",
-    href: "/search?q=%D8%A7%D8%B4%D9%86%D8%A7%DB%8C%D8%AF%D8%B1",
-  },
-  {
-    id: "siemens",
-    name: "زیمنس آلمان",
-    latinName: "Siemens",
-    logo: "/images/brand/3.webp",
-    href: "/search?q=%D8%B2%DB%8C%D9%85%D9%86%D8%B3",
-  },
-];
-
 export interface BrandShowcaseProps {
   className?: string;
 }
@@ -68,21 +23,21 @@ export interface BrandShowcaseProps {
  * نمایش کارت‌های مینیمال برند با تمرکز کامل روی تصویر لوگو
  */
 export function BrandShowcase({ className }: BrandShowcaseProps) {
-  const { data: dbBrands = [] } = useBrands();
+  const { data: dbBrands = [], isLoading } = useBrands();
 
-  // در صورت وجود برندهای دیتابیس از آن‌ها استفاده می‌کنیم؛ در غیر اینصورت از فال‌بک
-  const displayBrands: BrandItem[] =
-    dbBrands && dbBrands.length > 0
-      ? dbBrands
-          .filter((b) => b.isActive !== false)
-          .map((b, idx) => ({
-            id: b.id,
-            name: b.name,
-            latinName: b.slug?.toUpperCase() || "",
-            logo: b.logo || FALLBACK_BRANDS[idx % FALLBACK_BRANDS.length]?.logo || null,
-            href: `/search?q=${encodeURIComponent(b.name)}`,
-          }))
-      : FALLBACK_BRANDS;
+  const displayBrands: BrandItem[] = dbBrands
+    .filter((b) => b.isActive !== false)
+    .map((b) => ({
+      id: b.id,
+      name: b.name,
+      latinName: b.slug?.toUpperCase() || "",
+      logo: b.logo || null,
+      href: `/search?q=${encodeURIComponent(b.name)}`,
+    }));
+
+  if (!isLoading && displayBrands.length === 0) {
+    return null;
+  }
 
   return (
     <section
