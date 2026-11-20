@@ -12,7 +12,6 @@ import {
   Pencil,
   RotateCw,
   Clock,
-  Sparkles,
   AlertCircle,
   CheckCircle2,
   Loader2,
@@ -21,7 +20,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { OtpInput } from "./otp-input";
 import { useAuth } from "@/components/providers/auth-provider";
 import {
@@ -71,9 +69,6 @@ export function AuthCard({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [otpError, setOtpError] = useState<boolean>(false);
 
-  // کد تست محیط توسعه (devCode)
-  const [devCode, setDevCode] = useState<string | null>(null);
-
   // تایمر ۶۰ ثانیه‌ای شمارش معکوس ارسال مجدد
   const [timer, setTimer] = useState<number>(60);
 
@@ -112,7 +107,6 @@ export function AuthCard({
     try {
       const res = await requestOtp(cleanPhone);
       setIsNewUser(Boolean(res.isNewUser));
-      setDevCode(res.devCode ?? null);
       setStep("otp");
       setTimer(60);
       setOtpCode("");
@@ -156,7 +150,6 @@ export function AuthCard({
 
     try {
       const res = await requestOtp(phone);
-      setDevCode(res.devCode ?? null);
       setTimer(60);
       setOtpCode("");
       toast.success(res.message || "کد جدید با موفقیت ارسال شد.");
@@ -284,15 +277,6 @@ export function AuthCard({
     },
     [isNewUser, loginSuccess, name, otpCode, phone, queryRedirect, refreshUser]
   );
-
-  // درج خودکار کد تست محیط توسعه
-  const handleAutoFillDevCode = () => {
-    if (!devCode) return;
-    setOtpCode(devCode);
-    setOtpError(false);
-    setErrorMessage(null);
-    toast.success(`کد تستی ${devCode} درج شد.`);
-  };
 
   // ویرایش شماره و بازگشت به مرحله اول
   const handleBackToPhone = () => {
@@ -462,30 +446,6 @@ export function AuthCard({
                   className="h-10 rounded-xl text-xs sm:text-sm bg-background"
                   disabled={isSubmitting}
                 />
-              </div>
-            )}
-
-            {/* جعبه کمکی محیط توسعه (DevCode Helper) */}
-            {devCode && (
-              <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-foreground space-y-2 animate-in fade-in">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-semibold">
-                    <Sparkles className="w-4 h-4 shrink-0" />
-                    <span>کد تستی محیط توسعه:</span>
-                  </div>
-                  <Badge variant="outline" className="font-mono text-xs font-bold px-2 py-0.5">
-                    {devCode}
-                  </Badge>
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleAutoFillDevCode}
-                  className="w-full h-7 rounded-lg text-xs font-medium border-amber-500/30 hover:bg-amber-500/10 text-amber-700 dark:text-amber-300"
-                >
-                  درج خودکار کد تست ({devCode})
-                </Button>
               </div>
             )}
 
