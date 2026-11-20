@@ -44,10 +44,14 @@ export async function generateMetadata({
   };
 }
 
-export default async function CategoryPage({ params }: CategoryPageProps) {
+async function CategoryContent({ params }: CategoryPageProps) {
   const { slug } = await params;
   const currentSlug = slug?.[slug.length - 1] || "";
 
+  return <CategoryClient slug={currentSlug} fullPath={slug} />;
+}
+
+export default function CategoryPage({ params }: CategoryPageProps) {
   return (
     <div dir="rtl" className="min-h-screen bg-background text-foreground flex flex-col">
       <Header />
@@ -61,7 +65,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             </div>
           }
         >
-          <CategoryClient slug={currentSlug} fullPath={slug} />
+          <CategoryContent params={params} />
         </Suspense>
       </main>
 

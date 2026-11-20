@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, use, useMemo } from "react";
+import React, { Suspense, useState, use, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -39,6 +39,32 @@ interface PageProps {
 }
 
 export default function SingleProductPage({ params }: PageProps) {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-background text-foreground flex flex-col">
+          <Header />
+          <main className="flex-1 mx-auto max-w-8xl w-full px-4 sm:px-6 lg:px-8 py-10">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-pulse">
+              <div className="lg:col-span-5 h-[420px] rounded-3xl bg-muted/60" />
+              <div className="lg:col-span-4 space-y-4">
+                <div className="h-8 bg-muted/60 rounded w-3/4" />
+                <div className="h-4 bg-muted/40 rounded w-1/2" />
+                <div className="h-24 bg-muted/30 rounded mt-6" />
+              </div>
+              <div className="lg:col-span-3 h-[360px] rounded-3xl bg-muted/60" />
+            </div>
+          </main>
+          <Footer />
+        </div>
+      }
+    >
+      <SingleProductContent params={params} />
+    </Suspense>
+  );
+}
+
+function SingleProductContent({ params }: PageProps) {
   const router = useRouter();
   const { slug } = use(params);
 

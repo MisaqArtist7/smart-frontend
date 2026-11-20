@@ -126,7 +126,7 @@ export function ContactUsClient() {
     "تهران، شهرستان دماوند، بلوار شهید بهشتی، جنب اداره ثبت اسناد";
   const shopWorkingHours =
     process.env.NEXT_PUBLIC_SHOP_WORKING_HOURS?.trim() ||
-    "شنبه تا چهارشنبه ۹ الی ۱۸ | پنجشنبه‌ها ۹ الی ۱۴";
+    "شنبه تا چهارشنبه ۹ الی ۲۰ | پنجشنبه‌ها ۹ الی ۱۸";
   const shopEmail =
     process.env.NEXT_PUBLIC_SHOP_EMAIL?.trim() || "info@smart-electric.ir";
 
