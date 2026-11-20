@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
@@ -65,6 +65,7 @@ export function AuthCard({
 
   // استیت‌های لودینگ و خطا
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const isVerifyingRef = useRef<boolean>(false);
   const [isResending, setIsResending] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [otpError, setOtpError] = useState<boolean>(false);
@@ -178,6 +179,7 @@ export function AuthCard({
   // ----------------------------------------------------
   const handleVerifyOtp = useCallback(
     async (codeToVerify?: string) => {
+      if (isVerifyingRef.current) return;
       const code = toEnglishDigits(codeToVerify || otpCode).trim();
 
       if (!code || code.length !== 6) {
@@ -195,6 +197,7 @@ export function AuthCard({
         }
       }
 
+      isVerifyingRef.current = true;
       setIsSubmitting(true);
       setErrorMessage(null);
       setOtpError(false);
@@ -250,8 +253,9 @@ export function AuthCard({
         setOtpError(true);
         if (err instanceof ApiError) {
           if (err.status === 400) {
-            setErrorMessage("کد تأیید وارد شده اشتباه یا منقضی شده است.");
-            toast.error("کد تأیید اشتباه یا منقضی شده است.");
+            const msg = err.message || "کد تأیید وارد شده اشتباه یا منقضی شده است.";
+            setErrorMessage(msg);
+            toast.error(msg);
           } else if (err.status === 401) {
             setErrorMessage("کد تأیید نامعتبر است.");
             toast.error("کد تأیید نامعتبر است.");
@@ -272,6 +276,7 @@ export function AuthCard({
           toast.error(msg);
         }
       } finally {
+        isVerifyingRef.current = false;
         setIsSubmitting(false);
       }
     },
