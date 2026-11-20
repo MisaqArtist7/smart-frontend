@@ -33,7 +33,10 @@ import {
 } from "./address-utils";
 
 export const API_BASE_URL = (
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"
+  process.env.NEXT_PUBLIC_API_URL ||
+  (typeof window !== "undefined" && window.location.protocol === "https:"
+    ? "/api"
+    : "http://localhost:4000")
 ).replace(/\/+$/, "");
 
 // ----------------------------------------------------

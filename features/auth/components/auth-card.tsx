@@ -112,9 +112,7 @@ export function AuthCard({
     try {
       const res = await requestOtp(cleanPhone);
       setIsNewUser(Boolean(res.isNewUser));
-      if (res.devCode) {
-        setDevCode(res.devCode);
-      }
+      setDevCode(res.devCode ?? null);
       setStep("otp");
       setTimer(60);
       setOtpCode("");
@@ -126,6 +124,12 @@ export function AuthCard({
           setErrorMessage("کمی صبر کنید. تعداد درخواست‌های ارسال پیامک بیش از حد مجاز است.");
           setTimer(60);
           toast.warning("کمی صبر کنید. لطفاً منتظر بمانید.");
+          return;
+        }
+        if (err.status === 503) {
+          const msg = err.message || "سرویس ارسال پیامک موقتاً در دسترس نیست. لطفاً دقایقی دیگر تلاش کنید.";
+          setErrorMessage(msg);
+          toast.error(msg);
           return;
         }
         setErrorMessage(err.message);
@@ -152,9 +156,7 @@ export function AuthCard({
 
     try {
       const res = await requestOtp(phone);
-      if (res.devCode) {
-        setDevCode(res.devCode);
-      }
+      setDevCode(res.devCode ?? null);
       setTimer(60);
       setOtpCode("");
       toast.success(res.message || "کد جدید با موفقیت ارسال شد.");
@@ -163,6 +165,10 @@ export function AuthCard({
         setErrorMessage("کمی صبر کنید. تعداد درخواست‌های ارسال پیامک بیش از حد مجاز است.");
         setTimer(60);
         toast.warning("کمی صبر کنید. لطفاً منتظر بمانید.");
+      } else if (err instanceof ApiError && err.status === 503) {
+        const msg = err.message || "سرویس ارسال پیامک موقتاً در دسترس نیست. لطفاً دقایقی دیگر تلاش کنید.";
+        setErrorMessage(msg);
+        toast.error(msg);
       } else {
         const msg = err instanceof Error ? err.message : "خطا در ارسال مجدد کد";
         setErrorMessage(msg);
