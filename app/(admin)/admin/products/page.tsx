@@ -128,7 +128,7 @@ function toProductPayload(
 ) {
   return {
     title: v.title.trim(),
-    slug: generateSlug(v.title) || v.slug.trim(),
+    slug: v.slug && v.slug.trim() ? v.slug.trim() : generateSlug(v.title),
     categoryId: Number(v.categoryId),
     brandId: v.brandId && v.brandId !== "" ? Number(v.brandId) : null,
     price: v.price,
@@ -669,24 +669,22 @@ export default function AdminProductsPage() {
                 )}
               </div>
 
-              {/* اسلاگ (خودکار و غیرقابل ویرایش دستی) */}
+              {/* اسلاگ */}
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-foreground">
-                  اسلاگ محصول (خودکار)
+                  اسلاگ محصول (شناسه یکتای URL)
                 </label>
                 <Input
                   {...register("slug")}
-                  disabled
-                  readOnly
-                  placeholder="به‌صورت خودکار ساخته می‌شود..."
+                  placeholder="مثال: کلید-دوپل-دلند یا deland-switch"
                   dir="auto"
                   className={cn(
-                    "text-start bg-muted/60 cursor-not-allowed opacity-80",
+                    "text-start",
                     errors.slug && "border-destructive"
                   )}
                 />
                 <p className="text-[10px] text-muted-foreground">
-                  به‌صورت خودکار و هماهنگ با نام محصول تولید می‌شود.
+                  می‌توانید اسلاگ فارسی یا انگلیسی دلخواه وارد کنید (فاصله‌ها با خط تیره -).
                 </p>
                 {errors.slug && (
                   <p className="text-[11px] text-destructive">{errors.slug.message}</p>

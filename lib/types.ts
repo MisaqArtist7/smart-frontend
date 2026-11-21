@@ -19,6 +19,10 @@ export interface User {
   avatarUrl?: string | null;
   createdAt?: string;
   updatedAt?: string;
+  _count?: {
+    orders?: number;
+    comments?: number;
+  };
 }
 
 export interface RequestOtpResponse {
@@ -167,6 +171,10 @@ export interface Address {
   isDefault: boolean;
   createdAt?: string;
   updatedAt?: string;
+  _count?: {
+    orders?: number;
+    comments?: number;
+  };
 }
 
 export interface CreateAddressInput {

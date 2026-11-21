@@ -1389,6 +1389,35 @@ export function useAdminUsers() {
   });
 }
 
+export interface UpdateAdminUserInput {
+  id: number;
+  role?: "ADMIN" | "CUSTOMER";
+  isActive?: boolean;
+  name?: string;
+  phone?: string;
+}
+
+/**
+ * به‌روزرسانی مشخصات یا نقش کاربر در پنل مدیریت
+ * PATCH /admin/users/:id
+ */
+export function useUpdateAdminUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, ...dto }: UpdateAdminUserInput) => {
+      return await apiFetch<User>(`/admin/users/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify(dto),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-metrics"] });
+    },
+  });
+}
+
 // ----------------------------------------------------
 // 5. شاخص‌های آماری پیشخوان مدیریت (Admin Metrics)
 // ----------------------------------------------------

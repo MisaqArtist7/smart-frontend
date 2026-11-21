@@ -181,7 +181,10 @@ export default function AdminBrandsPage() {
     const rawLogo = values.logo?.trim();
     const payload = {
       name: values.name.trim(),
-      slug: generateSlug(values.name) || values.slug.trim().toLowerCase(),
+      slug:
+        values.slug && values.slug.trim()
+          ? values.slug.trim().toLowerCase()
+          : generateSlug(values.name),
       logo: rawLogo ? normalizeImageUrl(rawLogo, "") : null,
       description: values.description?.trim() || null,
       metaTitle: values.metaTitle?.trim() || null,
@@ -536,21 +539,19 @@ export default function AdminBrandsPage() {
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-foreground">
-                  اسلاگ برند (خودکار):
+                  اسلاگ برند (شناسه یکتای URL):
                 </label>
                 <Input
                   {...register("slug")}
-                  disabled
-                  readOnly
-                  placeholder="به‌صورت خودکار ساخته می‌شود..."
+                  placeholder="مثال: سیم-و-کابل-البرز یا alborz-cable"
                   className={cn(
-                    "text-xs rounded-xl bg-muted/60 cursor-not-allowed opacity-80",
+                    "text-xs rounded-xl",
                     errors.slug && "border-destructive"
                   )}
                   dir="auto"
                 />
                 <p className="text-[10px] text-muted-foreground">
-                  به‌صورت خودکار و هماهنگ با نام برند تولید می‌شود.
+                  می‌توانید اسلاگ فارسی یا انگلیسی وارد کنید (فاصله‌ها با خط تیره -).
                 </p>
                 {errors.slug && (
                   <p className="text-[11px] text-destructive">{errors.slug.message}</p>

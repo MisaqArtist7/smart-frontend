@@ -97,7 +97,7 @@ function toCategoryPayload(v: CategoryFormValues): CreateCategoryInput {
   const normalizedImage = rawImage ? normalizeImageUrl(rawImage, "") : undefined;
   return {
     name: v.name.trim(),
-    slug: generateSlug(v.name) || v.slug.trim(),
+    slug: v.slug && v.slug.trim() ? v.slug.trim() : generateSlug(v.name),
     parentId: v.parentId && v.parentId !== "" ? Number(v.parentId) : null,
     description: v.description?.trim() || undefined,
     image: normalizedImage || undefined,
@@ -536,24 +536,22 @@ export default function AdminCategoriesPage() {
                 )}
               </div>
 
-              {/* اسلاگ دسته‌بندی (خودکار و غیرقابل ویرایش دستی) */}
+              {/* اسلاگ دسته‌بندی */}
               <div className="space-y-1.5 sm:col-span-2">
                 <label className="text-xs font-bold text-foreground">
-                  اسلاگ دسته‌بندی (خودکار)
+                  اسلاگ دسته‌بندی (شناسه یکتای URL)
                 </label>
                 <Input
                   {...register("slug")}
-                  disabled
-                  readOnly
-                  placeholder="به‌صورت خودکار ساخته می‌شود..."
+                  placeholder="مثال: روشنایی-و-نورپردازی یا lighting"
                   dir="auto"
                   className={cn(
-                    "text-start bg-muted/60 cursor-not-allowed opacity-80",
+                    "text-start",
                     errors.slug && "border-destructive"
                   )}
                 />
                 <p className="text-[10px] text-muted-foreground">
-                  به‌صورت خودکار و هماهنگ با نام دسته‌بندی تولید می‌شود.
+                  می‌توانید اسلاگ فارسی یا انگلیسی دلخواه وارد کنید (فاصله‌ها با خط تیره -).
                 </p>
                 {errors.slug && (
                   <p className="text-[11px] text-destructive">{errors.slug.message}</p>
