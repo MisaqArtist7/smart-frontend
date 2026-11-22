@@ -61,7 +61,7 @@ export function FaqSection({ className }: FaqSectionProps) {
     <section
       dir="rtl"
       aria-label="سوالات متداول"
-      className={cn("w-full py-4 select-none", className)}
+      className={cn("w-full py-4", className)}
     >
       {/* سربرگ بخش: دات قرمز شاخص + عنوان */}
       <div className="flex items-center gap-2.5 mb-5">

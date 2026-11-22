@@ -41,7 +41,7 @@ export default function ProfileSettingsPage() {
   };
 
   return (
-    <div className="space-y-6 select-none max-w-3xl">
+    <div className="space-y-6 max-w-3xl">
       {/* سربرگ بخش اطلاعات حساب */}
       <div>
         <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
@@ -108,7 +108,7 @@ export default function ProfileSettingsPage() {
                   disabled
                   readOnly
                   dir="ltr"
-                  className="h-10 rounded-xl bg-muted/40 font-mono text-muted-foreground cursor-not-allowed select-none text-start pe-9"
+                  className="h-10 rounded-xl bg-muted/40 font-mono text-muted-foreground cursor-not-allowed text-start pe-9"
                 />
                 <Lock className="absolute end-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground/60" />
               </div>

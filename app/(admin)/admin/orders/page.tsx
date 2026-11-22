@@ -309,7 +309,7 @@ export default function AdminOrdersPage() {
   const shippedCount = orders.filter((o) => o.status === "SHIPPED").length;
 
   return (
-    <div className="space-y-6 select-none" dir="rtl">
+    <div className="space-y-6" dir="rtl">
       {/* سربرگ مدیریت سفارشات */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

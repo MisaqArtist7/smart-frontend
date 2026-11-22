@@ -92,7 +92,7 @@ export default function ProfileDashboardPage() {
   };
 
   return (
-    <div className="space-y-6 sm:space-y-8 select-none">
+    <div className="space-y-6 sm:space-y-8">
       {/* پیام خوش‌آمدگویی، مشخصات کاربر و دکمه خروج */}
       <div className="rounded-2xl border border-border/80 bg-card p-5 sm:p-6 shadow-xs relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-5">

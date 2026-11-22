@@ -22,7 +22,7 @@ export function B2BConsultation({ className }: B2BConsultationProps) {
     <section
       dir="rtl"
       aria-label="خدمات پروژه‌ای و سازمانی B2B"
-      className={cn("w-full py-4 select-none", className)}
+      className={cn("w-full py-4", className)}
     >
       <div className="relative rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/[0.04] via-card to-card p-6 sm:p-8 lg:p-10 shadow-xs overflow-hidden">
         {/* نورپردازی پس‌زمینه */}

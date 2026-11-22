@@ -318,7 +318,7 @@ export function CategoryClient({ slug }: CategoryClientProps) {
   }
 
   return (
-    <div className="space-y-6 sm:space-y-8 select-none">
+    <div className="space-y-6 sm:space-y-8">
       {/* بردکرامب (Breadcrumb) ناوبری */}
       <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap">
         <Link href="/" className="hover:text-primary transition-colors">

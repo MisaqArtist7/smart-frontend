@@ -215,7 +215,7 @@ function SingleProductContent({ params }: PageProps) {
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <Header />
 
-      <main className="flex-1 mx-auto max-w-8xl w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8 select-none">
+      <main className="flex-1 mx-auto max-w-8xl w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8">
         {/* مسیر راهنما (Breadcrumbs) */}
         <nav
           aria-label="مسیر صفحه"
@@ -614,7 +614,7 @@ function SingleProductContent({ params }: PageProps) {
                     <tr className="border-b border-border/60">
                       <td className="p-3.5 font-bold text-foreground">وضعیت موجودی</td>
                       <td className="p-3.5 text-muted-foreground">
-                        {product.stock > 0 ? `${product.stock.toLocaleString("fa-IR")} عدد موجود در انبار` : "ناموجود"}
+                        {product.stock > 0 ? "موجود در انبار" : "ناموجود"}
                       </td>
                     </tr>
 

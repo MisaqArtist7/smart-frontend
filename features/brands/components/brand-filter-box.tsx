@@ -134,7 +134,7 @@ export function BrandFilterBox({
                   }
                 }}
                 className={cn(
-                  "flex items-center justify-between p-2 rounded-xl text-xs cursor-pointer select-none transition-colors group",
+                  "flex items-center justify-between p-2 rounded-xl text-xs cursor-pointer transition-colors group",
                   isSelected
                     ? "bg-primary/10 text-primary font-bold border border-primary/20"
                     : "hover:bg-muted/50 text-foreground"

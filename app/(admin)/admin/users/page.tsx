@@ -53,7 +53,7 @@ export default function AdminUsersPage() {
   const [targetActive, setTargetActive] = useState<boolean>(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const { data: users = [], isLoading, refetch } = useAdminUsers();
+  const { data: users = [], isLoading, isError, error, refetch } = useAdminUsers();
   const updateMutation = useUpdateAdminUser();
   const { user: currentUser } = useAuth();
 
@@ -133,7 +133,7 @@ export default function AdminUsersPage() {
   };
 
   return (
-    <div className="space-y-6 select-none">
+    <div className="space-y-6">
       {/* عنوان صفحه */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -323,6 +323,25 @@ export default function AdminUsersPage() {
                         <span className="font-semibold text-foreground">
                           در حال بارگذاری لیست کاربران از سرور...
                         </span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : isError ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={8}
+                      className="py-14 text-center text-xs text-destructive"
+                    >
+                      <div className="space-y-2 max-w-md mx-auto">
+                        <AlertTriangle className="size-8 mx-auto opacity-80" />
+                        <div className="font-bold text-sm">
+                          خطا در دریافت لیست کاربران از سرور
+                        </div>
+                        <p className="text-[11px] text-muted-foreground">
+                          {error instanceof Error
+                            ? error.message
+                            : "لطفاً مطمئن شوید سرور بک‌اند با آخرین تغییرات ریستارت شده است."}
+                        </p>
                       </div>
                     </TableCell>
                   </TableRow>

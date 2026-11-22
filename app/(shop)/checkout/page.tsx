@@ -198,7 +198,7 @@ export default function CheckoutPage() {
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <Header />
 
-      <main className="flex-1 mx-auto max-w-8xl w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 select-none">
+      <main className="flex-1 mx-auto max-w-8xl w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
         {/* نوار مراحل خرید */}
         <div className="rounded-2xl border border-border bg-card p-4 shadow-xs">
           <div className="flex items-center justify-center gap-3 sm:gap-8 text-sm font-bold">
@@ -374,7 +374,7 @@ export default function CheckoutPage() {
                 {/* گزینه ۲: درگاه پرداخت اینترنتی (غیرفعال) */}
                 <div
                   aria-disabled="true"
-                  className="p-4 rounded-xl border border-border bg-muted/30 flex items-start gap-3 opacity-70 cursor-not-allowed select-none"
+                  className="p-4 rounded-xl border border-border bg-muted/30 flex items-start gap-3 opacity-70 cursor-not-allowed"
                 >
                   <div className="size-5 rounded-full border-2 border-muted-foreground/40 shrink-0 mt-0.5" />
                   <div className="space-y-1 flex-1">

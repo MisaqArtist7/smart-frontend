@@ -63,7 +63,7 @@ export function CategoryCarousel({
     <section
       dir="rtl"
       aria-label={title}
-      className={cn("w-full py-4 select-none", className)}
+      className={cn("w-full py-4", className)}
     >
       {/* سربرگ بخش: دات قرمز رنگ شاخص + عنوان بولد دسته‌بندی محصولات */}
       <div className="flex items-center justify-between mb-5">
@@ -106,7 +106,7 @@ export function CategoryCarousel({
               >
                 <Link
                   href={cat.href}
-                  className="group relative block h-45 sm:h-50 md:h-55 w-full rounded-2xl border border-border/80 bg-card shadow-xs transition-all duration-300 hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-border overflow-hidden select-none"
+                  className="group relative block h-45 sm:h-50 md:h-55 w-full rounded-2xl border border-border/80 bg-card shadow-xs transition-all duration-300 hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-border overflow-hidden"
                 >
                   {/* تصویر تمام‌صفحه که کل کارت را پر می‌کند */}
                   <Image

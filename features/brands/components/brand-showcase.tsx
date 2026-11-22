@@ -43,7 +43,7 @@ export function BrandShowcase({ className }: BrandShowcaseProps) {
     <section
       dir="rtl"
       aria-label="برندهای معتبر"
-      className={cn("w-full py-4 select-none", className)}
+      className={cn("w-full py-4", className)}
     >
       {/* سربرگ بخش: دات قرمز رنگ شاخص + عنوان */}
       <div className="flex items-center justify-between mb-5">

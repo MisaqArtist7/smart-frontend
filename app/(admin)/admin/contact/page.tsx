@@ -132,7 +132,7 @@ export default function AdminContactPage() {
   };
 
   return (
-    <div className="space-y-6 select-none">
+    <div className="space-y-6">
       <div>
         <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
           پیام‌های تماس با ما

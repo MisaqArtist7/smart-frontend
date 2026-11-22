@@ -47,7 +47,7 @@ export function PromoBanners({
     <section
       dir="rtl"
       aria-label="بنرهای تبلیغاتی و فروش ویژه"
-      className={cn("w-full py-2 select-none", className)}
+      className={cn("w-full py-2", className)}
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         {banners.map((banner, index) => (

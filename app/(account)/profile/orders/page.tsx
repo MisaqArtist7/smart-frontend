@@ -126,7 +126,7 @@ export default function ProfileOrdersPage() {
   };
 
   return (
-    <div className="space-y-6 select-none">
+    <div className="space-y-6">
       {/* سربرگ بخش سفارش‌ها */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">

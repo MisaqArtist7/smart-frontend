@@ -62,7 +62,7 @@ export function ProfileSidebar({ className, onNavigate }: ProfileSidebarProps) {
   };
 
   return (
-    <Card className={cn("rounded-2xl border-border bg-card shadow-xs overflow-hidden select-none", className)}>
+    <Card className={cn("rounded-2xl border-border bg-card shadow-xs overflow-hidden", className)}>
       <CardContent className="p-4 sm:p-5 space-y-5">
         {/* کارت اطلاعات کاربر در بالای سایدبار */}
         <div className="flex items-center gap-3.5 pb-4 border-b border-border/70">

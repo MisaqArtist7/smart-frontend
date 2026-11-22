@@ -44,7 +44,7 @@ export function LatestProducts({
     <section
       dir="rtl"
       aria-label={title}
-      className={cn("w-full py-6 select-none", className)}
+      className={cn("w-full py-6", className)}
     >
       {/* سربرگ بخش: دات قرمز رنگ شاخص + عنوان بولد «جدید ترین محصولات ما» */}
       <div className="flex items-center justify-between mb-5">

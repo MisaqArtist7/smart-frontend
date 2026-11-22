@@ -76,7 +76,7 @@ export default function AddressesPage() {
   };
 
   return (
-    <div className="space-y-6 select-none">
+    <div className="space-y-6">
       {/* سربرگ بخش آدرس‌ها */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>

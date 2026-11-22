@@ -1377,13 +1377,12 @@ export function useAdminUsers() {
       try {
         const data = await apiFetch<User[]>("/admin/users");
         return Array.isArray(data) ? data : [];
-      } catch {
-        try {
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 404) {
           const fallback = await apiFetch<User[]>("/users");
           return Array.isArray(fallback) ? fallback : [];
-        } catch {
-          return [];
         }
+        throw err;
       }
     },
   });

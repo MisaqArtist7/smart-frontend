@@ -46,7 +46,7 @@ export function AdminTopbar({ onOpenMobileSidebar }: AdminTopbarProps) {
   const { user, logout } = useAuth();
 
   return (
-    <header className="h-18 bg-card border-b border-border px-4 sm:px-6 lg:px-8 flex items-center justify-between sticky top-0 z-30 select-none">
+    <header className="h-18 bg-card border-b border-border px-4 sm:px-6 lg:px-8 flex items-center justify-between sticky top-0 z-30">
       {/* بخش راست (RTL): دکمه همبرگر موبایل و مسیر صفحه (Breadcrumb) */}
       <div className="flex items-center gap-3.5">
         <button

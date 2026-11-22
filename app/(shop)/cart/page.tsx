@@ -74,7 +74,7 @@ export default function CartPage() {
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <Header />
 
-      <main className="flex-1 mx-auto max-w-8xl w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 select-none">
+      <main className="flex-1 mx-auto max-w-8xl w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
         {/* نوار مراحل خرید (Checkout Steps Bar) */}
         <div className="rounded-2xl border border-border bg-card p-4 shadow-xs">
           <div className="flex items-center justify-center gap-3 sm:gap-8 text-sm font-bold">

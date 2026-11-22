@@ -45,7 +45,7 @@ export function SpecialOffers({ className }: SpecialOffersProps) {
     <section
       dir="rtl"
       aria-label="پیشنهادهای شگفت‌انگیز"
-      className={cn("w-full py-4 select-none", className)}
+      className={cn("w-full py-4", className)}
     >
       <div className="rounded-3xl bg-primary text-primary-foreground p-4 sm:p-6 lg:p-7 shadow-md overflow-hidden relative">
         {/* پس‌زمینه تزئینی ملایم */}

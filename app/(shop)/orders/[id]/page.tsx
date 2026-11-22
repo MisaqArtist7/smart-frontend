@@ -311,7 +311,7 @@ function OrderDetailsContent() {
     <div dir="rtl" className="min-h-screen bg-background text-foreground flex flex-col">
       <Header />
 
-      <main className="flex-1 mx-auto max-w-5xl w-full px-4 sm:px-6 lg:px-8 py-8 space-y-6 select-none">
+      <main className="flex-1 mx-auto max-w-5xl w-full px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         {/* بنر موفقیت ثبت سفارش اولیه هدایت‌شده از چک‌اوت */}
         {isNew && (
           <div className="rounded-3xl border border-emerald-500/30 bg-emerald-500/10 p-6 sm:p-8 text-center space-y-3">

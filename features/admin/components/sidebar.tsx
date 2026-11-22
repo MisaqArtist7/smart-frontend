@@ -105,7 +105,7 @@ export function AdminSidebar({
   return (
     <aside
       className={cn(
-        "flex flex-col h-full bg-card border-e border-border transition-all duration-300 select-none",
+        "flex flex-col h-full bg-card border-e border-border transition-all duration-300",
         isCollapsed ? "w-20" : "w-64",
         className
       )}

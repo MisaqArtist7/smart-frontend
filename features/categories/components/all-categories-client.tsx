@@ -44,7 +44,7 @@ export function AllCategoriesClient() {
   }, [serverCategories]);
 
   return (
-    <div className="space-y-8 sm:space-y-10 select-none">
+    <div className="space-y-8 sm:space-y-10">
       {/* نوار مسیر صفحه (Breadcrumb) */}
       <nav
         aria-label="مسیر صفحه"
@@ -122,7 +122,7 @@ export function AllCategoriesClient() {
                 <Link
                   key={cat.id}
                   href={targetHref}
-                  className="group relative block h-[200px] sm:h-[220px] md:h-[240px] w-full rounded-2xl border border-border/80 bg-card shadow-xs transition-all duration-300 hover:shadow-xl hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-border overflow-hidden select-none"
+                  className="group relative block h-[200px] sm:h-[220px] md:h-[240px] w-full rounded-2xl border border-border/80 bg-card shadow-xs transition-all duration-300 hover:shadow-xl hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-border overflow-hidden"
                 >
                   {/* تصویر تمام‌صفحه */}
                   <Image

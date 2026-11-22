@@ -49,7 +49,7 @@ export default function AdminLayout({
     return (
       <div
         dir="rtl"
-        className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 text-center select-none"
+        className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 text-center"
       >
         <div className="w-16 h-16 rounded-3xl bg-primary/10 text-primary flex items-center justify-center mb-4 ring-8 ring-primary/5">
           <Loader2 className="w-8 h-8 animate-spin" />
@@ -85,7 +85,7 @@ export default function AdminLayout({
     return (
       <div
         dir="rtl"
-        className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-4 sm:p-6 text-center select-none"
+        className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-4 sm:p-6 text-center"
       >
         <div className="w-full max-w-md bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden space-y-5">
           <div className="w-16 h-16 rounded-3xl bg-destructive/10 text-destructive flex items-center justify-center mx-auto ring-8 ring-destructive/5">

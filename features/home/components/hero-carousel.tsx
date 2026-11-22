@@ -114,7 +114,7 @@ export function HeroCarousel({
     <section
       dir="rtl"
       aria-label="بنرهای تبلیغاتی اصلی"
-      className={cn("w-full max-w-8xl mx-auto mt-4 sm:mt-6 px-4 sm:px-6 lg:px-8 relative select-none", className)}
+      className={cn("w-full max-w-8xl mx-auto mt-4 sm:mt-6 px-4 sm:px-6 lg:px-8 relative", className)}
     >
       <Carousel
         dir="rtl"
@@ -132,7 +132,7 @@ export function HeroCarousel({
               <Link
                 href={banner.link}
                 draggable={false}
-                className="group relative block w-full aspect-[2154/730] max-h-[200px] sm:max-h-[280px] md:max-h-[320px] lg:max-h-[350px] xl:max-h-[380px] rounded-2xl border border-border/80 shadow-xs overflow-hidden outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 select-none"
+                className="group relative block w-full aspect-[2154/730] max-h-[200px] sm:max-h-[280px] md:max-h-[320px] lg:max-h-[350px] xl:max-h-[380px] rounded-2xl border border-border/80 shadow-xs overflow-hidden outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0"
               >
                 {/* تصویر اصلی بنر هم‌اندازه دقیق با عرض اسلایدر */}
                 <Image
@@ -142,7 +142,7 @@ export function HeroCarousel({
                   height={7777}
                   draggable={false}
                   priority={index === 0}
-                  className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.01] select-none pointer-events-none"
+                  className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.01] pointer-events-none"
                 />
               </Link>
             </CarouselItem>
