@@ -150,10 +150,16 @@ export const DEFAULT_HEADER_CONFIG: HeaderConfig = {
         badge: "ویژه",
       },
       {
-        id: "industrial",
-        title: "تجهیزات صنعتی",
-        href: "/industrial",
+        id: "infrastructure",
+        title: "تجهیزات زیر ساخت",
+        href: `/category/${encodeURIComponent("تچهیزات-زیر-ساخت")}`,
         icon: Layers,
+      },
+      {
+        id: "security-systems",
+        title: "سیستم های امنیتی",
+        href: `/category/${encodeURIComponent("سیستم-های-امنیتی")}`,
+        icon: ShieldAlert,
       },
       {
         id: "contact",
