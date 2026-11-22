@@ -101,7 +101,7 @@ function toCategoryPayload(v: CategoryFormValues): CreateCategoryInput {
     parentId: v.parentId && v.parentId !== "" ? Number(v.parentId) : null,
     description: v.description?.trim() || undefined,
     image: normalizedImage || undefined,
-    imageAlt: v.imageAlt?.trim() || undefined,
+    imageAlt: v.name.trim() || undefined,
     metaTitle: v.metaTitle?.trim() || undefined,
     metaDescription: v.metaDescription?.trim() || undefined,
     sortOrder: v.sortOrder ?? 0,
@@ -214,7 +214,7 @@ export default function AdminCategoriesPage() {
       parentId: cat.parentId ? String(cat.parentId) : "",
       description: cat.description || "",
       image: cat.image || "",
-      imageAlt: cat.imageAlt || "",
+      imageAlt: cat.name || "",
       metaTitle: cat.metaTitle || "",
       metaDescription: cat.metaDescription || "",
       sortOrder: cat.sortOrder,
@@ -224,11 +224,12 @@ export default function AdminCategoriesPage() {
     setIsModalOpen(true);
   };
 
-  // تولید خودکار اسلاگ بر اساس نام دسته‌بندی (همیشه هماهنگ با نام)
+  // تولید خودکار اسلاگ و متن جایگزین تصویر بر اساس نام دسته‌بندی
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setValue("name", val, { shouldValidate: true });
     setValue("slug", generateSlug(val), { shouldValidate: true });
+    setValue("imageAlt", val, { shouldValidate: true });
   };
 
   // ثبت فرم (ایجاد یا ویرایش)
@@ -662,16 +663,20 @@ export default function AdminCategoriesPage() {
                 )}
               </div>
 
-              {/* متن جایگزین تصویر (Alt) */}
+              {/* متن جایگزین تصویر (Alt - خودکار و فقط‌خواندنی) */}
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-foreground flex items-center justify-between">
-                  <span>متن جایگزین تصویر (Alt)</span>
-                  <span className="text-[11px] text-muted-foreground font-normal">اختیاری</span>
+                  <span>متن جایگزین تصویر (Alt - خودکار)</span>
                 </label>
                 <Input
                   {...register("imageAlt")}
-                  placeholder="تصویر کلید و پریز هوشمند"
-                  className={errors.imageAlt ? "border-destructive" : ""}
+                  readOnly
+                  tabIndex={-1}
+                  placeholder="برابر با نام دسته‌بندی..."
+                  className={cn(
+                    "bg-muted/60 cursor-not-allowed opacity-80 focus-visible:ring-0",
+                    errors.imageAlt && "border-destructive"
+                  )}
                 />
                 {errors.imageAlt && (
                   <p className="text-[11px] text-destructive">{errors.imageAlt.message}</p>

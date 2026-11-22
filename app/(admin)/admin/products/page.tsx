@@ -140,7 +140,10 @@ function toProductPayload(
     metaTitle: v.metaTitle?.trim() || undefined,
     metaDescription: v.metaDescription?.trim() || undefined,
     isActive: v.isActive,
-    images: images && images.length > 0 ? images : undefined,
+    images:
+      images && images.length > 0
+        ? images.map((img) => ({ ...img, alt: v.title.trim() }))
+        : undefined,
   };
 }
 
@@ -201,6 +204,8 @@ export default function AdminProductsPage() {
     handleSubmit,
     reset,
     setValue,
+    getValues,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
@@ -267,7 +272,7 @@ export default function AdminProductsPage() {
     setProductImages(
       (prod.images || []).map((img, i) => ({
         url: img.url,
-        alt: img.alt || "",
+        alt: prod.title,
         sortOrder: img.sortOrder ?? i,
       }))
     );
@@ -302,11 +307,14 @@ export default function AdminProductsPage() {
     setIsCreateOpen(true);
   };
 
-  // تولید خودکار اسلاگ هنگام تغییر عنوان محصول
+  // تولید خودکار اسلاگ و متن جایگزین تصویر هنگام تغییر عنوان محصول
+  const watchedTitle = watch("title");
+
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setValue("title", val, { shouldValidate: true });
     setValue("slug", generateSlug(val), { shouldValidate: true });
+    setProductImages((prev) => prev.map((img) => ({ ...img, alt: val })));
   };
 
   // مدیریت مشخصات فنی (specs)
@@ -333,9 +341,10 @@ export default function AdminProductsPage() {
     if (!file) return;
     try {
       const res = await uploadMutation.mutateAsync({ file, type: "product" });
+      const currentTitle = getValues("title")?.trim() || "";
       setProductImages((prev) => [
         ...prev,
-        { url: res.path, alt: "", sortOrder: prev.length },
+        { url: res.path, alt: currentTitle, sortOrder: prev.length },
       ]);
       toast.success("تصویر با موفقیت آپلود شد.");
     } catch (err: unknown) {
@@ -898,10 +907,11 @@ export default function AdminProductsPage() {
                             </button>
                           </div>
                           <Input
-                            value={img.alt || ""}
-                            onChange={(e) => handleUpdateImageAlt(idx, e.target.value)}
-                            placeholder="متن جایگزین (Alt)..."
-                            className="h-7 text-[10px] px-2"
+                            value={watchedTitle || img.alt || ""}
+                            readOnly
+                            tabIndex={-1}
+                            placeholder="برابر با عنوان محصول..."
+                            className="h-7 text-[10px] px-2 bg-muted/60 cursor-not-allowed opacity-80 focus-visible:ring-0"
                           />
                         </div>
                       </div>
