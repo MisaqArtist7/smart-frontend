@@ -323,7 +323,7 @@ function SingleProductContent({ params }: PageProps) {
           <div className="lg:col-span-5 space-y-5">
             <div>
               {/* عنوان کالا */}
-              <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight leading-snug">
+              <h1 className="text-lg sm:text-xl font-bold text-foreground tracking-tight leading-snug">
                 {product.title}
               </h1>
             </div>
@@ -457,83 +457,42 @@ function SingleProductContent({ params }: PageProps) {
               </div>
             </div>
 
-            {/* بخش قیمت و تخفیف */}
-            <div className="space-y-1 text-end">
-              {hasDiscount && (
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-destructive bg-destructive/10 px-2 py-0.5 rounded-full">
-                    {discountPercent}٪ تخفیف
-                  </span>
-                  <span className="text-sm text-muted-foreground line-through font-mono">
-                    {product.price.toLocaleString("fa-IR")} تومان
-                  </span>
-                </div>
-              )}
-
-              <div className="flex items-baseline justify-end gap-1.5">
-                <span className="text-3xl sm:text-4xl font-black text-foreground tracking-tight font-mono">
-                  {finalPrice.toLocaleString("fa-IR")}
-                </span>
-                <span className="text-sm text-muted-foreground font-medium">تومان</span>
+            {/* بخش استعلام قیمت تلفنی */}
+            <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20 space-y-2 text-center">
+              <div className="text-xs font-bold text-primary flex items-center justify-center gap-1.5">
+                <PhoneCall className="size-4" />
+                <span>استعلام قیمت و موجودی روز</span>
               </div>
-
-              {hasDiscount && (
-                <div className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
-                  سود شما از این خرید: {(product.price - finalPrice).toLocaleString("fa-IR")} تومان
-                </div>
-              )}
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                با توجه به نوسانات بازار تجهیزات برقی، جهت دریافت قیمت دقیق و ثبت سفارش تماس بگیرید.
+              </p>
             </div>
 
-            {/* شمارنده انتخاب تعداد */}
-            {product.stock > 0 && (
-              <div className="flex items-center justify-between p-2 rounded-2xl border border-border bg-muted/20">
-                <span className="text-sm font-bold text-foreground ps-2">تعداد سفارش:</span>
-                <div className="flex items-center gap-2 bg-card rounded-xl border border-border p-1">
-                  <button
-                    type="button"
-                    onClick={handleIncrease}
-                    disabled={quantity >= product.stock}
-                    className="size-7 rounded-lg hover:bg-accent flex items-center justify-center text-foreground disabled:opacity-40 cursor-pointer"
-                  >
-                    <Plus className="size-3.5" />
-                  </button>
-
-                  <span className="font-mono font-bold text-sm px-2 min-w-5 text-center">
-                    {quantity.toLocaleString("fa-IR")}
-                  </span>
-
-                  <button
-                    type="button"
-                    onClick={handleDecrease}
-                    disabled={quantity <= 1}
-                    className="size-7 rounded-lg hover:bg-accent flex items-center justify-center text-foreground disabled:opacity-40 cursor-pointer"
-                  >
-                    <Minus className="size-3.5" />
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* دکمه‌های اقدام خرید */}
+            {/* دکمه‌های تماس برای استعلام قیمت */}
             <div className="space-y-2.5 pt-1">
-              <Button
-                onClick={handleAddToCart}
-                disabled={product.stock === 0}
-                className="w-full h-10 px-5 rounded-md bg-primary text-primary-foreground font-bold text-sm leading-none flex items-center justify-center gap-2 shadow-xs hover:bg-primary/90 cursor-pointer"
+              <a
+                href="tel:09122193551"
+                className="w-full h-11 px-4 rounded-xl bg-primary text-primary-foreground font-bold text-sm flex items-center justify-center gap-2 shadow-xs hover:bg-primary/90 transition-all"
               >
-                <ShoppingCart className="size-4" />
-                <span>افزودن به سبد خرید</span>
-              </Button>
+                <PhoneCall className="size-4" />
+                <span>تماس جهت استعلام قیمت: ۰۹۱۲۲۱۹۳۵۵۱</span>
+              </a>
 
-              <Button
-                onClick={handleBuyNow}
-                disabled={product.stock === 0}
-                variant="outline"
-                className="w-full h-10 px-5 rounded-md border-primary/30 text-primary hover:bg-primary/5 font-bold text-sm leading-none flex items-center justify-center gap-2 cursor-pointer"
+              <a
+                href="tel:09302340279"
+                className="w-full h-10 px-4 rounded-xl border border-primary/30 text-primary hover:bg-primary/5 font-bold text-xs flex items-center justify-center gap-2 transition-all"
               >
-                <Zap className="size-4" />
-                <span>خرید سریع و تسویه</span>
-              </Button>
+                <PhoneCall className="size-3.5" />
+                <span>شماره تماس فروش: ۰۹۳۰۲۳۴۰۲۷۹</span>
+              </a>
+
+              <Link
+                href="/contact-us"
+                className="w-full h-9 px-4 rounded-xl border border-border text-muted-foreground hover:text-foreground hover:bg-muted/40 font-semibold text-xs flex items-center justify-center gap-1.5 transition-all"
+              >
+                <MessageSquare className="size-3.5" />
+                <span>درخواست پیش‌فاکتور یا ارسال پیام</span>
+              </Link>
             </div>
           </div>
         </div>
