@@ -60,6 +60,7 @@ export class ApiError extends Error {
 // ----------------------------------------------------
 
 let refreshPromise: Promise<boolean> | null = null;
+let lastRefreshedAt = 0;
 let unauthorizedListeners: Array<() => void> = [];
 
 export function onUnauthorized(callback: () => void): () => void {
@@ -91,6 +92,7 @@ export function triggerUnauthorized() {
  * Concurrent 401 requests share a single refresh call.
  */
 export async function refreshSession(): Promise<boolean> {
+  if (Date.now() - lastRefreshedAt < 3000) return true;
   if (refreshPromise) return refreshPromise;
 
   refreshPromise = (async () => {
@@ -102,6 +104,9 @@ export async function refreshSession(): Promise<boolean> {
           Accept: "application/json",
         },
       });
+      if (res.ok) {
+        lastRefreshedAt = Date.now();
+      }
       return res.ok;
     } catch {
       return false;
