@@ -128,7 +128,7 @@ function toProductPayload(
 ) {
   return {
     title: v.title.trim(),
-    slug: v.slug && v.slug.trim() ? v.slug.trim() : generateSlug(v.title),
+    slug: generateSlug(v.title) || v.slug.trim(),
     categoryId: Number(v.categoryId),
     brandId: v.brandId && v.brandId !== "" ? Number(v.brandId) : null,
     price: v.price,
@@ -158,6 +158,39 @@ export default function AdminProductsPage() {
   const { data: products = [], isLoading: isProductsLoading } = useAdminProducts();
   const { data: categories = [] } = useAdminCategories();
   const { data: brands = [] } = useAdminBrands();
+
+  // مرتب‌سازی درختی دسته‌بندی‌ها برای تشخیص دسته‌های مادر و زیرمجموعه‌ها در لیست کشویی
+  const hierarchicalCategories = useMemo(() => {
+    const byParent = new Map<number | null, typeof categories>();
+    const ids = new Set(categories.map((c) => c.id));
+
+    for (const cat of categories) {
+      const parentKey = cat.parentId && ids.has(cat.parentId) ? cat.parentId : null;
+      const list = byParent.get(parentKey) ?? [];
+      list.push(cat);
+      byParent.set(parentKey, list);
+    }
+
+    const result: Array<{ id: number; label: string }> = [];
+
+    const visit = (parentId: number | null, depth: number, parentName?: string) => {
+      const children = (byParent.get(parentId) ?? []).sort(
+        (a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)
+      );
+      for (const cat of children) {
+        const indent = depth > 0 ? "\u00A0\u00A0\u00A0".repeat(depth) + "↳ " : "";
+        const label =
+          depth > 0 && parentName
+            ? `${indent}${cat.name} (زیرمجموعه ${parentName})`
+            : cat.name;
+        result.push({ id: cat.id, label });
+        visit(cat.id, depth + 1, cat.name);
+      }
+    };
+
+    visit(null, 0);
+    return result;
+  }, [categories]);
   const createProductMutation = useCreateProduct();
   const updateProductMutation = useUpdateProduct();
   const deleteProductMutation = useDeleteProduct();
@@ -446,9 +479,9 @@ export default function AdminProductsPage() {
                 className="h-10 rounded-xl"
               >
                 <option value="all">همه دسته‌بندی‌ها</option>
-                {categories.map((cat) => (
+                {hierarchicalCategories.map((cat) => (
                   <option key={cat.id} value={cat.id}>
-                    {cat.name}
+                    {cat.label}
                   </option>
                 ))}
               </Select>
@@ -654,8 +687,8 @@ export default function AdminProductsPage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 pt-1">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
               {/* نام کالا */}
-              <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-bold text-foreground">
+              <div className="space-y-2 sm:col-span-2">
+                <label className="block text-xs font-bold text-foreground">
                   نام کامل محصول <span className="text-destructive">*</span>
                 </label>
                 <Input
@@ -669,22 +702,24 @@ export default function AdminProductsPage() {
                 )}
               </div>
 
-              {/* اسلاگ */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground">
-                  اسلاگ محصول (شناسه یکتای URL)
+              {/* اسلاگ (خودکار و فقط‌خواندنی) */}
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-foreground">
+                  اسلاگ محصول (خودکار)
                 </label>
                 <Input
                   {...register("slug")}
-                  placeholder="مثال: کلید-دوپل-دلند یا deland-switch"
+                  readOnly
+                  tabIndex={-1}
+                  placeholder="به‌صورت خودکار ساخته می‌شود..."
                   dir="auto"
                   className={cn(
-                    "text-start",
+                    "text-start bg-muted/60 cursor-not-allowed opacity-80 focus-visible:ring-0",
                     errors.slug && "border-destructive"
                   )}
                 />
                 <p className="text-[10px] text-muted-foreground">
-                  می‌توانید اسلاگ فارسی یا انگلیسی دلخواه وارد کنید (فاصله‌ها با خط تیره -).
+                  به‌صورت خودکار و هماهنگ با نام محصول تولید می‌شود (غیرقابل ویرایش دستی).
                 </p>
                 {errors.slug && (
                   <p className="text-[11px] text-destructive">{errors.slug.message}</p>
@@ -692,8 +727,8 @@ export default function AdminProductsPage() {
               </div>
 
               {/* SKU */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground">
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-foreground">
                   کد کالا / SKU (اختیاری)
                 </label>
                 <Input
@@ -708,8 +743,8 @@ export default function AdminProductsPage() {
               </div>
 
               {/* دسته‌بندی */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground">
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-foreground">
                   دسته‌بندی محصول <span className="text-destructive">*</span>
                 </label>
                 <Select
@@ -717,9 +752,9 @@ export default function AdminProductsPage() {
                   className={errors.categoryId ? "border-destructive" : ""}
                 >
                   <option value="">انتخاب دسته‌بندی...</option>
-                  {categories.map((cat) => (
+                  {hierarchicalCategories.map((cat) => (
                     <option key={cat.id} value={cat.id}>
-                      {cat.name}
+                      {cat.label}
                     </option>
                   ))}
                 </Select>
@@ -729,8 +764,8 @@ export default function AdminProductsPage() {
               </div>
 
               {/* برند محصول (اختیاری) */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground">
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-foreground">
                   برند سازنده محصول (اختیاری)
                 </label>
                 <Select {...register("brandId")}>
@@ -747,8 +782,8 @@ export default function AdminProductsPage() {
               </div>
 
               {/* موجودی */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground">
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-foreground">
                   تعداد موجودی انبار <span className="text-destructive">*</span>
                 </label>
                 <Input
@@ -763,8 +798,8 @@ export default function AdminProductsPage() {
               </div>
 
               {/* قیمت اصلی */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground">
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-foreground">
                   قیمت اصلی (تومان) <span className="text-destructive">*</span>
                 </label>
                 <Input
@@ -779,8 +814,8 @@ export default function AdminProductsPage() {
               </div>
 
               {/* قیمت با تخفیف */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-foreground">
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-foreground">
                   قیمت با تخفیف (اختیاری)
                 </label>
                 <Input
@@ -880,7 +915,7 @@ export default function AdminProductsPage() {
               </div>
 
               {/* معرفی محصول (توضیحات تفصیلی) */}
-              <div className="space-y-1.5 sm:col-span-2">
+              <div className="space-y-2 sm:col-span-2">
                 <label className="text-xs font-bold text-foreground flex items-center justify-between">
                   <span>معرفی محصول (توضیحات کلی و نقد تخصصی)</span>
                   <span className="text-[11px] text-muted-foreground font-normal">اختیاری</span>
@@ -996,8 +1031,8 @@ export default function AdminProductsPage() {
               </div>
 
               {/* سئو */}
-              <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-bold text-foreground">
+              <div className="space-y-2 sm:col-span-2">
+                <label className="block text-xs font-bold text-foreground">
                   عنوان سئو (Meta Title)
                 </label>
                 <Input
@@ -1010,8 +1045,8 @@ export default function AdminProductsPage() {
                 )}
               </div>
 
-              <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-bold text-foreground">
+              <div className="space-y-2 sm:col-span-2">
+                <label className="block text-xs font-bold text-foreground">
                   توضیحات سئو (Meta Description)
                 </label>
                 <Textarea
