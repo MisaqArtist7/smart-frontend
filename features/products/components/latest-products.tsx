@@ -3,7 +3,7 @@
 import React, { useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Eye, PhoneCall } from "lucide-react";
+import { Eye } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
@@ -147,17 +147,23 @@ export function LatestProducts({
                         )}
                       </div>
 
-                      {/* عنوان و استعلام قیمت */}
+                      {/* عنوان و قیمت */}
                       <div className="space-y-2 mt-auto">
                         <h3 className="text-xs sm:text-sm font-bold text-foreground line-clamp-2 overflow-hidden h-12 leading-6 group-hover:text-primary transition-colors">
                           {product.title}
                         </h3>
 
-                        <div className="pt-2 border-t border-border/40 flex items-center justify-between min-h-[2.75rem]">
-                          <span className="text-xs font-bold text-primary flex items-center gap-1.5">
-                            <PhoneCall className="size-3.5 shrink-0" />
-                            استعلام قیمت (تماس بگیرید)
-                          </span>
+                        <div className="pt-1.5 border-t border-border/40 flex flex-col items-end justify-end min-h-[3.25rem]">
+                          {hasDiscount && (
+                            <span className="text-[11px] text-muted-foreground line-through">
+                              {product.price.toLocaleString("fa-IR")}
+                            </span>
+                          )}
+                          <div className="flex items-center gap-1">
+                            <span className="text-sm sm:text-base font-black text-foreground">
+                              {formatToman(displayPrice)}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </Link>

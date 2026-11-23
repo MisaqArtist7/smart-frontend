@@ -3,7 +3,7 @@
 import React, { useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Flame, ArrowLeft, Eye, Percent, PhoneCall } from "lucide-react";
+import { Flame, ArrowLeft, Eye, Percent } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
@@ -141,11 +141,20 @@ export function SpecialOffers({ className }: SpecialOffersProps) {
                           </h3>
                         </Link>
 
-                        {/* استعلام قیمت */}
+                        {/* قیمت و تخفیف */}
                         <div className="flex items-center justify-between mt-auto pt-3 pb-2 px-0.5 border-t border-border/40">
-                          <span className="text-xs font-bold text-primary flex items-center gap-1.5">
-                            <PhoneCall className="size-3.5 shrink-0" />
-                            استعلام قیمت (تماس بگیرید)
+                          <div className="flex flex-col">
+                            <span className="text-sm font-black text-foreground tracking-tight">
+                              {currentPrice.toLocaleString("fa-IR")}
+                            </span>
+                            {product.discountPrice != null && (
+                              <span className="text-[11px] text-muted-foreground line-through">
+                                {product.price.toLocaleString("fa-IR")}
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[11px] text-muted-foreground font-medium">
+                            تومان
                           </span>
                         </div>
 
