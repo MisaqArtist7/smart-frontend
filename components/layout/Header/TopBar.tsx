@@ -15,46 +15,22 @@ export function TopBar({ config, className = "" }: TopBarProps) {
     <div
       className={`border-b border-border bg-card text-xs transition-colors ${className}`}
     >
-      <div className="mx-auto flex h-12 bg-gray-100 items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* سمت راست: نشانگر وضعیت + متن ارسال رایگان */}
-        <div className="flex items-center gap-2">
+      <div className="mx-auto max-w-8xl flex min-h-10 bg-gray-100 items-center justify-center sm:justify-between gap-2 px-3 sm:px-6 lg:px-8 py-1.5">
+        {/* سمت راست: نشانگر وضعیت + متن اطلاعیه (در دسکتاپ و تبلت) */}
+        <div className="hidden sm:flex items-center gap-2 min-w-0">
           <span className="relative flex size-2 shrink-0">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
             <span className="relative inline-flex size-2 rounded-full bg-primary" />
           </span>
-          <span className="text-muted-foreground font-medium truncate max-w-[200px] sm:max-w-md md:max-w-none">
+          <span className="text-muted-foreground font-medium truncate max-w-xs md:max-w-none">
             {announcement.text}
           </span>
         </div>
 
-        {/* سمت چپ: کادر کد تخفیف با خط‌چین تمیز
-        <div className="flex items-center gap-2 shrink-0">
-          <span className="hidden sm:inline text-muted-foreground">
-            {discount.label}
-          </span>
-          <button
-            type="button"
-            onClick={handleCopyCode}
-            title={copied ? (discount.copiedNotice || "کپی شد!") : "کلیک جهت کپی کد تخفیف"}
-            className="group flex items-center gap-1.5 rounded border border-dashed border-primary px-2 py-0.5 font-mono text-xs font-bold text-primary transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-          >
-            <span>{discount.code}</span>
-            {copied ? (
-              <Check className="size-3 text-primary animate-in zoom-in" />
-            ) : (
-              <Copy className="size-3 opacity-60 group-hover:opacity-100 transition-opacity" />
-            )}
-            {copied && (
-              <span className="text-[10px] font-sans font-medium">
-                {discount.copiedNotice || "کپی شد!"}
-              </span>
-            )}
-          </button>
-        </div> */}
-          
+        {/* سمت چپ (در موبایل وسط‌چین): ارسال رایگان */}
         <div className="flex items-center gap-2 shrink-0">
           <span
-            className="group flex items-center gap-1.5 rounded border border-dashed border-primary px-2 py-0.5 font-mono text-xs font-bold text-primary transition-colors hover:bg-accent focus:outline-none focus:ring-1 focus:ring-primary"
+            className="group flex items-center gap-1.5 rounded border border-dashed border-primary px-2 py-0.5 font-mono text-[11px] sm:text-xs font-bold text-primary transition-colors hover:bg-accent"
           >
             ارسال بالای ۳ میلیون تومان رایگان است
           </span>

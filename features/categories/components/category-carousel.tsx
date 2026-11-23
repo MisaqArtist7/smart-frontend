@@ -102,11 +102,11 @@ export function CategoryCarousel({
             {displayCategories.map((cat) => (
               <CarouselItem
                 key={cat.id}
-                className="ps-3 sm:ps-4 basis-[44%] sm:basis-[30%] md:basis-[22%] lg:basis-[16.6%] xl:basis-[15%] 2xl:basis-[14.2857%]"
+                className="ps-3 sm:ps-4 basis-[48%] sm:basis-[31%] md:basis-[23%] lg:basis-[16.66%] xl:basis-[14.28%]"
               >
                 <Link
                   href={cat.href}
-                  className="group relative block h-45 sm:h-50 md:h-55 w-full rounded-2xl border border-border/80 bg-card shadow-xs transition-all duration-300 hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-border overflow-hidden"
+                  className="group relative block h-40 sm:h-48 md:h-52 w-full rounded-2xl border border-border/80 bg-card shadow-xs transition-all duration-300 hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-border overflow-hidden"
                 >
                   {/* تصویر تمام‌صفحه که کل کارت را پر می‌کند */}
                   <Image
@@ -124,10 +124,10 @@ export function CategoryCarousel({
                   <div className="absolute inset-0 z-10 bg-black/45 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
                   {/* کانتینر متن: در حالت عادی پایین عکس است و در زمان هاور با انیمیشن روان به وسط کارت می‌آید */}
-                  <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-3 sm:p-4 pointer-events-none">
-                    <div className="flex flex-col items-center justify-center text-center w-full translate-y-13 sm:translate-y-15 md:translate-y-16.5 group-hover:translate-y-0 transition-transform duration-500 ease-out">
+                  <div className="absolute inset-0 z-20 flex flex-col items-center justify-end pb-3 sm:pb-4 group-hover:justify-center group-hover:pb-0 p-2 sm:p-4 pointer-events-none transition-all duration-300">
+                    <div className="flex flex-col items-center justify-center text-center w-full transition-transform duration-500 ease-out">
                       {/* نام دسته‌بندی با بردر سفید در پایین عکس و حالت هاور */}
-                      <span className="text-white font-bold text-xs sm:text-sm md:text-base text-center tracking-tight drop-shadow-md px-3.5 py-1.5 rounded-xl border border-white bg-black/35 backdrop-blur-[2px] transition-all duration-500 group-hover:bg-primary/95 group-hover:shadow-lg group-hover:border-white group-hover:font-black max-w-[92%] line-clamp-1">
+                      <span className="text-white font-bold text-[11px] sm:text-xs md:text-sm text-center tracking-tight drop-shadow-md px-2.5 py-1 sm:px-3.5 sm:py-1.5 rounded-xl border border-white/80 bg-black/45 backdrop-blur-[2px] transition-all duration-500 group-hover:bg-primary/95 group-hover:shadow-lg group-hover:border-white group-hover:font-black max-w-[94%] line-clamp-1">
                         {cat.title}
                       </span>
 

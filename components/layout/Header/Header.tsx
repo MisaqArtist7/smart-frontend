@@ -419,36 +419,38 @@ export function Header({
   };
 
   return (
-    <header
-      dir="rtl"
-      className={`w-full bg-background transition-colors ${
-        sticky ? "sticky top-0 z-40 shadow-xs backdrop-blur-md" : ""
-      } ${className}`}
-    >
-      {/* طبقه اول: نوار بالا (Top Bar) */}
-      <TopBar config={mergedConfig.topBar} />
+    <>
+      <header
+        dir="rtl"
+        className={`w-full bg-background transition-colors ${
+          sticky ? "sticky top-0 z-40 shadow-xs backdrop-blur-md" : ""
+        } ${className}`}
+      >
+        {/* طبقه اول: نوار بالا (Top Bar) */}
+        <TopBar config={mergedConfig.topBar} />
 
-      {/* طبقه دوم: نوار میانی (Main Bar) */}
-      <MainBar
-        config={mergedConfig.mainBar}
-        cartCount={effectiveCartCount}
-        onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
-      />
+        {/* طبقه دوم: نوار میانی (Main Bar) */}
+        <MainBar
+          config={mergedConfig.mainBar}
+          cartCount={effectiveCartCount}
+          onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
+        />
 
-      {/* طبقه سوم: نوار ناوبری (Navigation Bar) */}
-      <NavigationBar
-        config={mergedConfig.navigation}
-        cartCount={effectiveCartCount}
-      />
+        {/* طبقه سوم: نوار ناوبری (Navigation Bar) */}
+        <NavigationBar
+          config={mergedConfig.navigation}
+          cartCount={effectiveCartCount}
+        />
+      </header>
 
-      {/* منوی دراور ویژه صفحات موبایل و تبلت */}
+      {/* منوی دراور ویژه صفحات موبایل و تبلت (خارج از header تا backdrop-blur ارتفاع آن را محدود نکند) */}
       <MobileMenu
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
         config={mergedConfig}
         cartCount={effectiveCartCount}
       />
-    </header>
+    </>
   );
 }
 

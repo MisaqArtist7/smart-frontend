@@ -24,7 +24,7 @@ export function B2BConsultation({ className }: B2BConsultationProps) {
       aria-label="خدمات پروژه‌ای و سازمانی B2B"
       className={cn("w-full py-4", className)}
     >
-      <div className="relative rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/[0.04] via-card to-card p-6 sm:p-8 lg:p-10 shadow-xs overflow-hidden">
+      <div className="relative rounded-2xl sm:rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/[0.04] via-card to-card p-4 sm:p-8 lg:p-10 shadow-xs overflow-hidden">
         {/* نورپردازی پس‌زمینه */}
         <div className="absolute top-0 end-0 size-80 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 start-0 size-60 bg-primary/[0.03] rounded-full blur-2xl pointer-events-none" />

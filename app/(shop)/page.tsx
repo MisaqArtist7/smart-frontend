@@ -13,7 +13,7 @@ import FaqSection from "@/components/home/faq-section";
 export default function HomePage() {
   return (
     <div
-      className="min-h-screen text-foreground flex flex-col"
+      className="min-h-screen text-foreground flex flex-col overflow-x-hidden"
       style={{
         backgroundColor: "color-mix(in srgb, var(--primary) 3%, var(--background))",
       }}

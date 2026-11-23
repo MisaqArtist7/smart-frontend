@@ -67,8 +67,8 @@ export function MobileMenu({
         aria-hidden="true"
       />
 
-      {/* پنل کشویی از سمت راست (RTL) */}
-      <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-xs sm:max-w-sm flex-col bg-card border-l border-border shadow-2xl animate-in slide-in-from-right duration-250">
+      {/* پنل کشویی تمام‌ارتفاع از سمت راست (RTL) */}
+      <div className="fixed inset-y-0 right-0 z-50 flex h-dvh w-[85vw] max-w-xs sm:max-w-sm flex-col bg-card border-l border-border shadow-2xl animate-in slide-in-from-right duration-250">
         {/* سربرگ دراور موبایل */}
         <div className="flex items-center justify-between border-b border-border p-4">
           <Link
