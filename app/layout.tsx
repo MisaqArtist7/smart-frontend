@@ -12,9 +12,35 @@ const vazir = Vazirmatn({
   variable: "--font-vazir",
 });
 
+const SITE_URL = (
+  process.env.NEXT_PUBLIC_SITE_URL || "https://smart-electric.ir"
+).replace(/\/+$/, "");
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "فروشگاه اینترنتی اسمارت الکتریک",
-  description: "خرید آنلاین انواع محصولات و تجهیزات برق و شبکه",
+  description: "خرید آنلاین انواع محصولات و تجهیزات برق، روشنایی، خانه هوشمند و شبکه",
+  openGraph: {
+    type: "website",
+    locale: "fa_IR",
+    siteName: "فروشگاه اینترنتی اسمارت الکتریک",
+    title: "فروشگاه اینترنتی اسمارت الکتریک",
+    description: "خرید آنلاین انواع محصولات و تجهیزات برق، روشنایی، خانه هوشمند و شبکه",
+    images: [
+      {
+        url: "/images/brand/logo.png",
+        width: 512,
+        height: 512,
+        alt: "فروشگاه اینترنتی اسمارت الکتریک",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "فروشگاه اینترنتی اسمارت الکتریک",
+    description: "خرید آنلاین انواع محصولات و تجهیزات برق، روشنایی، خانه هوشمند و شبکه",
+    images: ["/images/brand/logo.png"],
+  },
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },

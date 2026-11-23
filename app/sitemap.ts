@@ -28,6 +28,11 @@ const STATIC_ROUTES: StaticRouteConfig[] = [
     priority: 1.0,
   },
   {
+    path: "/products",
+    changeFrequency: "daily",
+    priority: 0.95,
+  },
+  {
     path: "/offers",
     changeFrequency: "daily",
     priority: 0.9,
