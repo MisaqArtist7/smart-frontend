@@ -28,6 +28,19 @@ function truncateDescription(text?: string | null, maxLen = 160): string {
   return `${cleaned.slice(0, maxLen - 3).trim()}...`;
 }
 
+function getServerApiBases(): string[] {
+  const bases: string[] = [];
+  const internal = process.env.INTERNAL_API_URL || process.env.BACKEND_URL;
+  if (internal) bases.push(internal.replace(/\/+$/, ""));
+  if (API_BASE_URL.startsWith("http://") || API_BASE_URL.startsWith("https://")) {
+    bases.push(API_BASE_URL);
+  } else {
+    bases.push("http://127.0.0.1:4000");
+    bases.push(`${SITE_URL}${API_BASE_URL.startsWith("/") ? "" : "/"}${API_BASE_URL}`);
+  }
+  return Array.from(new Set(bases));
+}
+
 async function fetchProductBySlug(slug: string): Promise<Product | null> {
   const decoded = (() => {
     try {
@@ -37,19 +50,21 @@ async function fetchProductBySlug(slug: string): Promise<Product | null> {
     }
   })();
 
-  const urls = [
-    `${API_BASE_URL}/product/slug/${encodeURIComponent(decoded)}`,
-    /^\d+$/.test(decoded) ? `${API_BASE_URL}/product/${decoded}` : null,
+  const paths = [
+    `/product/slug/${encodeURIComponent(decoded)}`,
+    /^\d+$/.test(decoded) ? `/product/${decoded}` : null,
   ].filter(Boolean) as string[];
 
-  for (const url of urls) {
-    try {
-      const res = await fetch(url, { next: { revalidate: 60 } });
-      if (res.ok) {
-        return (await res.json()) as Product;
+  for (const base of getServerApiBases()) {
+    for (const path of paths) {
+      try {
+        const res = await fetch(`${base}${path}`, { next: { revalidate: 60 } });
+        if (res.ok) {
+          return (await res.json()) as Product;
+        }
+      } catch {
+        // ادامه به آدرس بعدی
       }
-    } catch {
-      // ادامه به آدرس بعدی یا فال‌بک
     }
   }
   return null;
