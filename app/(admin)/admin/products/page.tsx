@@ -309,6 +309,15 @@ export default function AdminProductsPage() {
 
   // تولید خودکار اسلاگ و متن جایگزین تصویر هنگام تغییر عنوان محصول
   const watchedTitle = watch("title");
+  const watchedPrice = watch("price");
+  const watchedDiscountPrice = watch("discountPrice");
+
+  const formatLivePrice = (val: number | undefined): string | null => {
+    if (typeof val !== "number" || !Number.isFinite(val) || val <= 0) return null;
+    const withCommas = Math.trunc(val).toLocaleString("en-US");
+    const persian = withCommas.replace(/\d/g, (d) => "۰۱۲۳۴۵۶۷۸۹"[Number(d)]);
+    return `${persian} تومان`;
+  };
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -808,9 +817,16 @@ export default function AdminProductsPage() {
 
               {/* قیمت اصلی */}
               <div className="space-y-2">
-                <label className="block text-xs font-bold text-foreground">
-                  قیمت اصلی (تومان) <span className="text-destructive">*</span>
-                </label>
+                <div className="flex items-center justify-between gap-2">
+                  <label className="block text-xs font-bold text-foreground">
+                    قیمت اصلی (تومان) <span className="text-destructive">*</span>
+                  </label>
+                  {formatLivePrice(watchedPrice) && (
+                    <span className="text-[11px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md">
+                      {formatLivePrice(watchedPrice)}
+                    </span>
+                  )}
+                </div>
                 <Input
                   type="number"
                   {...register("price", { valueAsNumber: true })}
@@ -824,9 +840,16 @@ export default function AdminProductsPage() {
 
               {/* قیمت با تخفیف */}
               <div className="space-y-2">
-                <label className="block text-xs font-bold text-foreground">
-                  قیمت با تخفیف (اختیاری)
-                </label>
+                <div className="flex items-center justify-between gap-2">
+                  <label className="block text-xs font-bold text-foreground">
+                    قیمت با تخفیف (اختیاری)
+                  </label>
+                  {formatLivePrice(watchedDiscountPrice) && (
+                    <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md">
+                      {formatLivePrice(watchedDiscountPrice)}
+                    </span>
+                  )}
+                </div>
                 <Input
                   type="number"
                   {...register("discountPrice", {
