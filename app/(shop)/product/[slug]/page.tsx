@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { API_BASE_URL } from "@/lib/api";
 import type { Product } from "@/lib/types";
@@ -117,7 +118,21 @@ export async function generateMetadata({
   };
 }
 
-export default async function SingleProductPage({ params }: ProductPageProps) {
+async function ProductContent({ params }: ProductPageProps) {
   const { slug } = await params;
   return <SingleProductClient slug={slug} />;
+}
+
+export default function SingleProductPage({ params }: ProductPageProps) {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-background text-foreground flex items-center justify-center text-xs text-muted-foreground">
+          در حال بارگذاری اطلاعات محصول...
+        </div>
+      }
+    >
+      <ProductContent params={params} />
+    </Suspense>
+  );
 }
