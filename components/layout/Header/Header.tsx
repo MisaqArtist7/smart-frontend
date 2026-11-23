@@ -152,7 +152,7 @@ export const DEFAULT_HEADER_CONFIG: HeaderConfig = {
       {
         id: "infrastructure",
         title: "تجهیزات زیر ساخت",
-        href: `/category/${encodeURIComponent("تچهیزات-زیر-ساخت")}`,
+        href: `/category/${encodeURIComponent("تجهیزات-زیر-ساخت")}`,
         icon: Layers,
       },
       {
