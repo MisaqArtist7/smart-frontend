@@ -11,7 +11,6 @@ import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { apiFetch, ApiError, onUnauthorized } from "@/lib/api";
-import { getMe } from "@/lib/auth-api";
 import type { User } from "@/lib/types";
 import { useAccountStore } from "@/lib/account-store";
 
@@ -54,16 +53,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (err instanceof ApiError && err.status === 401) {
           return null;
         }
-        // در صورت عدم دسترسی به سرور از وضعیت توسعه محلی چک می‌شود
-        try {
-          return await getMe();
-        } catch {
-          return null;
-        }
+        // خطاهای موقت شبکه یا سرور (5xx) نباید باعث لاگ‌اوت و پاک شدن user شوند
+        throw err;
       }
     },
-    staleTime: 60 * 1000,
-    retry: false,
+    staleTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    retry: (failureCount, err) => {
+      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+        return false;
+      }
+      return failureCount < 2;
+    },
   });
 
   // همگام‌سازی وضعیت کاربر با استور اکانت

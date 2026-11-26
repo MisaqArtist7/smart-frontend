@@ -59,7 +59,6 @@ export class ApiError extends Error {
 // 401 Session Refresh Deduplication
 // ----------------------------------------------------
 
-let refreshPromise: Promise<boolean> | null = null;
 let lastRefreshedAt = 0;
 let unauthorizedListeners: Array<() => void> = [];
 
@@ -90,12 +89,20 @@ export function triggerUnauthorized() {
 /**
  * Deduplicated POST /auth/refresh
  * Concurrent 401 requests share a single refresh call.
+ * Returns:
+ * - "ok": session refreshed
+ * - "unauthorized": refresh token is explicitly rejected (401/403)
+ * - "error": transient network / 5xx error (do NOT force logout)
  */
-export async function refreshSession(): Promise<boolean> {
-  if (Date.now() - lastRefreshedAt < 3000) return true;
-  if (refreshPromise) return refreshPromise;
+let refreshStatusPromise: Promise<"ok" | "unauthorized" | "error"> | null = null;
 
-  refreshPromise = (async () => {
+export async function refreshSessionWithStatus(): Promise<
+  "ok" | "unauthorized" | "error"
+> {
+  if (Date.now() - lastRefreshedAt < 3000) return "ok";
+  if (refreshStatusPromise) return refreshStatusPromise;
+
+  refreshStatusPromise = (async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
         method: "POST",
@@ -106,16 +113,25 @@ export async function refreshSession(): Promise<boolean> {
       });
       if (res.ok) {
         lastRefreshedAt = Date.now();
+        return "ok";
       }
-      return res.ok;
+      if (res.status === 401 || res.status === 403) {
+        return "unauthorized";
+      }
+      return "error";
     } catch {
-      return false;
+      return "error";
     } finally {
-      refreshPromise = null;
+      refreshStatusPromise = null;
     }
   })();
 
-  return refreshPromise;
+  return refreshStatusPromise;
+}
+
+export async function refreshSession(): Promise<boolean> {
+  const status = await refreshSessionWithStatus();
+  return status === "ok";
 }
 
 // ----------------------------------------------------
@@ -172,13 +188,13 @@ export async function apiFetch<T>(
     endpoint.includes("/auth/verify-otp");
 
   if (response.status === 401 && !isAuthEndpoint && !options?._isRetry) {
-    const refreshed = await refreshSession();
-    if (refreshed) {
+    const refreshStatus = await refreshSessionWithStatus();
+    if (refreshStatus === "ok") {
       return apiFetch<T>(endpoint, {
         ...options,
         _isRetry: true,
       });
-    } else {
+    } else if (refreshStatus === "unauthorized") {
       triggerUnauthorized();
     }
   }
